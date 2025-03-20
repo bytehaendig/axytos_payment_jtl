@@ -1,0 +1,4 @@
+composer.autoloader_path: "%project_root%/vendor/autoload.php"
+composer.autoload_deregister: false
+indexer.enabled_watchers: ["find", "php"]
+indexer.include_patterns: ["**/*.php"]

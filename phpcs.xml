@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<ruleset name="Custom Standard">
+    <description>Custom coding standard with 4-space indentation</description>
+
+    <!-- Set default tab width for indentation -->
+    <arg name="tab-width" value="4"/>
+
+    <!-- Use PSR-12 as the base -->
+    <rule ref="PSR12"/>
+
+    <!-- Configure indentation -->
+    <rule ref="Generic.WhiteSpace.ScopeIndent">
+        <properties>
+            <property name="indent" value="4"/>
+            <property name="tabIndent" value="false"/>
+        </properties>
+    </rule>
+
+    <!-- Ensure arrays use proper indentation -->
+    <rule ref="Generic.Arrays.ArrayIndent"/>
+</ruleset>

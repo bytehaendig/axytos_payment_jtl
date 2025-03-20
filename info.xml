@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jtlshopplugin>
+  <Name>Axytos Payment</Name>
+  <PluginID>axytos_payment</PluginID>
+  <XMLVersion>001</XMLVersion>
+  <Description>Axytos payment integration for JTL Shop</Description>
+  <Author>Bytehaendig Software Manufaktur</Author>
+  <URL>https://bytehaendig.de</URL>
+  <Version>0.1.0</Version>
+  <CreateDate>2025-03-25</CreateDate>
+  <ShopVersion>5.0.0</ShopVersion>
+  <Install>
+    <PaymentMethod>
+      <Method>
+        <Name>Bezahlen auf Rechnung</Name>
+        <Sort>1</Sort>
+        <SendMail>1</SendMail>
+        <Provider>Axytos</Provider>
+        <TSCode>OTHER</TSCode>
+        <PreOrder>1</PreOrder>
+        <Soap>0</Soap>
+        <Curl>0</Curl>
+        <Sockets>0</Sockets>
+        <ClassFile>AxytosPaymentMethod.php</ClassFile>
+        <ClassName>AxytosPaymentMethod</ClassName>
+        <MethodLanguage iso="GER">
+          <Name>Bezahlen auf Rechnung</Name>
+          <ChargeName>Bezahlen Sie bequem</ChargeName>
+          <InfoText>lorem impsum</InfoText>
+        </MethodLanguage>"
+        <Setting type="text" initValue="" sort="1" conf="Y">
+          <Name>API Key</Name>
+          <Description>Axytos API Key for authentication</Description>
+          <ValueName>Foobar</ValueName> 
+        </Setting>
+        <Setting type="checkbox" initValue="0" sort="1" conf="Y">
+          <Name>Use Sandbox</Name>
+          <Description>Send API requests to the test sandbox instead of the production system</Description>
+          <ValueName>Foobar</ValueName> 
+        </Setting>
+      </Method>
+    </PaymentMethod>
+    <Locales>
+      <Variable>
+        <Name>xzy</Name>
+        <VariableLocalized iso="GER">abc</VariableLocalized>
+        <VariableLocalized iso="ENG">ABC</VariableLocalized>
+      </Variable>
+    </Locales>
+  </Install>
+</jtlshopplugin>
