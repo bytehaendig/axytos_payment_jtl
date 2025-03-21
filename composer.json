@@ -5,7 +5,7 @@
     "autoload": {
         "psr-4": {
             "JTL\\": "../../includes/src/",
-            "Bytehaendig\\axytos_payment\\": "./"
+            "Plugin\\axytos_payment\\": "./"
         },
         "exclude-from-classmap": [
             "vendor/"

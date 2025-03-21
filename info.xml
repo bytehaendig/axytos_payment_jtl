@@ -2,7 +2,7 @@
 <jtlshopplugin>
   <Name>Axytos Payment</Name>
   <PluginID>axytos_payment</PluginID>
-  <XMLVersion>001</XMLVersion>
+  <XMLVersion>002</XMLVersion>
   <Description>Axytos payment integration for JTL Shop</Description>
   <Author>Bytehaendig Software Manufaktur</Author>
   <URL>https://bytehaendig.de</URL>
@@ -23,6 +23,7 @@
         <Sockets>0</Sockets>
         <ClassFile>AxytosPaymentMethod.php</ClassFile>
         <ClassName>AxytosPaymentMethod</ClassName>
+        <TemplateFile>template/payment.tpl</TemplateFile>
         <MethodLanguage iso="GER">
           <Name>Bezahlen auf Rechnung</Name>
           <ChargeName>Bezahlen Sie bequem</ChargeName>
@@ -31,12 +32,12 @@
         <Setting type="text" initValue="" sort="1" conf="Y">
           <Name>API Key</Name>
           <Description>Axytos API Key for authentication</Description>
-          <ValueName>Foobar</ValueName> 
+          <ValueName>api_key</ValueName> 
         </Setting>
-        <Setting type="checkbox" initValue="0" sort="1" conf="Y">
+        <Setting type="checkbox" initValue="Y" sort="2" conf="Y">
           <Name>Use Sandbox</Name>
-          <Description>Send API requests to the test sandbox instead of the production system</Description>
-          <ValueName>Foobar</ValueName> 
+          <Description>Sende API Anfragen zur Test-Sandbox anstatt zum Produktivsystem</Description>
+          <ValueName>use_sandbox</ValueName> 
         </Setting>
       </Method>
     </PaymentMethod>

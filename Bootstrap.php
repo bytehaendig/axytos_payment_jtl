@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bytehaendig\axytos_payment;
+namespace Plugin\axytos_payment;
 
 use JTL\Backend\Notification;
 use JTL\Backend\NotificationEntry;
@@ -10,7 +10,7 @@ use JTL\Events\Dispatcher;
 use JTL\Plugin\Bootstrapper;
 use JTL\Plugin\Payment\Method;
 use JTL\Shop;
-use Bytehaendig\axytos_payment\paymentmethod\AxytosPaymentMethod;
+use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 
 /**
  * Class Bootstrap
