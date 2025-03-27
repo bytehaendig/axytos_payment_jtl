@@ -10,6 +10,11 @@
   <CreateDate>2025-03-25</CreateDate>
   <ShopVersion>5.0.0</ShopVersion>
   <Install>
+    <Adminmenu>
+      <Customlink sort="1">
+        <Name>API Setup</Name>
+      </Customlink>
+    </Adminmenu>
     <PaymentMethod>
       <Method>
         <Name>Bezahlen auf Rechnung</Name>
@@ -29,16 +34,6 @@
           <ChargeName>Bezahlen Sie bequem</ChargeName>
           <InfoText>lorem impsum</InfoText>
         </MethodLanguage>"
-        <Setting type="text" initValue="" sort="1" conf="Y">
-          <Name>API Key</Name>
-          <Description>Axytos API Key for authentication</Description>
-          <ValueName>api_key</ValueName> 
-        </Setting>
-        <Setting type="checkbox" initValue="Y" sort="2" conf="Y">
-          <Name>Use Sandbox</Name>
-          <Description>Sende API Anfragen zur Test-Sandbox anstatt zum Produktivsystem</Description>
-          <ValueName>use_sandbox</ValueName> 
-        </Setting>
       </Method>
     </PaymentMethod>
     <Locales>
