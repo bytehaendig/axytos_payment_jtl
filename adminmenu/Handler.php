@@ -6,8 +6,6 @@ use JTL\Smarty\JTLSmarty;
 use JTL\Plugin\PluginInterface;
 use JTL\Helpers\Form;
 use JTL\Helpers\Request;
-use JTL\Shop;
-use stdClass;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 
 class Handler
@@ -30,7 +28,7 @@ class Handler
         if (Request::postInt('save') === 1 && Form::validateToken()) {
             $apiKey = Request::postVar('api_key', '');
             $useSandbox = Request::postInt('use_sandbox', 0);
-            $ok = $this->method->saveSettings(array('api_key' => $apiKey, 'use_sandbox' => $useSandbox));
+            $ok = $this->method->savePluginSettings(array('api_key' => $apiKey, 'use_sandbox' => $useSandbox));
             if ($ok) {
                 // Add success message
                 $messages[] = [

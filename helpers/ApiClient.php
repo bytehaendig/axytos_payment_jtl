@@ -41,7 +41,7 @@ class ApiClient
         return $response;
     }
 
-    public function invoicePrecheck($requestData)
+    public function precheck($requestData)
     {
         $apiUrl = '/Payments/invoice/order/precheck';
         $response = $this->makeRequest($apiUrl, 'POST', $requestData);

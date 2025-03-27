@@ -1,37 +1,66 @@
 <?php
-namespace Plugin\AxytosPayment\helpers;
+
+namespace Plugin\axytos_payment\helpers;
 
 use JTL\Checkout\Bestellung;
+use JTL\Helpers\Order;
+use JTL\Session\Frontend;
+
+function getAddress($addr)
+{
+    $address = [
+        "company" => $addr->cFirma,
+        "firstname" => $addr->cVorname,
+        "lastname" => $addr->cNachname,
+        "zipCode" => $addr->cPLZ,
+        "city" => $addr->cOrt,
+        "country" => $addr->cLand,
+        "addressLine1" => $addr->cStrasse . ' ' . $addr->cHausnummer,
+        "addressLine2" => $addr->cAdressZusatz,
+    ];
+    return $address;
+}
 
 /**
  * Helper class for formatting data for Axytos API
  */
 class DataFormatter
 {
+    private Bestellung $order;
+    private Order $orderHelper;
+
+    public function __construct(Bestellung $order)
+    {
+        $this->order = $order;
+        // helper
+        $this->orderHelper = new Order($order);
+    }
     /**
      * Create basket data for API requests
      *
-     * @param Bestellung $order
      * @param string $style order|invoice|refund
      * @return array
      */
-    public function createBasketData(Bestellung $order, string $style = "order"): array
+    private function createBasketData(string $style = "order"): array
     {
         $positions = [];
         $taxGroups = [];
-        $grossTotal = $order->fGesamtsumme;
-        $netTotal = $grossTotal - $order->fSteuern;
-        
+        $grossTotal = $this->order->fGesamtsumme;
+        $netTotal = 0; // work-around - for some reason order->fGesamtsummeNette is 0
         // Process order positions
-        foreach ($order->Positionen as $position) {
+        foreach ($this->orderHelper->getPositions() as $position) {
             $quantity = $position->nAnzahl;
             $netPrice = $position->fPreis;
             $grossPrice = $netPrice * (1 + ($position->fMwSt / 100));
-            $taxPercent = $position->fMwSt;
+            $taxPercent = (float)$position->fMwSt;
             $lineNetPrice = $netPrice * $quantity;
             $lineGrossPrice = $grossPrice * $quantity;
-            $productId = $position->kArtikel;
-            
+            $productId = $position->cArtNr;
+            $netPriceDisplay = round($netPrice, 2);
+            $grossPriceDisplay = round($grossPrice, 2);
+            $lineNetPriceDisplay = round($lineNetPrice, 2);
+            $lineGrossPriceDisplay = round($lineGrossPrice, 2);
+            $netTotal += $lineNetPrice;
             // Track tax groups
             if (!isset($taxGroups[$taxPercent])) {
                 $taxGroups[$taxPercent] = [
@@ -39,26 +68,24 @@ class DataFormatter
                     'value' => 0
                 ];
             }
-            
             $taxGroups[$taxPercent]['tax'] += ($lineGrossPrice - $lineNetPrice);
             $taxGroups[$taxPercent]['value'] += $lineNetPrice;
-            
             // Format position data based on style
             if ($style === "invoice") {
                 $positions[] = [
                     "productId" => $productId,
                     "quantity" => $quantity,
                     "taxPercent" => $taxPercent,
-                    "netPricePerUnit" => $netPrice,
-                    "grossPricePerUnit" => $grossPrice,
-                    "netPositionTotal" => $lineNetPrice,
-                    "grossPositionTotal" => $lineGrossPrice,
+                    "netPricePerUnit" => $netPriceDisplay,
+                    "grossPricePerUnit" => $grossPriceDisplay,
+                    "netPositionTotal" => $lineNetPriceDisplay,
+                    "grossPositionTotal" => $lineGrossPriceDisplay,
                 ];
             } elseif ($style === "refund") {
                 $positions[] = [
                     "productId" => $productId,
-                    "netRefundTotal" => $lineNetPrice,
-                    "grossRefundTotal" => $lineGrossPrice,
+                    "netRefundTotal" => $lineNetPriceDisplay,
+                    "grossRefundTotal" => $lineGrossPriceDisplay,
                 ];
             } else {
                 $positions[] = [
@@ -67,20 +94,18 @@ class DataFormatter
                     "productCategory" => "General", // TODO: Get actual category
                     "quantity" => $quantity,
                     "taxPercent" => $taxPercent,
-                    "netPricePerUnit" => $netPrice,
-                    "grossPricePerUnit" => $grossPrice,
-                    "netPositionTotal" => $lineNetPrice,
-                    "grossPositionTotal" => $lineGrossPrice,
+                    "netPricePerUnit" => $netPriceDisplay,
+                    "grossPricePerUnit" => $grossPriceDisplay,
+                    "netPositionTotal" => $lineNetPriceDisplay,
+                    "grossPositionTotal" => $lineGrossPriceDisplay,
                 ];
             }
         }
-        
         $result = [
-            "netTotal" => $netTotal,
-            "grossTotal" => $grossTotal,
+            "netTotal" => round($netTotal, 2),
+            "grossTotal" => round($grossTotal, 2),
             "positions" => $positions,
         ];
-        
         // Add tax groups for invoice and refund styles
         if ($style === "invoice" || $style === "refund") {
             $formattedTaxGroups = [];
@@ -93,126 +118,98 @@ class DataFormatter
             }
             $result["taxGroups"] = $formattedTaxGroups;
         }
-        
         // Add currency for order style
         if ($style === "order") {
-            $result["currency"] = $order->Waehrung->cISO;
+            $result["currency"] = $this->orderHelper->getCurrency()->name;
         }
-        
         return $result;
     }
-    
+
     /**
      * Create order data for API requests
      *
      * @param Bestellung $order
      * @return array
      */
-    public function createOrderData(Bestellung $order): array
+    private function createOrderData(): array
     {
-        $customer = $order->oKunde;
+        $customer = $this->orderHelper->getCustomer() ?: Frontend::getCustomer();
         $customerId = $customer->kKunde ?: $customer->cMail;
-        
         return [
             "personalData" => [
                 "externalCustomerId" => (string)$customerId,
-                "language" => $order->Sprache->cISO,
+                "language" => Frontend::getInstance()->getLanguage()->cISOSprache,
                 "email" => $customer->cMail,
-                "mobilePhoneNumber" => $customer->cMobil ?: $customer->cTel,
+                "mobilePhoneNumber" => $customer->cMobil ? $customer->cMobil : $customer->cTel,
             ],
-            "invoiceAddress" => [
-                "company" => $order->oRechnungsadresse->cFirma,
-                "firstname" => $order->oRechnungsadresse->cVorname,
-                "lastname" => $order->oRechnungsadresse->cNachname,
-                "zipCode" => $order->oRechnungsadresse->cPLZ,
-                "city" => $order->oRechnungsadresse->cOrt,
-                "country" => $order->oRechnungsadresse->cLand,
-                "addressLine1" => $order->oRechnungsadresse->cStrasse . ' ' . $order->oRechnungsadresse->cHausnummer,
-                "addressLine2" => $order->oRechnungsadresse->cAdressZusatz,
-            ],
-            "deliveryAddress" => [
-                "company" => $order->oLieferadresse->cFirma,
-                "firstname" => $order->oLieferadresse->cVorname,
-                "lastname" => $order->oLieferadresse->cNachname,
-                "zipCode" => $order->oLieferadresse->cPLZ,
-                "city" => $order->oLieferadresse->cOrt,
-                "country" => $order->oLieferadresse->cLand,
-                "addressLine1" => $order->oLieferadresse->cStrasse . ' ' . $order->oLieferadresse->cHausnummer,
-                "addressLine2" => $order->oLieferadresse->cAdressZusatz,
-            ],
-            "basket" => $this->createBasketData($order, "order"),
+            "invoiceAddress" => getAddress($this->order->oRechnungsadresse),
+            "deliveryAddress" => getAddress($this->order->oLieferadresse ? $this->order->oLieferadresse : $this->order->oRechnungsadresse),
+            "basket" => $this->createBasketData("order"),
         ];
     }
-    
+
     /**
      * Create precheck data for API requests
      *
      * @param Bestellung $order
      * @return array
      */
-    public function createPrecheckData(Bestellung $order): array
+    public function createPrecheckData(): array
     {
-        $orderData = $this->createOrderData($order);
+        $orderData = $this->createOrderData($this->order);
         $precheckData = [
             "requestMode" => "SingleStep",
             "paymentTypeSecurity" => "U",
             "selectedPaymentType" => "",
             "proofOfInterest" => "AAE",
         ];
-        
         return array_merge($orderData, $precheckData);
     }
-    
     /**
      * Create confirm data for API requests
      *
      * @param Bestellung $order
      * @return array
      */
-    public function createConfirmData(Bestellung $order): array
+    public function createConfirmData(): array
     {
-        $orderData = $this->createOrderData($order);
-        $precheckResponse = json_decode($order->getBestellungMeta('precheck_response'), true);
-        
+        $orderData = $this->createOrderData($this->order);
+        $precheckResponse = json_decode($this->order->getBestellungMeta('precheck_response'), true);
         $confirmData = [
-            "externalOrderId" => $order->cBestellNr,
+            "externalOrderId" => $this->order->cBestellNr,
             "date" => date('c'),
             "orderPrecheckResponse" => $precheckResponse
         ];
-        
         return array_merge($orderData, $confirmData);
     }
-    
+
     /**
      * Create invoice data for API requests
      *
-     * @param Bestellung $order
      * @return array
      */
-    public function createInvoiceData(Bestellung $order): array
+    public function createInvoiceData(): array
     {
         return [
-            "externalOrderId" => $order->cBestellNr,
-            "externalInvoiceNumber" => $order->cBestellNr,
-            "externalInvoiceDisplayName" => sprintf("Invoice #%s", $order->cBestellNr),
+            "externalOrderId" => $this->order->cBestellNr,
+            "externalInvoiceNumber" => $this->order->cBestellNr,
+            "externalInvoiceDisplayName" => sprintf("Invoice #%s", $this->order->cBestellNr),
             "externalSubOrderId" => "",
-            "date" => date('c', strtotime($order->dErstellt)),
+            "date" => date('c', strtotime($this->order->dErstellt)),
             "dueDateOffsetDays" => 14,
-            "basket" => $this->createBasketData($order, "invoice"),
+            "basket" => $this->createBasketData("invoice"),
         ];
     }
-    
+
     /**
      * Create shipping data for API requests
      *
-     * @param Bestellung $order
      * @return array
      */
-    public function createShippingData(Bestellung $order): array
+    public function createShippingData(): array
     {
         $positions = [];
-        
-        foreach ($order->Positionen as $position) {
+        foreach ($this->order->Positionen as $position) {
             if ($position->kArtikel > 0) {
                 $positions[] = [
                     "productId" => $position->kArtikel,
@@ -220,31 +217,28 @@ class DataFormatter
                 ];
             }
         }
-        
         return [
-            "externalOrderId" => $order->cBestellNr,
+            "externalOrderId" => $this->order->cBestellNr,
             "externalSubOrderId" => "",
             "basketPositions" => $positions,
             "shippingDate" => date('c'),
         ];
     }
-    
+
     /**
      * Create refund data for API requests
      *
-     * @param Bestellung $order
      * @return array
      */
-    public function createRefundData(Bestellung $order): array
+    public function createRefundData(): array
     {
-        $invoiceNumber = $order->getBestellungMeta('axytos_invoice_number');
-        
+        $invoiceNumber = $this->order->getBestellungMeta('axytos_invoice_number');
         return [
-            "externalOrderId" => $order->cBestellNr,
+            "externalOrderId" => $this->order->cBestellNr,
             "refundDate" => date('c'),
             "originalInvoiceNumber" => $invoiceNumber,
             "externalSubOrderId" => "",
-            "basket" => $this->createBasketData($order, "refund"),
+            "basket" => $this->createBasketData("refund"),
         ];
     }
 }

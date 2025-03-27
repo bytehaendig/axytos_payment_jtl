@@ -1,9 +1,5 @@
 
 <div class="card">
-    <div class="card-header">
-        <div class="subheading1">API Configuration</div>
-        <hr class="mb-n3">
-    </div>
     <div class="card-body">
         {if !empty($messages)}
             {foreach $messages as $message}
@@ -19,7 +15,7 @@
 
             <div class="form-group">
                 <label for="api_key">API Key:</label>
-                <input type="text" class="form-control" id="api_key" name="api_key" value="{$apiKey|escape:'html'}">
+                <input type="text" class="form-control" id="api_key" name="api_key" value="{$apiKey}">
                 <small class="form-text text-muted">Your API key will be encrypted before storing in the database.</small>
             </div>
 
