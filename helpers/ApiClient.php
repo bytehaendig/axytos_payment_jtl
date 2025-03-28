@@ -36,7 +36,8 @@ class ApiClient
         curl_close($ch);
         if ($status < 200 || $status >= 300) {
             // TODO: better error handling
-            throw new Exception('Error in communication with Axytos');
+            error_log('Axytos Payment: ' . $response);
+            throw new \Exception('Error in communication with Axytos');
         }
         return $response;
     }

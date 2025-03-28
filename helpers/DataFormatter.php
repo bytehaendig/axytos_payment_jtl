@@ -21,6 +21,12 @@ function getAddress($addr)
     return $address;
 }
 
+function getProductId($pos): string
+{
+    // TODO: better productId (especially relevant for shipping)
+    return $pos->cArtNr ?: "-";
+}
+
 /**
  * Helper class for formatting data for Axytos API
  */
@@ -55,7 +61,7 @@ class DataFormatter
             $taxPercent = (float)$position->fMwSt;
             $lineNetPrice = $netPrice * $quantity;
             $lineGrossPrice = $grossPrice * $quantity;
-            $productId = $position->cArtNr;
+            $productId = getProductId($position);
             $netPriceDisplay = round($netPrice, 2);
             $grossPriceDisplay = round($grossPrice, 2);
             $lineNetPriceDisplay = round($lineNetPrice, 2);
@@ -120,7 +126,7 @@ class DataFormatter
         }
         // Add currency for order style
         if ($style === "order") {
-            $result["currency"] = $this->orderHelper->getCurrency()->name;
+            $result["currency"] = $this->orderHelper->getCurrency()->getCode();
         }
         return $result;
     }
@@ -143,7 +149,7 @@ class DataFormatter
                 "mobilePhoneNumber" => $customer->cMobil ? $customer->cMobil : $customer->cTel,
             ],
             "invoiceAddress" => getAddress($this->order->oRechnungsadresse),
-            "deliveryAddress" => getAddress($this->order->oLieferadresse ? $this->order->oLieferadresse : $this->order->oRechnungsadresse),
+            "deliveryAddress" => getAddress($this->order->oLieferadresse ?: $this->order->oRechnungsadresse),
             "basket" => $this->createBasketData("order"),
         ];
     }
@@ -171,14 +177,13 @@ class DataFormatter
      * @param Bestellung $order
      * @return array
      */
-    public function createConfirmData(): array
+    public function createConfirmData(array $precheckResponseJson): array
     {
         $orderData = $this->createOrderData($this->order);
-        $precheckResponse = json_decode($this->order->getBestellungMeta('precheck_response'), true);
         $confirmData = [
             "externalOrderId" => $this->order->cBestellNr,
             "date" => date('c'),
-            "orderPrecheckResponse" => $precheckResponse
+            "orderPrecheckResponse" => $precheckResponseJson,
         ];
         return array_merge($orderData, $confirmData);
     }
@@ -212,7 +217,7 @@ class DataFormatter
         foreach ($this->order->Positionen as $position) {
             if ($position->kArtikel > 0) {
                 $positions[] = [
-                    "productId" => $position->kArtikel,
+                    "productId" => getProductId($position),
                     "quantity" => $position->nAnzahl,
                 ];
             }

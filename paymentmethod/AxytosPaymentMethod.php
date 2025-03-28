@@ -109,24 +109,155 @@ class AxytosPaymentMethod extends Method
         return parent::isValidIntern($args_arr) && $this->duringCheckout === 1;
     }
 
+    private function addErrorMessage(string $message, string $key = 'generic'): void
+    {
+        // $localization = $this->plugin->getLocalization();
+        // $errorMessage = $localization->getTranslation($message);
+        // if ($errorMessage !== '') {
+        //     Shop::Container()->getAlertService()->addError(
+        //         $errorMessage,
+        //         'axytos_' . $key,
+        //     );
+        // }
+        // TODO: i18n
+        Shop::Container()->getAlertService()->addError($message, 'axytos_' . $key, ['saveInSession' => true]);
+    }
+
+    private function getLogger()
+    {
+        if (\method_exists($this->plugin, 'getLogger')) {
+            $logger = $this->plugin->getLogger();
+        } else {
+            // fallback for shop versions < 5.3.0
+            $logger = Shop::Container()->getLogService();
+        }
+        return $logger;
+    }
+
     /** overwrite */
     public function preparePaymentProcess(Bestellung $order): void
     {
+        assert($this->duringCheckout === 1);
         parent::preparePaymentProcess($order);
-        $localization = $this->plugin->getLocalization();
-        $paymentHash  = $this->generateHash($order);
         $client       = $this->createApiClient();
-        $DataFormatter = $this->createDataFormatter($order);
-        $precheckData  =  $DataFormatter->createPrecheckData();
-    echo json_encode($precheckData, JSON_PRETTY_PRINT);
+        $dataFormatter = $this->createDataFormatter($order);
+        $precheckData  =  $dataFormatter->createPrecheckData();
+        $precheckSuccessful = false;
         try {
-            $res = $client->precheck($precheckData);
+            $precheckResponse = $client->precheck($precheckData);
+            $this->saveInSession('precheck_response', $precheckResponse);
+            $precheckSuccessful = true;
         } catch (\Exception $e) {
-            $this->addErrorMessage($localization->get('error_precheck_failed'));
-            return;
+            $this->getLogger()->error(
+                'Axytos payment precheck failed: ' . $e->getMessage(),
+                ['order' => $order->kBestellung, 'exception' => $e]
+            );
+            $this->addErrorMessage('error_precheck_failed', 'precheck_error');
         }
-if ($this->duringCheckout) {
-            Shop::Smarty()->assign('axytosPaymentURL', $this->getNotificationURL($paymentHash) . '&payed');
+        if ($precheckSuccessful) {
+            $responseBody = json_decode($precheckResponse, true);
+            $decisionCode = $responseBody['decision'];
+            $paymentAccepted = strtolower($decisionCode) === "u";
+            if ($paymentAccepted) {
+                if ($this->confirmOrder($order, $responseBody)) {
+                    $redirectUrl = $this->getNotificationURL($this->generateHash($order));
+                    header('Location: ' . $redirectUrl);
+                    exit;
+                }
+            } else {
+                $this->addErrorMessage('error_payment_rejected', 'precheck_rejected');
+            }
         }
+        header('Location: ' . Shop::getURL() . '/bestellvorgang.php?editZahlungsart=1');
+        exit;
+    }
+
+    public function finalizeOrder(Bestellung $order, string $hash, array $args): bool
+    {
+        // called after redirect to getNotificationURL
+        // order is not yet saved to DB
+        // true means payment success
+        return true;
+    }
+
+    public function redirectOnPaymentSuccess(): bool
+    {
+        // called when finalizeOrder returns true
+        return true;
+    }
+
+    public function redirectOnCancel(): bool
+    {
+        // called when finalizeOrder returns false
+        return true;
+    }
+
+    public function handleNotification(Bestellung $order, string $hash, array $args): void
+    {
+        // called after redirect to getNotificationURL and after finalizeOrder
+        // order is saved to DB - now we can save additional information
+        //
+        // it is misleading for the customer when the order is already marked as paid
+        // TODO: clarify if Axytos will communicate the payment status
+        //
+        // $this->addIncomingPayment($order, (object)[
+        //     'fBetrag'          => $order->fGesamtsumme,
+        //     'fZahlungsgebuehr' => 0,
+        //     'cHinweis'         => `Axytos`, // TODO: add transaction ID
+        // ]);
+        // $this->setOrderStatusToPaid($order);
+        $precheckResponse = $this->loadFromSession('precheck_response');
+        $this->addOrderAttribute($order, 'axytos_precheck_response', $precheckResponse);
+        $this->addOrderAttribute($order, 'axytos_confirmed', '1');
+        $this->sendConfirmationMail($order);
+    }
+
+    private function confirmOrder(Bestellung $order, array $precheckResponseJson): bool
+    {
+        $client       = $this->createApiClient();
+        $dataFormatter = $this->createDataFormatter($order);
+        $confirmData  = $dataFormatter->createConfirmData($precheckResponseJson);
+        try {
+            $response = $client->orderConfirm($confirmData);
+        } catch (\Exception $e) {
+            $this->getLogger()->error(
+                "Axytos payment order confirmation failed for order {$order->kBestellung}: " . $e->getMessage(),
+                ['order' => $order->kBestellung, 'exception' => $e],
+            );
+            $this->addErrorMessage('error_order_confirmation_failed', 'confirmation_error');
+            return false;
+        }
+        $this->getLogger()->info(
+            // TODO: no kBestellung here
+            "Axytos payment order confirmation successful for order {$order->kBestellung}.",
+            ['order' => $order->kBestellung],
+        );
+        $responseBody = json_decode($response, true);
+        return true;
+    }
+
+    private function addOrderAttribute(Bestellung $order, string $key, string $value): void
+    {
+        $ins = new stdClass();
+        $ins->kBestellung = $order->kBestellung;
+        $ins->cName = $key;
+        $ins->cValue = $value;
+        $this->db->insert('tbestellattribut', $ins);
+    }
+
+    private function saveInSession(string $key, mixed $value): void
+    {
+        if (!isset($_SESSION['axytos_payment'])) {
+            $_SESSION['axytos_payment'] = [];
+        }
+        $_SESSION['axytos_payment'][$key] = $value;
+    }
+
+    private function loadFromSession(string $key): mixed
+    {
+        if (isset($_SESSION['axytos_payment']) && array_key_exists($key, $_SESSION['axytos_payment'])) {
+            return $_SESSION['axytos_payment'][$key];
+        }
+        return null;
     }
 }
