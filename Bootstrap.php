@@ -13,6 +13,7 @@ use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 use Plugin\axytos_payment\adminmenu\Handler;
+use Plugin\axytos_payment\frontend\AgreementController;
 
 /**
  * Class Bootstrap
@@ -29,10 +30,25 @@ class Bootstrap extends Bootstrapper
         $this->method = Method::create($this->getModuleID());
         $this->method = $this->getMethod();
         parent::boot($dispatcher);
-        if (!Shop::isFrontend()) {
+
+        if (Shop::isFrontend()) {
+            // Add hook for modifying checkout page to add agreement link
+            $dispatcher->hookInto(\HOOK_SMARTY_OUTPUTFILTER, [$this, 'addAgreementLink']);
+            $dispatcher->hookInto(\HOOK_ROUTER_PRE_DISPATCH, function (array $args) {
+                /** @var Router $router */
+                $router = $args['router'];
+                $controller = $this->createAgreementController();
+                $router->addRoute($controller->getPath(), [$controller, 'getResponse'], 'axytosAgreement');
+            });
+        } else {
             $dispatcher->listen('backend.notification', [$this, 'checkPayments']);
         }
-        $dispatcher->listen('shop.hook.' . \HOOK_PLUGIN_SAVE_OPTIONS, [$this, 'handlePluginSettingsSave']);
+    }
+
+    private function createAgreementController()
+    {
+        $controller = new AgreementController($this->getPlugin(), $this->getMethod());
+        return $controller;
     }
 
     private function getModuleID(): string
@@ -64,26 +80,6 @@ class Bootstrap extends Bootstrapper
             );
             $note->setPluginId($this->getPlugin()->getPluginID());
             Notification::getInstance()->addNotify($note);
-        }
-    }
-
-    /**
-     * Handle plugin settings save to encrypt API key
-     * @param array $args
-     */
-    public function handlePluginSettingsSave(array $args): void
-    {
-        die($args);
-        // Check if these are our plugin's settings being saved
-        if (isset($args['kPlugin']) && (int)$args['kPlugin'] === $this->getPlugin()->getID()) {
-            // Check if the API key is being set
-            if (isset($_POST['api_key']) && !empty($_POST['api_key'])) {
-                // Get the encryption service
-                $encryption = Shop::Container()->getCryptoService();
-
-                // Encrypt the API key
-                $_POST['api_key'] = $encryption->encryptXTEA($_POST['api_key']);
-            }
         }
     }
 
@@ -128,5 +124,40 @@ class Bootstrap extends Bootstrapper
     {
         $handler = new Handler($this->getPlugin(), $this->getMethod());
         return $handler->render($tabName, $menuID, $smarty);
+    }
+
+    /**
+     * Add agreement link to the payment method in checkout
+     *
+     * @param array $args
+     * @return string
+     */
+    public function addAgreementLink($ctx)
+    {
+        $doc = $ctx['document'];
+        $smarty = $ctx['smarty'];
+        // Only modify output on checkout page
+        // TODO: 'Bestellvorgang' should be replaced with a constant or config value to be independent of language
+        if (!isset($_SERVER['REQUEST_URI']) || strpos($_SERVER['REQUEST_URI'], 'Bestellvorgang') === false) {
+            return $doc;
+        }
+
+        // Get the payment method ID
+        $moduleID = $this->getModuleID();
+        // Find the payment method element by its ID
+        $paymentMethodElement = $doc->find('#' . $moduleID);
+        // If the payment method element is found, append the agreement link
+        if ($paymentMethodElement->length > 0) {
+            // Find the label element within the payment method
+            $noteElement = $paymentMethodElement->find('.checkout-payment-method-note');
+            if ($noteElement->length > 0) {
+                $controller = $this->createAgreementController();
+                $link = $controller->getLink($smarty);
+                // Append the agreement link after the label
+                $noteElement->after($link);
+            }
+        }
+        // Return the modified HTML
+        return $doc->htmlOuter();
     }
 }
