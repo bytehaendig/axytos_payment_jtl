@@ -98,6 +98,16 @@ class ApiClient
         return $response;
     }
 
+    public function reverseCancelOrder($orderID)
+    {
+        $apiUrl = '/Payments/invoice/order/reverseCancellation';
+        $data = [
+            'externalOrderId' => $orderID,
+        ];
+        $response = $this->makeRequest($apiUrl, 'POST', $data);
+        return $response;
+    }
+
     public function getAgreement()
     {
         $apiUrl = '/StaticContent/creditcheckagreement';

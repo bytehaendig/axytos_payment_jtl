@@ -154,12 +154,30 @@ class AxytosPaymentMethod extends Method
 
     public function cancelOrder(int $orderID, bool $delete = false): void
     {
-
+        $client = $this->createApiClient();
+        try {
+            $response = $client->cancelOrder($orderID);
+        } catch (\Exception $e) {
+            // TODO: rethink error handlint (maybe doLog?)
+            $this->getLogger()->error(
+                "Axytos payment order cancellation failed for order {$orderID}: " . $e->getMessage(),
+                ['order' => $orderID, 'exception' => $e],
+            );
+        }
     }
 
     public function reactivateOrder(int $orderID): void
     {
-
+        $client = $this->createApiClient();
+        try {
+            $response = $client->reverseCancelOrder($orderID);
+        } catch (\Exception $e) {
+            // TODO: rethink error handlint (maybe doLog?)
+            $this->getLogger()->error(
+                "Axytos payment order reactivation failed for order {$orderID}: " . $e->getMessage(),
+                ['order' => $orderID, 'exception' => $e],
+            );
+        }
     }
 
     /**** END Payment Method Interface  */
