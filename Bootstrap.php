@@ -47,7 +47,7 @@ class Bootstrap extends Bootstrapper
 
     private function createAgreementController()
     {
-        $controller = new AgreementController($this->getPlugin(), $this->getMethod());
+        $controller = new AgreementController($this->getPlugin(), $this->getMethod(), Shop::Container()->getCache());
         return $controller;
     }
 
