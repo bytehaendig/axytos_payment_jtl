@@ -197,8 +197,8 @@ class DataFormatter
     {
         return [
             "externalOrderId" => $this->order->cBestellNr,
-            "externalInvoiceNumber" => $this->order->cBestellNr,
-            "externalInvoiceDisplayName" => sprintf("Invoice #%s", $this->order->cBestellNr),
+            // "externalInvoiceNumber" => $this->order->cBestellNr,
+            // "externalInvoiceDisplayName" => sprintf("Invoice #%s", $this->order->cBestellNr),
             "externalSubOrderId" => "",
             "date" => date('c', strtotime($this->order->dErstellt)),
             "dueDateOffsetDays" => 14,

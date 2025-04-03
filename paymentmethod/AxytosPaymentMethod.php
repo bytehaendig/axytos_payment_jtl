@@ -20,6 +20,8 @@ class AxytosPaymentMethod extends Method
     private DbInterface $db;
     private array $settings;
 
+    /**** START Payment Method Interface  */
+
     /** overwrite */
     public function init(int $nAgainCheckout = 0): self
     {
@@ -32,107 +34,18 @@ class AxytosPaymentMethod extends Method
         return $this;
     }
 
-    private function loadPluginSettings(): void
-    {
-        $this->settings = [];
-        $pluginId = $this->plugin->getID();
-        $settings = $this->db->selectAll('tplugineinstellungen', ['kPlugin'], [$pluginId]);
-        foreach ($settings as $setting) {
-            if ($setting->cName === $this->getSettingName('api_key')) {
-                $encryption = Shop::Container()->getCryptoService();
-                $setting->cWert = trim($encryption->decryptXTEA($setting->cWert));
-            }
-            if ($setting->cName === $this->getSettingName('use_sandbox')) {
-                $setting->cWert = (bool)$setting->cWert;
-            }
-            $this->settings[$setting->cName] = $setting->cWert;
-        }
-    }
-
-    public function savePluginSettings(array $settings): bool
-    {
-        $pluginId = $this->plugin->getID();
-
-        foreach ($settings as $key => $value) {
-            // Encrypt API key before saving if not empty
-            if ($key === 'api_key' && !empty($value)) {
-                $cryptoService = Shop::Container()->getCryptoService();
-                $value = $cryptoService->encryptXTEA(trim($value));
-            }
-            if ($key === 'use_sandbox') {
-                $value = (bool)$value;
-            }
-            $ins = new stdClass();
-            $ins->kPlugin = $pluginId;
-            $ins->cName = $this->getSettingName($key);
-            $ins->cWert = $value;
-            $this->db->delete(
-                'tplugineinstellungen',
-                ['kPlugin', 'cName'],
-                [$ins->kPlugin, $ins->cName]
-            );
-            $this->db->insert('tplugineinstellungen', $ins);
-        }
-        $this->loadPluginSettings();
-        return true;
-    }
-
-    public function getSettingName(string $key): string
-    {
-        return $this->moduleID . '_' . $key;
-    }
-
-    /** overwrite */
-    public function getSetting(string $key): mixed
-    {
-        $setting = parent::getSetting($key);
-        if ($setting === null) {
-            $setting = $this->settings[$this->getSettingName($key)];
-        }
-        return $setting;
-    }
-
-    public function createApiClient(): ApiClient
-    {
-        $client = new ApiClient($this->getSetting('api_key'), $this->getSetting('use_sandbox'));
-        return $client;
-    }
-
-    private function createDataFormatter(Bestellung $order): DataFormatter
-    {
-        return new DataFormatter($order);
-    }
-
     /** overwrite */
     public function isValidIntern(array $args_arr = []): bool
     {
-        return parent::isValidIntern($args_arr) && $this->duringCheckout === 1;
+        return parent::isValidIntern($args_arr) && $this->duringCheckout === 1 && !empty($this->getSetting('api_key'));
     }
 
-    private function addErrorMessage(string $message, string $key = 'generic'): void
+    public function isValid(): bool
     {
-        // $localization = $this->plugin->getLocalization();
-        // $errorMessage = $localization->getTranslation($message);
-        // if ($errorMessage !== '') {
-        //     Shop::Container()->getAlertService()->addError(
-        //         $errorMessage,
-        //         'axytos_' . $key,
-        //     );
-        // }
-        // TODO: i18n
-        Shop::Container()->getAlertService()->addError($message, 'axytos_' . $key, ['saveInSession' => true]);
+        // TODO: only allow for invoice address in Germany
+        return true;
     }
 
-    private function getLogger()
-    {
-        if (\method_exists($this->plugin, 'getLogger')) {
-            $logger = $this->plugin->getLogger();
-        } else {
-            // fallback for shop versions < 5.3.0
-            $logger = Shop::Container()->getLogService();
-        }
-        return $logger;
-    }
 
     /** overwrite */
     public function preparePaymentProcess(Bestellung $order): void
@@ -145,7 +58,7 @@ class AxytosPaymentMethod extends Method
         $precheckSuccessful = false;
         try {
             $precheckResponse = $client->precheck($precheckData);
-            $this->saveInSession('precheck_response', $precheckResponse);
+            $this->addCache('precheck_response', $precheckResponse);
             $precheckSuccessful = true;
         } catch (\Exception $e) {
             $this->getLogger()->error(
@@ -206,10 +119,135 @@ class AxytosPaymentMethod extends Method
         //     'cHinweis'         => `Axytos`, // TODO: add transaction ID
         // ]);
         // $this->setOrderStatusToPaid($order);
-        $precheckResponse = $this->loadFromSession('precheck_response');
+        // $this->sendConfirmationMail($order);
+        $precheckResponse = $this->getCache('precheck_response');
         $this->addOrderAttribute($order, 'axytos_precheck_response', $precheckResponse);
         $this->addOrderAttribute($order, 'axytos_confirmed', '1');
-        $this->sendConfirmationMail($order);
+        $precheckResponseJson = json_decode($precheckResponse, true);
+        $transactionID = $precheckResponseJson['transactionMetadata']['transactionId'] ?? '';
+        $this->doLog("Axytos: Payment accepted with transaction ID {$transactionID}.", \LOGLEVEL_NOTICE);
+    }
+
+    public function createInvoice(int $orderID, int $languageID): object
+    {
+        $result = parent::createInvoice($orderID, $languageID);
+        $order = new Bestellung($orderID);
+        $order->fuelleBestellung(false);
+        $dataFormatter = $this->createDataFormatter($order);
+        $invoiceData = $dataFormatter->createInvoiceData();
+        $client = $this->createApiClient();
+        try {
+            $response = $client->createInvoice($invoiceData);
+            $responseJson = json_decode($response, true);
+            $invoiceNumber = $responseJson['invoiceNumber'] ?? '';
+            if (!empty($invoiceNumber)) {
+                $this->addOrderAttribute($order, 'axytos_invoice_number', $invoiceNumber);
+                // TODO: i18n
+                $result->cInfo = 'Bei Bezahlung folgende Rechnungsnummer angeben: ' . $invoiceNumber;
+                $result->nType = 1;
+            }
+        } catch (\Exception $e) {
+            // TODO: handle error
+        }
+        return $result;
+    }
+
+    public function cancelOrder(int $orderID, bool $delete = false): void
+    {
+
+    }
+
+    public function reactivateOrder(int $orderID): void
+    {
+
+    }
+
+    /**** END Payment Method Interface  */
+
+    private function loadPluginSettings(): void
+    {
+        $this->settings = [];
+        $pluginId = $this->plugin->getID();
+        $settings = $this->db->selectAll('tplugineinstellungen', ['kPlugin'], [$pluginId]);
+        foreach ($settings as $setting) {
+            if ($setting->cName === $this->getSettingName('api_key')) {
+                $encryption = Shop::Container()->getCryptoService();
+                $setting->cWert = trim($encryption->decryptXTEA($setting->cWert));
+            }
+            if ($setting->cName === $this->getSettingName('use_sandbox')) {
+                $setting->cWert = (bool)$setting->cWert;
+            }
+            $this->settings[$setting->cName] = $setting->cWert;
+        }
+    }
+
+    public function savePluginSettings(array $settings): bool
+    {
+        $pluginId = $this->plugin->getID();
+
+        foreach ($settings as $key => $value) {
+            // Encrypt API key before saving if not empty
+            if ($key === 'api_key' && !empty($value)) {
+                $cryptoService = Shop::Container()->getCryptoService();
+                $value = $cryptoService->encryptXTEA(trim($value));
+            }
+            if ($key === 'use_sandbox') {
+                $value = (bool)$value;
+            }
+            $ins = new stdClass();
+            $ins->kPlugin = $pluginId;
+            $ins->cName = $this->getSettingName($key);
+            $ins->cWert = $value;
+            $this->db->delete(
+                'tplugineinstellungen',
+                ['kPlugin', 'cName'],
+                [$ins->kPlugin, $ins->cName]
+            );
+            $this->db->insert('tplugineinstellungen', $ins);
+        }
+        $this->loadPluginSettings();
+        return true;
+    }
+
+    public function getSettingName(string $key): string
+    {
+        return $this->moduleID . '_' . $key;
+    }
+
+    public function createApiClient(): ApiClient
+    {
+        $client = new ApiClient($this->getSetting('api_key'), $this->getSetting('use_sandbox'));
+        return $client;
+    }
+
+    private function createDataFormatter(Bestellung $order): DataFormatter
+    {
+        return new DataFormatter($order);
+    }
+
+    private function addErrorMessage(string $message, string $key = 'generic'): void
+    {
+        // $localization = $this->plugin->getLocalization();
+        // $errorMessage = $localization->getTranslation($message);
+        // if ($errorMessage !== '') {
+        //     Shop::Container()->getAlertService()->addError(
+        //         $errorMessage,
+        //         'axytos_' . $key,
+        //     );
+        // }
+        // TODO: i18n
+        Shop::Container()->getAlertService()->addError($message, 'axytos_' . $key, ['saveInSession' => true]);
+    }
+
+    private function getLogger()
+    {
+        if (\method_exists($this->plugin, 'getLogger')) {
+            $logger = $this->plugin->getLogger();
+        } else {
+            // fallback for shop versions < 5.3.0
+            $logger = Shop::Container()->getLogService();
+        }
+        return $logger;
     }
 
     private function confirmOrder(Bestellung $order, array $precheckResponseJson): bool
@@ -243,21 +281,5 @@ class AxytosPaymentMethod extends Method
         $ins->cName = $key;
         $ins->cValue = $value;
         $this->db->insert('tbestellattribut', $ins);
-    }
-
-    private function saveInSession(string $key, mixed $value): void
-    {
-        if (!isset($_SESSION['axytos_payment'])) {
-            $_SESSION['axytos_payment'] = [];
-        }
-        $_SESSION['axytos_payment'][$key] = $value;
-    }
-
-    private function loadFromSession(string $key): mixed
-    {
-        if (isset($_SESSION['axytos_payment']) && array_key_exists($key, $_SESSION['axytos_payment'])) {
-            return $_SESSION['axytos_payment'][$key];
-        }
-        return null;
     }
 }
