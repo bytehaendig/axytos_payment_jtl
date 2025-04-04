@@ -42,6 +42,7 @@ class Bootstrap extends Bootstrapper
             });
         } else {
             $dispatcher->listen('backend.notification', [$this, 'checkPayments']);
+            $dispatcher->hookInto(\HOOK_BESTELLUNGEN_XML_BESTELLSTATUS, [$this, 'onUpdateOrderStatus']);
         }
     }
 
@@ -56,6 +57,13 @@ class Bootstrap extends Bootstrapper
         $methods = $this->getPlugin()->getPaymentMethods()->getMethods();
         $moduleId = $methods[0]->getModuleID();
         return $moduleId;
+    }
+
+    private function getZahlungsart(): \stdClass
+    {
+        $moduleID = $this->getModuleID();
+        $result = $this->db->select('tzahlungsart', 'cModulId', $moduleID);
+        return $result;
     }
 
     public function getMethod(): AxytosPaymentMethod
@@ -80,6 +88,17 @@ class Bootstrap extends Bootstrapper
             );
             $note->setPluginId($this->getPlugin()->getPluginID());
             Notification::getInstance()->addNotify($note);
+        }
+    }
+
+    public function onUpdateOrderStatus(int $status, \stdClass $order): void
+    {
+        if ($status === \BESTELLUNG_STATUS_VERSANDT) {
+            $zahlungsart = $this->getZahlungsart();
+            if ($order->kZahlungsart == $zahlungsart->kZahlungsart) {
+                $paymentMethod = $this->getMethod();
+                $paymentMethod->orderWasShipped($order->kBestellung);
+            }
         }
     }
 

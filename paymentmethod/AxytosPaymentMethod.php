@@ -190,7 +190,7 @@ class AxytosPaymentMethod extends Method
         try {
             $response = $client->reverseCancelOrder($orderID);
         } catch (\Exception $e) {
-            // TODO: rethink error handlint (maybe doLog?)
+            // TODO: rethink error handling (maybe doLog?)
             $this->getLogger()->error(
                 "Axytos payment order reactivation failed for order {$orderID}: " . $e->getMessage(),
                 ['order' => $orderID, 'exception' => $e],
@@ -199,6 +199,21 @@ class AxytosPaymentMethod extends Method
     }
 
     /**** END Payment Method Interface  */
+
+    public function orderWasShipped(int $orderID): void
+    {
+        $order = new Bestellung($orderID);
+        $order->fuelleBestellung(false);
+        $dataFormatter = $this->createDataFormatter($order);
+        $shippingData = $dataFormatter->createShippingData();
+        $client = $this->createApiClient();
+        try {
+            $response = $client->updateShippingStatus($shippingData);
+            $this->addOrderAttribute($order, 'axytos_shipped', '1');
+        } catch (\Exception $e) {
+            // TODO: handle error
+        }
+    }
 
     private function loadPluginSettings(): void
     {
