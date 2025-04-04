@@ -8,7 +8,10 @@ use JTL\Plugin\Payment\Method;
 use JTL\Plugin\PluginInterface;
 use JTL\DB\DbInterface;
 use JTL\Checkout\Bestellung;
+use JTL\Checkout\OrderHandler;
+use JTL\Session\Frontend;
 use JTL\Shop;
+use JTL\Cart\Cart;
 use Plugin\axytos_payment\helpers\ApiClient;
 use Plugin\axytos_payment\helpers\DataFormatter;
 use stdClass;
@@ -33,6 +36,15 @@ class AxytosPaymentMethod extends Method
         $this->loadPluginSettings();
         return $this;
     }
+    /** overwrite */
+    public function getSetting(string $key): mixed
+    {
+        $setting = parent::getSetting($key);
+        if ($setting === null) {
+            $setting = $this->settings[$this->getSettingName($key)];
+        }
+        return $setting;
+    }
 
     /** overwrite */
     public function isValidIntern(array $args_arr = []): bool
@@ -40,7 +52,7 @@ class AxytosPaymentMethod extends Method
         return parent::isValidIntern($args_arr) && $this->duringCheckout === 1 && !empty($this->getSetting('api_key'));
     }
 
-    public function isValid(): bool
+    public function isValid(object $customer, Cart $cart): bool
     {
         // TODO: only allow for invoice address in Germany
         return true;
@@ -56,6 +68,7 @@ class AxytosPaymentMethod extends Method
         $dataFormatter = $this->createDataFormatter($order);
         $precheckData  =  $dataFormatter->createPrecheckData();
         $precheckSuccessful = false;
+        $paymentAccepted = false;
         try {
             $precheckResponse = $client->precheck($precheckData);
             $this->addCache('precheck_response', $precheckResponse);
@@ -71,17 +84,14 @@ class AxytosPaymentMethod extends Method
             $responseBody = json_decode($precheckResponse, true);
             $decisionCode = $responseBody['decision'];
             $paymentAccepted = strtolower($decisionCode) === "u";
-            if ($paymentAccepted) {
-                if ($this->confirmOrder($order, $responseBody)) {
-                    $redirectUrl = $this->getNotificationURL($this->generateHash($order));
-                    header('Location: ' . $redirectUrl);
-                    exit;
-                }
-            } else {
+            if (!$paymentAccepted) {
                 $this->addErrorMessage('error_payment_rejected', 'precheck_rejected');
             }
         }
-        header('Location: ' . Shop::getURL() . '/bestellvorgang.php?editZahlungsart=1');
+        $redirectUrl = ($paymentAccepted)
+        ? $this->getNotificationURL($this->generateHash($order))
+        : Shop::getURL() . '/bestellvorgang.php?editZahlungsart=1';
+        header('Location: ' . $redirectUrl);
         exit;
     }
 
@@ -90,6 +100,9 @@ class AxytosPaymentMethod extends Method
         // called after redirect to getNotificationURL
         // order is not yet saved to DB
         // true means payment success
+        // this is a workaround since JTL does not create a 'nice' order number due to some bug
+        $handler = new OrderHandler($this->db, Frontend::getCustomer(), Frontend::getCart());
+        $order->cBestellNr = $handler->createOrderNo();
         return true;
     }
 
@@ -111,7 +124,7 @@ class AxytosPaymentMethod extends Method
         // order is saved to DB - now we can save additional information
         //
         // it is misleading for the customer when the order is already marked as paid
-        // TODO: clarify if Axytos will communicate the payment status
+        // TODO: do this later in a cron job (periodically check payment status of orders)
         //
         // $this->addIncomingPayment($order, (object)[
         //     'fBetrag'          => $order->fGesamtsumme,
@@ -122,10 +135,15 @@ class AxytosPaymentMethod extends Method
         // $this->sendConfirmationMail($order);
         $precheckResponse = $this->getCache('precheck_response');
         $this->addOrderAttribute($order, 'axytos_precheck_response', $precheckResponse);
-        $this->addOrderAttribute($order, 'axytos_confirmed', '1');
         $precheckResponseJson = json_decode($precheckResponse, true);
-        $transactionID = $precheckResponseJson['transactionMetadata']['transactionId'] ?? '';
-        $this->doLog("Axytos: Payment accepted with transaction ID {$transactionID}.", \LOGLEVEL_NOTICE);
+        try {
+            $this->confirmOrder($order, $precheckResponseJson);
+            $this->addOrderAttribute($order, 'axytos_confirmed', '1');
+            $transactionID = $precheckResponseJson['transactionMetadata']['transactionId'] ?? '';
+            $this->doLog("Axytos: Payment accepted with transaction ID {$transactionID}.", \LOGLEVEL_NOTICE);
+        } catch (\Exception $e) {
+            // TODO: need to handle this case!!!
+        }
     }
 
     public function createInvoice(int $orderID, int $languageID): object

@@ -9,14 +9,14 @@ use JTL\Session\Frontend;
 function getAddress($addr)
 {
     $address = [
-        "company" => $addr->cFirma,
-        "firstname" => $addr->cVorname,
-        "lastname" => $addr->cNachname,
+        "company" => $addr->cFirma ?? '',
+        "firstname" => $addr->cVorname ?? '',
+        "lastname" => $addr->cNachname ?? '',
         "zipCode" => $addr->cPLZ,
         "city" => $addr->cOrt,
         "country" => $addr->cLand,
         "addressLine1" => $addr->cStrasse . ' ' . $addr->cHausnummer,
-        "addressLine2" => $addr->cAdressZusatz,
+        "addressLine2" => $addr->cAdressZusatz ?? '',
     ];
     return $address;
 }
@@ -140,13 +140,13 @@ class DataFormatter
     private function createOrderData(): array
     {
         $customer = $this->orderHelper->getCustomer() ?: Frontend::getCustomer();
-        $customerId = $customer->kKunde ?: $customer->cMail;
+        $customerId = $customer->cMail; // always use email as customer ID
         return [
             "personalData" => [
                 "externalCustomerId" => (string)$customerId,
                 "language" => Frontend::getInstance()->getLanguage()->cISOSprache,
                 "email" => $customer->cMail,
-                "mobilePhoneNumber" => $customer->cMobil ? $customer->cMobil : $customer->cTel,
+                "mobilePhoneNumber" => $customer->cMobil ? $customer->cMobil : $customer->cTel ?? '',
             ],
             "invoiceAddress" => getAddress($this->order->oRechnungsadresse),
             "deliveryAddress" => getAddress($this->order->oLieferadresse ?: $this->order->oRechnungsadresse),
@@ -201,6 +201,7 @@ class DataFormatter
             // "externalInvoiceDisplayName" => sprintf("Invoice #%s", $this->order->cBestellNr),
             "externalSubOrderId" => "",
             "date" => date('c', strtotime($this->order->dErstellt)),
+            // TODO: should this be configurable?
             "dueDateOffsetDays" => 14,
             "basket" => $this->createBasketData("invoice"),
         ];
@@ -235,15 +236,15 @@ class DataFormatter
      *
      * @return array
      */
-    public function createRefundData(): array
-    {
-        $invoiceNumber = $this->order->getBestellungMeta('axytos_invoice_number');
-        return [
-            "externalOrderId" => $this->order->cBestellNr,
-            "refundDate" => date('c'),
-            "originalInvoiceNumber" => $invoiceNumber,
-            "externalSubOrderId" => "",
-            "basket" => $this->createBasketData("refund"),
-        ];
-    }
+    // public function createRefundData(): array
+    // {
+    //     $invoiceNumber = $this->order->getBestellungMeta('axytos_invoice_number');
+    //     return [
+    //         "externalOrderId" => $this->order->cBestellNr,
+    //         "refundDate" => date('c'),
+    //         "originalInvoiceNumber" => $invoiceNumber,
+    //         "externalSubOrderId" => "",
+    //         "basket" => $this->createBasketData("refund"),
+    //     ];
+    // }
 }
