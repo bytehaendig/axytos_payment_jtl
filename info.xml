@@ -17,7 +17,7 @@
     </Adminmenu>
     <PaymentMethod>
       <Method>
-        <Name>Bezahlen auf Rechnung</Name>
+        <Name>Pay Later</Name>
         <Sort>1</Sort>
         <SendMail>1</SendMail>
         <Provider>Axytos</Provider>
@@ -28,19 +28,38 @@
         <Sockets>0</Sockets>
         <ClassFile>AxytosPaymentMethod.php</ClassFile>
         <ClassName>AxytosPaymentMethod</ClassName>
-        <TemplateFile>template/payment.tpl</TemplateFile>
         <MethodLanguage iso="GER">
           <Name>Bezahlen auf Rechnung</Name>
-          <ChargeName>Bezahlen Sie bequem</ChargeName>
-          <InfoText>lorem impsum</InfoText>
+          <InfoText>Bezahlen Sie bequem später nach Erhalt der Ware.</InfoText>
+          <ChargeName>keine</ChargeName>
+        </MethodLanguage>"
+        <MethodLanguage iso="ENG">
+          <Name>Pay Later</Name>
+          <InfoText>Conveniently pay later after you got your purchase.</InfoText>
+          <ChargeName>none</ChargeName>
         </MethodLanguage>"
       </Method>
     </PaymentMethod>
     <Locales>
       <Variable>
-        <Name>xzy</Name>
-        <VariableLocalized iso="GER">abc</VariableLocalized>
-        <VariableLocalized iso="ENG">ABC</VariableLocalized>
+        <Name>invoice_reference</Name>
+        <VariableLocalized iso="GER">Bei der Bezahlung bitte folgenden Betreff angeben:</VariableLocalized>
+        <VariableLocalized iso="ENG">Please provide the following reference ID during your payment:</VariableLocalized>
+      </Variable>
+      <Variable>
+        <Name>error_order_precheck_failed</Name>
+        <VariableLocalized iso="GER">Bei der Überprüfung ist ein Fehler aufgetreten.</VariableLocalized>
+        <VariableLocalized iso="ENG">An error occured during checking your payment request.</VariableLocalized>
+      </Variable>
+      <Variable>
+        <Name>error_order_confirmation_failed</Name>
+        <VariableLocalized iso="GER">Die Bestellung konnte nicht beim Zahlungsanbieter bestätigt werden.</VariableLocalized>
+        <VariableLocalized iso="ENG">The order could not be confirmed at the payment provider.</VariableLocalized>
+      </Variable>
+      <Variable>
+        <Name>error_payment_rejected</Name>
+        <VariableLocalized iso="GER">Für diese Bestellung steht diese Zahlungsart leider nicht zur Verfügung.</VariableLocalized>
+        <VariableLocalized iso="ENG">This payment method can not be used for this order.</VariableLocalized>
       </Variable>
     </Locales>
   </Install>

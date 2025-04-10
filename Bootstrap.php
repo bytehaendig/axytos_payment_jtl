@@ -82,7 +82,7 @@ class Bootstrap extends Bootstrapper
             $note = new NotificationEntry(
                 NotificationEntry::TYPE_WARNING,
                 $paymentMethod->getName(),
-                'Die Zahlungsart kann nur mit Zahlung vor Bestellabschluss verwendet werden',
+                __('This payment method can only be used with payment before order completion'),
                 Shop::getAdminURL() . '/paymentmethods?kZahlungsart=' . $method->kZahlungsart
                     . '&token=' . $_SESSION['jtl_token']
             );

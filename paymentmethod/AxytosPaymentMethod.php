@@ -75,7 +75,7 @@ class AxytosPaymentMethod extends Method
             $precheckSuccessful = true;
         } catch (\Exception $e) {
             $this->getLogger()->error(
-                'Axytos payment precheck failed: ' . $e->getMessage(),
+                "Axytos payment precheck failed for order {$order->kBestellung}: " . $e->getMessage(),
                 ['order' => $order->kBestellung, 'exception' => $e]
             );
             $this->addErrorMessage('error_precheck_failed', 'precheck_error');
@@ -86,6 +86,15 @@ class AxytosPaymentMethod extends Method
             $paymentAccepted = strtolower($decisionCode) === "u";
             if (!$paymentAccepted) {
                 $this->addErrorMessage('error_payment_rejected', 'precheck_rejected');
+                $this->getLogger()->info(
+                    "Axytos payment precheck rejected for order {$order->kBestellung}",
+                    ['order' => $order->kBestellung],
+                );
+            } else {
+                $this->getLogger()->info(
+                    "Axytos payment precheck accepted for order {$order->kBestellung}: " . $e->getMessage(),
+                    ['order' => $order->kBestellung, 'exception' => $e],
+                );
             }
         }
         $redirectUrl = ($paymentAccepted)
@@ -141,8 +150,16 @@ class AxytosPaymentMethod extends Method
             $this->addOrderAttribute($order, 'axytos_confirmed', '1');
             $transactionID = $precheckResponseJson['transactionMetadata']['transactionId'] ?? '';
             $this->doLog("Axytos: Payment accepted with transaction ID {$transactionID}.", \LOGLEVEL_NOTICE);
+            $this->getLogger()->info(
+                "Axytos payment accepted for order {$order->kBestellung} with transaction ID {$transactionID}.",
+                ['order' => $order->kBestellung, 'transaction_id' => $transactionID],
+            );
         } catch (\Exception $e) {
             // TODO: need to handle this case!!!
+            $this->getLogger()->error(
+                "Axytos payment confirmation failed for order {$order->kBestellung}: " . $e->getMessage(),
+                ['order' => $order->kBestellung, 'exception' => $e],
+            );
         }
     }
 
@@ -160,10 +177,14 @@ class AxytosPaymentMethod extends Method
             $invoiceNumber = $responseJson['invoiceNumber'] ?? '';
             if (!empty($invoiceNumber)) {
                 $this->addOrderAttribute($order, 'axytos_invoice_number', $invoiceNumber);
-                // TODO: i18n
-                $result->cInfo = 'Bei Bezahlung folgende Rechnungsnummer angeben: ' . $invoiceNumber;
+                $msg = $this->getTranslation('invoice_reference');
+                $result->cInfo = $msg . ' ' . $invoiceNumber;
                 $result->nType = 1;
             }
+            $this->getLogger()->info(
+                "Axytos payment invoice creation successful for order {$orderID} - received invoice number {$invoiceNumber}.",
+                ['order' => $orderID, 'invoice_number' => $invoiceNumber],
+            );
         } catch (\Exception $e) {
             // TODO: handle error
         }
@@ -175,6 +196,10 @@ class AxytosPaymentMethod extends Method
         $client = $this->createApiClient();
         try {
             $response = $client->cancelOrder($orderID);
+            $this->getLogger()->info(
+                "Axytos payment order cancellation successful for order {$orderID}.",
+                ['order' => $orderID],
+            );
         } catch (\Exception $e) {
             // TODO: rethink error handlint (maybe doLog?)
             $this->getLogger()->error(
@@ -189,6 +214,10 @@ class AxytosPaymentMethod extends Method
         $client = $this->createApiClient();
         try {
             $response = $client->reverseCancelOrder($orderID);
+            $this->getLogger()->info(
+                "Axytos payment order reactivation successful for order {$orderID}.",
+                ['order' => $orderID],
+            );
         } catch (\Exception $e) {
             // TODO: rethink error handling (maybe doLog?)
             $this->getLogger()->error(
@@ -276,7 +305,7 @@ class AxytosPaymentMethod extends Method
         return new DataFormatter($order);
     }
 
-    private function addErrorMessage(string $message, string $key = 'generic'): void
+    private function addErrorMessage(string $messageKey, string $key = 'generic'): void
     {
         // $localization = $this->plugin->getLocalization();
         // $errorMessage = $localization->getTranslation($message);
@@ -286,7 +315,7 @@ class AxytosPaymentMethod extends Method
         //         'axytos_' . $key,
         //     );
         // }
-        // TODO: i18n
+        $message = $this->getTranslation($messageKey);
         Shop::Container()->getAlertService()->addError($message, 'axytos_' . $key, ['saveInSession' => true]);
     }
 
@@ -332,5 +361,11 @@ class AxytosPaymentMethod extends Method
         $ins->cName = $key;
         $ins->cValue = $value;
         $this->db->insert('tbestellattribut', $ins);
+    }
+
+    private function getTranslation($key): string | null
+    {
+        $localization = $this->plugin->getLocalization();
+        return $localization->getTranslation($key);
     }
 }

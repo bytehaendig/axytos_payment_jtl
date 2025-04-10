@@ -1,0 +1,18 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Axytos Payment"
+msgstr "Axytos - Bezahlen auf Rechnung"
+
+msgid "Axytos payment integration for JTL Shop"
+msgstr "Axytos Bezahlungsintegration für JTL Shop"
+
+msgid "API Setup"
+msgstr "API Konfiguration"
+
+msgid "Pay Later"
+msgstr "Zahlen auf Rechnung"
+
+msgid "This payment method can only be used with payment before order completion"
+msgstr "Die Zahlungsart kann nur mit Zahlung vor Bestellabschluss verwendet werden"
