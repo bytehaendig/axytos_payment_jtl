@@ -78,7 +78,7 @@ class AxytosPaymentMethod extends Method
                 "Axytos payment precheck failed for order {$order->kBestellung}: " . $e->getMessage(),
                 ['order' => $order->kBestellung, 'exception' => $e]
             );
-            $this->addErrorMessage('error_precheck_failed', 'precheck_error');
+            $this->addErrorMessage('error_order_precheck_failed', 'precheck_error');
         }
         if ($precheckSuccessful) {
             $responseBody = json_decode($precheckResponse, true);
@@ -92,8 +92,8 @@ class AxytosPaymentMethod extends Method
                 );
             } else {
                 $this->getLogger()->info(
-                    "Axytos payment precheck accepted for order {$order->kBestellung}: " . $e->getMessage(),
-                    ['order' => $order->kBestellung, 'exception' => $e],
+                    "Axytos payment precheck accepted for order {$order->kBestellung}.",
+                    ['order' => $order->kBestellung],
                 );
             }
         }
@@ -154,6 +154,8 @@ class AxytosPaymentMethod extends Method
                 "Axytos payment accepted for order {$order->kBestellung} with transaction ID {$transactionID}.",
                 ['order' => $order->kBestellung, 'transaction_id' => $transactionID],
             );
+            $this->setOrderStatusToProcessing($order);
+            $this->addSuccessMessage('payment_accepted');
         } catch (\Exception $e) {
             // TODO: need to handle this case!!!
             $this->getLogger()->error(
@@ -187,6 +189,10 @@ class AxytosPaymentMethod extends Method
             );
         } catch (\Exception $e) {
             // TODO: handle error
+            $this->getLogger()->error(
+                "Axytos invoice creation failed for order {$order->kBestellung}: " . $e->getMessage(),
+                ['order' => $order->kBestellung, 'exception' => $e],
+            );
         }
         return $result;
     }
@@ -242,6 +248,16 @@ class AxytosPaymentMethod extends Method
         } catch (\Exception $e) {
             // TODO: handle error
         }
+    }
+
+
+    public function setOrderStatusToProcessing(Bestellung $order)
+    {
+        $upd                = new stdClass();
+        $upd->cStatus       = \BESTELLUNG_STATUS_IN_BEARBEITUNG;
+        $this->db->update('tbestellung', 'kBestellung', (int)$order->kBestellung, $upd);
+
+        return $this;
     }
 
     private function loadPluginSettings(): void
@@ -307,16 +323,14 @@ class AxytosPaymentMethod extends Method
 
     private function addErrorMessage(string $messageKey, string $key = 'generic'): void
     {
-        // $localization = $this->plugin->getLocalization();
-        // $errorMessage = $localization->getTranslation($message);
-        // if ($errorMessage !== '') {
-        //     Shop::Container()->getAlertService()->addError(
-        //         $errorMessage,
-        //         'axytos_' . $key,
-        //     );
-        // }
         $message = $this->getTranslation($messageKey);
         Shop::Container()->getAlertService()->addError($message, 'axytos_' . $key, ['saveInSession' => true]);
+    }
+
+    private function addSuccessMessage(string $messageKey, string $key = 'generic'): void
+    {
+        $message = $this->getTranslation($messageKey);
+        Shop::Container()->getAlertService()->addSuccess($message, 'axytos_' . $key, ['saveInSession' => true]);
     }
 
     private function getLogger()

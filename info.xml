@@ -61,6 +61,11 @@
         <VariableLocalized iso="GER">Für diese Bestellung steht diese Zahlungsart leider nicht zur Verfügung.</VariableLocalized>
         <VariableLocalized iso="ENG">This payment method can not be used for this order.</VariableLocalized>
       </Variable>
+      <Variable>
+        <Name>payment_accepted</Name>
+        <VariableLocalized iso="GER">Vielen Dank. Der Kauf auf Rechnung wurde für diese Bestellung akzeptiert.</VariableLocalized>
+        <VariableLocalized iso="ENG">Thank you. The 'pay later' payment was accepted for this order.</VariableLocalized>
+      </Variable>
     </Locales>
   </Install>
 </jtlshopplugin>
