@@ -66,6 +66,26 @@
         <VariableLocalized iso="GER">Vielen Dank. Der Kauf auf Rechnung wurde für diese Bestellung akzeptiert.</VariableLocalized>
         <VariableLocalized iso="ENG">Thank you. The 'pay later' payment was accepted for this order.</VariableLocalized>
       </Variable>
+      <Variable>
+        <Name>agreement_text</Name>
+        <VariableLocalized iso="GER">Wenn Sie diese Zahlungsart auswählen, erklären Sie Ihre Zustimmung zu unseren</VariableLocalized>
+        <VariableLocalized iso="ENG">By selecting this payment method, you agree to our </VariableLocalized>
+      </Variable>
+      <Variable>
+        <Name>agreement_link</Name>
+        <VariableLocalized iso="GER">Konditionen</VariableLocalized>
+        <VariableLocalized iso="ENG">Terms and Conditions</VariableLocalized>
+      </Variable>
+      <Variable>
+        <Name>agreement_title</Name>
+        <VariableLocalized iso="GER">Konditionen</VariableLocalized>
+        <VariableLocalized iso="ENG">Terms and Conditions</VariableLocalized>
+      </Variable>
+      <Variable>
+        <Name>agreement_close</Name>
+        <VariableLocalized iso="GER">Schließen</VariableLocalized>
+        <VariableLocalized iso="ENG">Close</VariableLocalized>
+      </Variable>
     </Locales>
   </Install>
 </jtlshopplugin>

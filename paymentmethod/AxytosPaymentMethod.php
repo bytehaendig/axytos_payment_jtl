@@ -40,8 +40,9 @@ class AxytosPaymentMethod extends Method
     public function getSetting(string $key): mixed
     {
         $setting = parent::getSetting($key);
-        if ($setting === null) {
-            $setting = $this->settings[$this->getSettingName($key)];
+        $name = $this->getSettingName($key);
+        if ($setting === null && array_key_exists($name, $this->settings)) {
+            $setting = $this->settings[$name];
         }
         return $setting;
     }
@@ -49,17 +50,23 @@ class AxytosPaymentMethod extends Method
     /** overwrite */
     public function isValidIntern(array $args_arr = []): bool
     {
-        return parent::isValidIntern($args_arr) && $this->duringCheckout === 1 && !empty($this->getSetting('api_key'));
+        $emptyApiKey = empty($this->getSetting('api_key'));
+        if ($emptyApiKey) {
+            return false;
+        }
+        return parent::isValidIntern($args_arr) && $this->duringCheckout === 1;
     }
 
     public function isValid(object $customer, Cart $cart): bool
     {
-        // TODO: only allow for invoice address in Germany
-        return true;
+        return parent::isValid($customer, $cart);
     }
 
     public function isSelectable(): bool
     {
+        if (!parent::isSelectable()) {
+            return false;
+        }
         $rejected = $this->getCache('axytos_precheck_rejected');
         return $rejected !== '1';
     }
@@ -79,6 +86,7 @@ class AxytosPaymentMethod extends Method
             $this->addCache('precheck_response', $precheckResponse);
             $precheckSuccessful = true;
         } catch (\Exception $e) {
+            $this->doLog("precheck failed: " . $e->getMessage(), \LOGLEVEL_ERROR);
             $this->getLogger()->error(
                 "Axytos payment precheck failed for order {$order->kBestellung}: " . $e->getMessage(),
                 ['order' => $order->kBestellung, 'exception' => $e]
@@ -144,30 +152,39 @@ class AxytosPaymentMethod extends Method
         // $this->addIncomingPayment($order, (object)[
         //     'fBetrag'          => $order->fGesamtsumme,
         //     'fZahlungsgebuehr' => 0,
-        //     'cHinweis'         => `Axytos`, // TODO: add transaction ID
+        //     'cHinweis'         => `Axytos`, // add transaction ID
         // ]);
         // $this->setOrderStatusToPaid($order);
         // $this->sendConfirmationMail($order);
         $precheckResponse = $this->getCache('precheck_response');
         $this->addOrderAttribute($order, 'axytos_precheck_response', $precheckResponse);
         $precheckResponseJson = json_decode($precheckResponse, true);
+        $transactionID = $precheckResponseJson['transactionMetadata']['transactionId'] ?? '';
+        $client       = $this->createApiClient();
+        $dataFormatter = $this->createDataFormatter($order);
+        $confirmData  = $dataFormatter->createConfirmData($precheckResponseJson);
+        $confirmationSuccessful = false;
         try {
-            $this->confirmOrder($order, $precheckResponseJson);
+            $response = $client->orderConfirm($confirmData);
+            $confirmationSuccessful = true;
+        } catch (\Exception $e) {
+            $this->doLog("Payment confirmation failed for order {$order->kBestellung}: " . $e->getMessage(), \LOGLEVEL_ERROR);
+            $message = "Axytos payment confirmation failed for order {$order->kBestellung}: " . $e->getMessage();
+            $this->getLogger()->error($message, ['order' => $order->kBestellung, 'exception' => $e]);
+            // TODO: better handling (with cron job)
+            $this->sendErrorMail($message);
+        }
+        if ($confirmationSuccessful) {
             $this->addOrderAttribute($order, 'axytos_confirmed', '1');
-            $transactionID = $precheckResponseJson['transactionMetadata']['transactionId'] ?? '';
-            $this->doLog("Axytos: Payment accepted with transaction ID {$transactionID}.", \LOGLEVEL_NOTICE);
+            $this->doLog("Payment for order {$order->kBestellung} accepted with transaction ID {$transactionID}.", \LOGLEVEL_NOTICE);
             $this->getLogger()->info(
                 "Axytos payment accepted for order {$order->kBestellung} with transaction ID {$transactionID}.",
                 ['order' => $order->kBestellung, 'transaction_id' => $transactionID],
             );
             $this->setOrderStatusToProcessing($order);
             $this->addSuccessMessage('payment_accepted');
-        } catch (\Exception $e) {
-            // TODO: need to handle this case!!!
-            $this->getLogger()->error(
-                "Axytos payment confirmation failed for order {$order->kBestellung}: " . $e->getMessage(),
-                ['order' => $order->kBestellung, 'exception' => $e],
-            );
+        } else {
+            $this->addErrorMessage('error_order_confirmation_failed', 'confirmation_error');
         }
     }
 
@@ -193,12 +210,13 @@ class AxytosPaymentMethod extends Method
                 "Axytos payment invoice creation successful for order {$orderID} - received invoice number {$invoiceNumber}.",
                 ['order' => $orderID, 'invoice_number' => $invoiceNumber],
             );
+            $this->doLog("Invoice creation successful for order {$orderID} - received invoice number {$invoiceNumber}.", \LOGLEVEL_NOTICE);
         } catch (\Exception $e) {
-            // TODO: handle error
             $this->getLogger()->error(
                 "Axytos invoice creation failed for order {$order->kBestellung}: " . $e->getMessage(),
                 ['order' => $order->kBestellung, 'exception' => $e],
             );
+            $this->doLog("Invoice creation failed for order {$orderID}: " . $e->getMessage(), \LOGLEVEL_ERROR);
         }
         return $result;
     }
@@ -212,12 +230,13 @@ class AxytosPaymentMethod extends Method
                 "Axytos payment order cancellation successful for order {$orderID}.",
                 ['order' => $orderID],
             );
+            $this->doLog("Order cancellation successful for order {$orderID}.", \LOGLEVEL_NOTICE);
         } catch (\Exception $e) {
-            // TODO: rethink error handlint (maybe doLog?)
             $this->getLogger()->error(
                 "Axytos payment order cancellation failed for order {$orderID}: " . $e->getMessage(),
                 ['order' => $orderID, 'exception' => $e],
             );
+            $this->doLog("Order cancellation failed for order {$orderID}: " . $e->getMessage(), \LOGLEVEL_ERROR);
         }
     }
 
@@ -230,12 +249,13 @@ class AxytosPaymentMethod extends Method
                 "Axytos payment order reactivation successful for order {$orderID}.",
                 ['order' => $orderID],
             );
+            $this->doLog("Order reactivation successful for order {$orderID}.", \LOGLEVEL_NOTICE);
         } catch (\Exception $e) {
-            // TODO: rethink error handling (maybe doLog?)
             $this->getLogger()->error(
                 "Axytos payment order reactivation failed for order {$orderID}: " . $e->getMessage(),
                 ['order' => $orderID, 'exception' => $e],
             );
+            $this->doLog("Order reactivation failed for order {$orderID}: " . $e->getMessage(), \LOGLEVEL_ERROR);
         }
     }
 
@@ -251,8 +271,17 @@ class AxytosPaymentMethod extends Method
         try {
             $response = $client->updateShippingStatus($shippingData);
             $this->addOrderAttribute($order, 'axytos_shipped', '1');
+            $this->getLogger()->info(
+                "Axytos payment order shipping status update successful for order {$orderID}.",
+                ['order' => $orderID],
+            );
+            $this->doLog("Order shipping status update successful for order {$orderID}.", \LOGLEVEL_NOTICE);
         } catch (\Exception $e) {
-            // TODO: handle error
+            $this->getLogger()->error(
+                "Axytos payment order shipping status update failed for order {$orderID}: " . $e->getMessage(),
+                ['order' => $orderID, 'exception' => $e],
+            );
+            $this->doLog("Order shipping status update failed for order {$orderID}: " . $e->getMessage(), \LOGLEVEL_ERROR);
         }
     }
 
@@ -262,7 +291,6 @@ class AxytosPaymentMethod extends Method
         $upd                = new stdClass();
         $upd->cStatus       = \BESTELLUNG_STATUS_IN_BEARBEITUNG;
         $this->db->update('tbestellung', 'kBestellung', (int)$order->kBestellung, $upd);
-
         return $this;
     }
 
@@ -348,30 +376,6 @@ class AxytosPaymentMethod extends Method
             $logger = Shop::Container()->getLogService();
         }
         return $logger;
-    }
-
-    private function confirmOrder(Bestellung $order, array $precheckResponseJson): bool
-    {
-        $client       = $this->createApiClient();
-        $dataFormatter = $this->createDataFormatter($order);
-        $confirmData  = $dataFormatter->createConfirmData($precheckResponseJson);
-        try {
-            $response = $client->orderConfirm($confirmData);
-        } catch (\Exception $e) {
-            $this->getLogger()->error(
-                "Axytos payment order confirmation failed for order {$order->kBestellung}: " . $e->getMessage(),
-                ['order' => $order->kBestellung, 'exception' => $e],
-            );
-            $this->addErrorMessage('error_order_confirmation_failed', 'confirmation_error');
-            return false;
-        }
-        $this->getLogger()->info(
-            // TODO: no kBestellung here
-            "Axytos payment order confirmation successful for order {$order->kBestellung}.",
-            ['order' => $order->kBestellung],
-        );
-        $responseBody = json_decode($response, true);
-        return true;
     }
 
     private function addOrderAttribute(Bestellung $order, string $key, string $value): void
