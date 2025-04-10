@@ -6,6 +6,7 @@ use JTL\Checkout\Bestellung;
 use JTL\Helpers\Order;
 use JTL\Session\Frontend;
 
+
 function getAddress($addr)
 {
     $address = [
@@ -25,6 +26,27 @@ function getProductId($pos): string
 {
     // TODO: better productId (especially relevant for shipping)
     return $pos->cArtNr ?: "-";
+}
+
+function getProductCategory($pos): string
+{
+    $posType = $pos->nPosTyp;
+    return match ($posType) {
+        C_WARENKORBPOS_TYP_ARTIKEL                  => 'Article',
+        C_WARENKORBPOS_TYP_VERSANDPOS               => 'Shipping',
+        C_WARENKORBPOS_TYP_KUPON                    => 'Coupon',
+        C_WARENKORBPOS_TYP_GUTSCHEIN                => 'Voucher',
+        C_WARENKORBPOS_TYP_ZAHLUNGSART              => 'Payment',
+        C_WARENKORBPOS_TYP_VERSANDZUSCHLAG          => 'Shipping surcharge',
+        C_WARENKORBPOS_TYP_NEUKUNDENKUPON           => 'New customer coupon',
+        C_WARENKORBPOS_TYP_NACHNAHMEGEBUEHR         => 'Cash on delivery fee',
+        C_WARENKORBPOS_TYP_VERSAND_ARTIKELABHAENGIG => 'Shipping dependent on article',
+        C_WARENKORBPOS_TYP_VERPACKUNG               => 'Packaging',
+        C_WARENKORBPOS_TYP_GRATISGESCHENK           => 'Promotion',
+        C_WARENKORBPOS_TYP_ZINSAUFSCHLAG       => 'Interest surcharge',
+        C_WARENKORBPOS_TYP_BEARBEITUNGSGEBUEHR => 'Processing fee',
+        default => 'Unspecified',
+    };
 }
 
 /**
@@ -97,7 +119,7 @@ class DataFormatter
                 $positions[] = [
                     "productId" => $productId,
                     "productName" => $position->cName,
-                    "productCategory" => "General", // TODO: Get actual category
+                    "productCategory" => getProductCategory($position),
                     "quantity" => $quantity,
                     "taxPercent" => $taxPercent,
                     "netPricePerUnit" => $netPriceDisplay,
