@@ -58,6 +58,11 @@ class AxytosPaymentMethod extends Method
         return true;
     }
 
+    public function isSelectable(): bool
+    {
+        $rejected = $this->getCache('axytos_precheck_rejected');
+        return $rejected !== '1';
+    }
 
     /** overwrite */
     public function preparePaymentProcess(Bestellung $order): void
@@ -90,6 +95,7 @@ class AxytosPaymentMethod extends Method
                     "Axytos payment precheck rejected for order {$order->kBestellung}",
                     ['order' => $order->kBestellung],
                 );
+                $this->addCache('axytos_precheck_rejected', '1');
             } else {
                 $this->getLogger()->info(
                     "Axytos payment precheck accepted for order {$order->kBestellung}.",
