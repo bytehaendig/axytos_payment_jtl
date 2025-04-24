@@ -11,6 +11,7 @@ use JTL\Plugin\Bootstrapper;
 use JTL\Plugin\Payment\Method;
 use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
+use Plugin\axytos_payment\helpers\CronHelper;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 use Plugin\axytos_payment\adminmenu\Handler;
 use Plugin\axytos_payment\frontend\AgreementController;
@@ -44,6 +45,9 @@ class Bootstrap extends Bootstrapper
             $dispatcher->listen('backend.notification', [$this, 'checkPayments']);
         }
         $dispatcher->hookInto(\HOOK_BESTELLUNGEN_XML_BESTELLSTATUS, [$this, 'onUpdateOrderStatus']);
+        $cronHelper = new CronHelper();
+        $dispatcher->listen(\JTL\Events\Event::GET_AVAILABLE_CRONJOBS, [$cronHelper, 'availableCronjobType']);
+        $dispatcher->listen(\JTL\Events\Event::MAP_CRONJOB_TYPE, [$cronHelper, 'mappingCronjobType']);
     }
 
     private function createAgreementController()
@@ -138,6 +142,20 @@ class Bootstrap extends Bootstrapper
         }
         return $result;
     }
+
+    // public function installed(): void
+    // {
+    //     parent::installed();
+    //     $cronHelper = new CronHelper();
+    //     $cronHelper->installCron();
+    // }
+    //
+    // public function uninstalled(bool $deleteData = true): void
+    // {
+    //     parent::uninstalled($deleteData);
+    //     $cronHelper = new CronHelper();
+    //     $cronHelper->uninstallCron();
+    // }
 
     /**
      * @inheritdoc
