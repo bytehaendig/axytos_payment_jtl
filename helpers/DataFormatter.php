@@ -249,7 +249,7 @@ class DataFormatter
             "externalOrderId" => $this->order->cBestellNr,
             "externalSubOrderId" => "",
             "basketPositions" => $positions,
-            "shippingDate" => date('c'),
+            "shippingDate" => $this->order->dVersandDatum ? date('c', strtotime($this->order->dVersandDatum)) : date('c'),
         ];
     }
 

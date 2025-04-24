@@ -42,8 +42,8 @@ class Bootstrap extends Bootstrapper
             });
         } else {
             $dispatcher->listen('backend.notification', [$this, 'checkPayments']);
-            $dispatcher->hookInto(\HOOK_BESTELLUNGEN_XML_BESTELLSTATUS, [$this, 'onUpdateOrderStatus']);
         }
+        $dispatcher->hookInto(\HOOK_BESTELLUNGEN_XML_BESTELLSTATUS, [$this, 'onUpdateOrderStatus']);
     }
 
     private function createAgreementController()
@@ -62,7 +62,8 @@ class Bootstrap extends Bootstrapper
     private function getZahlungsart(): \stdClass
     {
         $moduleID = $this->getModuleID();
-        $result = $this->db->select('tzahlungsart', 'cModulId', $moduleID);
+        $db = Shop::Container()->getDB();
+        $result = $db->select('tzahlungsart', 'cModulId', $moduleID);
         return $result;
     }
 
@@ -91,8 +92,10 @@ class Bootstrap extends Bootstrapper
         }
     }
 
-    public function onUpdateOrderStatus(int $status, \stdClass $order): void
+    public function onUpdateOrderStatus(array $args): void
     {
+        $status = $args['status'];
+        $order = $args['oBestellung'];
         if ($status === \BESTELLUNG_STATUS_VERSANDT) {
             $zahlungsart = $this->getZahlungsart();
             if ($order->kZahlungsart == $zahlungsart->kZahlungsart) {
