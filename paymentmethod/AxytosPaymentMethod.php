@@ -299,7 +299,6 @@ class AxytosPaymentMethod extends Method
         }
     }
 
-
     public function setOrderStatusToProcessing(Bestellung $order)
     {
         $upd                = new stdClass();
