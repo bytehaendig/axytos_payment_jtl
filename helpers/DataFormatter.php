@@ -6,7 +6,6 @@ use JTL\Checkout\Bestellung;
 use JTL\Helpers\Order;
 use JTL\Session\Frontend;
 
-
 function getAddress($addr)
 {
     $address = [
@@ -219,8 +218,8 @@ class DataFormatter
     {
         return [
             "externalOrderId" => $this->order->cBestellNr,
-            // "externalInvoiceNumber" => $this->order->cBestellNr,
-            // "externalInvoiceDisplayName" => sprintf("Invoice #%s", $this->order->cBestellNr),
+            "externalInvoiceNumber" => $this->order->cBestellNr,
+            "externalInvoiceDisplayName" => sprintf("Bestellung %s", $this->order->cBestellNr),
             "externalSubOrderId" => "",
             "date" => date('c', strtotime($this->order->dErstellt)),
             // TODO: should this be configurable?

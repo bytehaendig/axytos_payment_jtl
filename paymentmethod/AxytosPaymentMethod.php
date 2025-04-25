@@ -193,32 +193,41 @@ class AxytosPaymentMethod extends Method
         $result = parent::createInvoice($orderID, $languageID);
         $order = new Bestellung($orderID);
         $order->fuelleBestellung(false);
+        $invoiceNumber = $this->createInvoiceAtProvider($order);
+        if (!empty($invoiceNumber)) {
+            $msg = $this->getTranslation('invoice_reference');
+            $result->cInfo = $msg . ' ' . $invoiceNumber;
+            $result->nType = 1;
+        }
+        return $result;
+    }
+
+    private function createInvoiceAtProvider(Bestellung $order): string
+    {
         $dataFormatter = $this->createDataFormatter($order);
         $invoiceData = $dataFormatter->createInvoiceData();
         $client = $this->createApiClient();
+        $invoiceNumber = '';
         try {
             $response = $client->createInvoice($invoiceData);
             $responseJson = json_decode($response, true);
             $invoiceNumber = $responseJson['invoiceNumber'] ?? '';
             if (!empty($invoiceNumber)) {
                 $this->addOrderAttribute($order, 'axytos_invoice_number', $invoiceNumber);
-                $msg = $this->getTranslation('invoice_reference');
-                $result->cInfo = $msg . ' ' . $invoiceNumber;
-                $result->nType = 1;
             }
             $this->getLogger()->info(
-                'Axytos payment invoice creation successful for order {orderID} - received invoice number {invoiceNumber}.',
-                ['orderID' => $orderID, 'invoiceNumber' => $invoiceNumber],
+                'Axytos payment invoice creation successful for order {kBestellung} - invoice number {invoiceNumber}.',
+                ['kBestellung' => $order->kBestellung, 'invoiceNumber' => $invoiceNumber],
             );
-            $this->doLog("Invoice creation successful for order {$orderID} - received invoice number {$invoiceNumber}.", \LOGLEVEL_NOTICE);
+            $this->doLog("Invoice creation successful for order {$order->kBestellung} - received invoice number {$invoiceNumber}.", \LOGLEVEL_NOTICE);
         } catch (\Exception $e) {
             $this->getLogger()->error(
                 'Axytos invoice creation failed for order {kBestellung}: {message}',
                 ['kBestellung' => $order->kBestellung, 'message' => $e->getMessage()],
             );
-            $this->doLog("Invoice creation failed for order {$orderID}: " . $e->getMessage(), \LOGLEVEL_ERROR);
+            $this->doLog("Invoice creation failed for order {$order->kBestellung}: " . $e->getMessage(), \LOGLEVEL_ERROR);
         }
-        return $result;
+        return $invoiceNumber;
     }
 
     public function cancelOrder(int $orderID, bool $delete = false): void
@@ -282,6 +291,11 @@ class AxytosPaymentMethod extends Method
                 ['orderID' => $orderID, 'message' => $e->getMessage()],
             );
             $this->doLog("Order shipping status update failed for order {$orderID}: " . $e->getMessage(), \LOGLEVEL_ERROR);
+        }
+        $invoiceNumber = $this->getOrderAttribute($order, 'axytos_invoice_number');
+        if (empty($invoiceNumber)) {
+            // create invoice if not already created
+            $this->createInvoiceAtProvider($order);
         }
     }
 
@@ -385,6 +399,15 @@ class AxytosPaymentMethod extends Method
         $ins->cName = $key;
         $ins->cValue = $value;
         $this->db->insert('tbestellattribut', $ins);
+    }
+
+    private function getOrderAttribute(Bestellung $order, string $key): ?string
+    {
+        $result = $this->db->select('tbestellattribut', 'kBestellung', (int)$order->kBestellung, 'cName', $key);
+        if ($result !== null) {
+            return $result->cValue;
+        }
+        return null;
     }
 
     private function getTranslation($key): string | null
