@@ -48,6 +48,30 @@ function getProductCategory($pos): string
     };
 }
 
+function html_decode_recursive($data) {
+    if (is_string($data)) {
+        return html_entity_decode($data, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    } elseif (is_array($data)) {
+        $result = [];
+        foreach ($data as $key => $value) {
+            // Also decode keys if they're strings
+            $decoded_key = is_string($key) ? 
+                html_entity_decode($key, ENT_QUOTES | ENT_HTML5, 'UTF-8') : $key;
+            $result[$decoded_key] = html_decode_recursive($value);
+        }
+        return $result;
+    } elseif (is_object($data)) {
+        // Create deep copy using serialization/unserialization
+        $clone = unserialize(serialize($data));
+        foreach (get_object_vars($clone) as $key => $value) {
+            $clone->$key = html_decode_recursive($value);
+        }
+        return $clone;
+    }
+    // For primitives (int, float, bool, null), return as-is (they're copied by value)
+    return $data;
+}
+
 /**
  * Helper class for formatting data for Axytos API
  */
@@ -58,7 +82,9 @@ class DataFormatter
 
     public function __construct(Bestellung $order)
     {
-        $this->order = $order;
+        // decode HTML entities in order data
+        // this is needed because JTL sometimes gives the order data with HTML entities encoded
+        $this->order = html_decode_recursive($order);
         // helper
         $this->orderHelper = new Order($order);
     }
