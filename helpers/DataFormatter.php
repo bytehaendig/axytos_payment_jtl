@@ -55,7 +55,7 @@ function html_decode_recursive($data) {
         $result = [];
         foreach ($data as $key => $value) {
             // Also decode keys if they're strings
-            $decoded_key = is_string($key) ? 
+            $decoded_key = is_string($key) ?
                 html_entity_decode($key, ENT_QUOTES | ENT_HTML5, 'UTF-8') : $key;
             $result[$decoded_key] = html_decode_recursive($value);
         }
@@ -84,9 +84,10 @@ class DataFormatter
     {
         // decode HTML entities in order data
         // this is needed because JTL sometimes gives the order data with HTML entities encoded
-        $this->order = html_decode_recursive($order);
+        $decodedOrder = html_decode_recursive($order);
+        $this->order = $decodedOrder;
         // helper
-        $this->orderHelper = new Order($order);
+        $this->orderHelper = new Order($decodedOrder);
     }
     /**
      * Create basket data for API requests
@@ -184,7 +185,7 @@ class DataFormatter
      * @param Bestellung $order
      * @return array
      */
-    private function createOrderData(): array
+    public function createOrderData(): array
     {
         $customer = $this->orderHelper->getCustomer() ?: Frontend::getCustomer();
         $customerId = $customer->cMail; // always use email as customer ID
@@ -207,9 +208,8 @@ class DataFormatter
      * @param Bestellung $order
      * @return array
      */
-    public function createPrecheckData(): array
+    public function createPrecheckData(array $orderData): array
     {
-        $orderData = $this->createOrderData($this->order);
         $precheckData = [
             "requestMode" => "SingleStep",
             "paymentTypeSecurity" => "U",
@@ -224,9 +224,8 @@ class DataFormatter
      * @param Bestellung $order
      * @return array
      */
-    public function createConfirmData(array $precheckResponseJson): array
+    public function createConfirmData(array $precheckResponseJson, array $orderData): array
     {
-        $orderData = $this->createOrderData($this->order);
         $confirmData = [
             "externalOrderId" => $this->order->cBestellNr,
             "date" => date('c'),

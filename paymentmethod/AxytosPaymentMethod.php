@@ -78,7 +78,13 @@ class AxytosPaymentMethod extends Method
         parent::preparePaymentProcess($order);
         $client       = $this->createApiClient();
         $dataFormatter = $this->createDataFormatter($order);
-        $precheckData  =  $dataFormatter->createPrecheckData();
+        $orderData = $dataFormatter->createOrderData($order);
+        $precheckData  =  $dataFormatter->createPrecheckData($orderData);
+        // we need to cache the order-data to re-use it during confirm
+        // because of a JTL bug where order-data is not exactly the same before
+        // and after perstistence to Db
+        // but Axytos REQUIRES exactly the same data in precheck and confirm
+        $this->addCache('order_data', json_encode($orderData));
         $precheckSuccessful = false;
         $paymentAccepted = false;
         try {
@@ -156,13 +162,22 @@ class AxytosPaymentMethod extends Method
         // ]);
         // $this->setOrderStatusToPaid($order);
         // $this->sendConfirmationMail($order);
+        $orderDataRaw = $this->getCache('order_data');
+        $orderData = $orderDataRaw ? json_decode($orderDataRaw, true) : null;
         $precheckResponse = $this->getCache('precheck_response');
         $this->addOrderAttribute($order, 'axytos_precheck_response', $precheckResponse);
         $precheckResponseJson = json_decode($precheckResponse, true);
         $transactionID = $precheckResponseJson['transactionMetadata']['transactionId'] ?? '';
         $client       = $this->createApiClient();
         $dataFormatter = $this->createDataFormatter($order);
-        $confirmData  = $dataFormatter->createConfirmData($precheckResponseJson);
+        if ($orderData === null) {
+            $this->getLogger()->warning(
+                'no cached order-data from precheck for order {kBestellung}, recreate order-data (might lead to subtle differences and Axytos failure)',
+                ['kBestellung' => $order->kBestellung],
+            );
+            $orderData = $dataFormatter->createOrderData();
+        }
+        $confirmData  = $dataFormatter->createConfirmData($precheckResponseJson, $orderData);
         $confirmationSuccessful = false;
         try {
             $response = $client->orderConfirm($confirmData);
