@@ -89,6 +89,12 @@ class DataFormatter
         // helper
         $this->orderHelper = new Order($decodedOrder);
     }
+
+    public function getExternalOrderId(): string
+    {
+        return $this->order->cBestellNr;
+    }
+
     /**
      * Create basket data for API requests
      *
@@ -227,7 +233,7 @@ class DataFormatter
     public function createConfirmData(array $precheckResponseJson, array $orderData): array
     {
         $confirmData = [
-            "externalOrderId" => $this->order->cBestellNr,
+            "externalOrderId" => $this->getExternalOrderId(),
             "date" => date('c'),
             "orderPrecheckResponse" => $precheckResponseJson,
         ];
@@ -242,7 +248,7 @@ class DataFormatter
     public function createInvoiceData(): array
     {
         return [
-            "externalOrderId" => $this->order->cBestellNr,
+            "externalOrderId" => $this->getExternalOrderId(),
             "externalInvoiceNumber" => $this->order->cBestellNr,
             "externalInvoiceDisplayName" => sprintf("Bestellung %s", $this->order->cBestellNr),
             "externalSubOrderId" => "",
@@ -270,7 +276,7 @@ class DataFormatter
             }
         }
         return [
-            "externalOrderId" => $this->order->cBestellNr,
+            "externalOrderId" => $this->getExternalOrderId(),
             "externalSubOrderId" => "",
             "basketPositions" => $positions,
             "shippingDate" => $this->order->dVersandDatum ? date('c', strtotime($this->order->dVersandDatum)) : date('c'),

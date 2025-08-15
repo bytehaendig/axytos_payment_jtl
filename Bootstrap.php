@@ -12,8 +12,10 @@ use JTL\Plugin\Payment\Method;
 use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
 use Plugin\axytos_payment\helpers\CronHelper;
+use Plugin\axytos_payment\helpers\VersionMigrator;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
-use Plugin\axytos_payment\adminmenu\Handler;
+use Plugin\axytos_payment\adminmenu\SetupHandler;
+use Plugin\axytos_payment\adminmenu\ToolsHandler;
 use Plugin\axytos_payment\frontend\AgreementController;
 
 /**
@@ -56,7 +58,7 @@ class Bootstrap extends Bootstrapper
         return $controller;
     }
 
-    private function getModuleID(): string
+    public function getModuleID(): string
     {
         $methods = $this->getPlugin()->getPaymentMethods()->getMethods();
         $moduleId = $methods[0]->getModuleID();
@@ -65,8 +67,8 @@ class Bootstrap extends Bootstrapper
 
     private function getZahlungsart(): \stdClass
     {
+        $db = $this->getDB();
         $moduleID = $this->getModuleID();
-        $db = Shop::Container()->getDB();
         $result = $db->select('tzahlungsart', 'cModulId', $moduleID);
         return $result;
     }
@@ -143,6 +145,21 @@ class Bootstrap extends Bootstrapper
         return $result;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function updated($oldVersion, $newVersion): void
+    {
+        if ($newVersion === '0.9.3') {
+            $versionMigrator = new VersionMigrator($this);
+            $versionMigrator->migrateVersion_0_9_3();
+        }
+    }
+
+    public function enabled()
+    {
+    }
+
     // public function installed(): void
     // {
     //     parent::installed();
@@ -162,8 +179,14 @@ class Bootstrap extends Bootstrapper
      */
     public function renderAdminMenuTab(string $tabName, int $menuID, JTLSmarty $smarty): string
     {
-        $handler = new Handler($this->getPlugin(), $this->getMethod());
-        return $handler->render($tabName, $menuID, $smarty);
+        if ($tabName == "API Setup") {
+            $handler = new SetupHandler($this->getPlugin(), $this->getMethod());
+            return $handler->render($tabName, $menuID, $smarty);
+        }
+        if ($tabName == "Tools") {
+            $handler = new ToolsHandler($this->getPlugin(), $this->getMethod(), $this->getDB());
+            return $handler->render($tabName, $menuID, $smarty);
+        }
     }
 
     /**

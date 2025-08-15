@@ -247,14 +247,26 @@ class AxytosPaymentMethod extends Method
 
     public function cancelOrder(int $orderID, bool $delete = false): void
     {
+        parent::cancelOrder($orderID, $delete);
+        // parent::cancelOrder does send mails - we don't want that in VersionMigrator->migrateVersion_0_9_3
+        $this->doCancelOrder($orderID);
+    }
+
+    public function doCancelOrder(int $orderID): bool
+    {
+        $order = new Bestellung($orderID);
+        $order->fuelleBestellung(false);
+        $dataFormatter = $this->createDataFormatter($order);
         $client = $this->createApiClient();
+        $successful = false;
         try {
-            $response = $client->cancelOrder($orderID);
+            $response = $client->cancelOrder($dataFormatter->getExternalOrderId());
             $this->getLogger()->info(
                 'Axytos payment order cancellation successful for order {orderID}.',
                 ['orderID' => $orderID],
             );
             $this->doLog("Order cancellation successful for order {$orderID}.", \LOGLEVEL_NOTICE);
+            $successful = true;
         } catch (\Exception $e) {
             $this->getLogger()->error(
                 'Axytos payment order cancellation failed for order {orderID}: {message}',
@@ -262,13 +274,18 @@ class AxytosPaymentMethod extends Method
             );
             $this->doLog("Order cancellation failed for order {$orderID}: " . $e->getMessage(), \LOGLEVEL_ERROR);
         }
+        return $successful;
     }
 
     public function reactivateOrder(int $orderID): void
     {
+        parent::reactivateOrder($orderID);
+        $order = new Bestellung($orderID);
+        $order->fuelleBestellung(false);
+        $dataFormatter = $this->createDataFormatter($order);
         $client = $this->createApiClient();
         try {
-            $response = $client->reverseCancelOrder($orderID);
+            $response = $client->reverseCancelOrder($dataFormatter->getExternalOrderId());
             $this->getLogger()->info(
                 'Axytos payment order reactivation successful for order {orderID}.',
                 ['orderID' => $orderID],
