@@ -6,11 +6,22 @@ class ApiClient
 {
     private $AxytosAPIKey;
     private $BaseUrl;
+    private $UserAgent;
 
-    public function __construct($AxytosAPIKey, $useSandbox = true)
+    public function __construct($AxytosAPIKey, $useSandbox = true, $pluginVersion = null)
     {
         $this->AxytosAPIKey = $AxytosAPIKey;
         $this->BaseUrl = $useSandbox ? 'https://api-sandbox.axytos.com/api/v1' : 'https://api.axytos.com/api/v1';
+        $this->UserAgent = $this->makeUserAgent($pluginVersion);
+    }
+
+    private function makeUserAgent($pluginVersion = null)
+    {
+        $pluginVersion = $pluginVersion ?? 'unknown';
+        $phpVersion = phpversion();
+        $jtlVersion = defined('APPLICATION_VERSION') ? APPLICATION_VERSION : 'unknown';
+        $userAgent = "AxytosJTLShopPlugin/$pluginVersion (PHP:$phpVersion JTL:$jtlVersion)";
+        return $userAgent;
     }
 
     private function makeRequest($url, $method = 'GET', $data = [])
@@ -24,6 +35,7 @@ class ApiClient
         $ch = curl_init($this->BaseUrl . $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($ch, CURLOPT_USERAGENT, $this->UserAgent);
         if ($method === 'POST') {
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         }

@@ -391,7 +391,8 @@ class AxytosPaymentMethod extends Method
 
     public function createApiClient(): ApiClient
     {
-        $client = new ApiClient($this->getSetting('api_key'), $this->getSetting('use_sandbox'));
+        $pluginVersion = $this->plugin->getMeta()->getVersion();
+        $client = new ApiClient($this->getSetting('api_key'), $this->getSetting('use_sandbox'), $pluginVersion);
         return $client;
     }
 
