@@ -13,8 +13,11 @@ class VersionMigrator
         $this->bootstrapper = $bootstrapper;
     }
 
-    public function migrateVersion_0_9_3()
+    public function rerun_failed_cancellations()
     {
+        // TODO: since this may affect a bigger amount of orders,
+        // running this sinchronously (as is done here) will exceed the PHP request limits
+        // so we need to run this in cron jobs or something like that
         $db = $this->bootstrapper->getDB();
         $moduleID = $this->bootstrapper->getModuleID();
         $cancelIds = [];

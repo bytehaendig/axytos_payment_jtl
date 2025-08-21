@@ -150,10 +150,11 @@ class Bootstrap extends Bootstrapper
      */
     public function updated($oldVersion, $newVersion): void
     {
-        if ($newVersion === '0.9.3') {
-            $versionMigrator = new VersionMigrator($this);
-            $versionMigrator->migrateVersion_0_9_3();
-        }
+        // don't run this migration because it exceeds PHP request limits
+        // if ($newVersion === '0.9.3') {
+        //     $versionMigrator = new VersionMigrator($this);
+        //     $versionMigrator->rerun_failed_cancallations()
+        // }
     }
 
     public function enabled()
