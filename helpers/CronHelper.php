@@ -10,7 +10,7 @@ use Plugin\axytos_payment\helpers\UpdatesCronJob;
 class CronHelper
 {
     private const CRON_TYPE = 'plugin:axytos_payment.updates';
-    private const FREQENCY = 24; // in h
+    private const FREQUENCY = 1; // in h
     private const START_TIME = '02:00';
 
     public function availableCronjobType(array &$args): void
@@ -34,8 +34,8 @@ class CronHelper
         $controller = Shop::Container()->get(CronController::class);
         $controller->addQueueEntry([
             'type'      => self::CRON_TYPE,
-            'frequency' => $this->FREQENCY,
-            'time'      => $this->START_TIME,
+            'frequency' => self::FREQUENCY,
+            'time'      => self::START_TIME,
             'date'      => (new \DateTime())->format('Y-m-d H:i:s'),
         ]);
     }

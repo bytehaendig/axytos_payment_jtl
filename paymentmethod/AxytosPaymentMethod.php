@@ -14,6 +14,7 @@ use JTL\Shop;
 use JTL\Cart\Cart;
 use Plugin\axytos_payment\helpers\ApiClient;
 use Plugin\axytos_payment\helpers\DataFormatter;
+use Plugin\axytos_payment\helpers\ActionHandler;
 use stdClass;
 
 class AxytosPaymentMethod extends Method
@@ -34,8 +35,10 @@ class AxytosPaymentMethod extends Method
         $this->plugin = PluginHelper::getLoaderByPluginID($pluginID)->init($pluginID);
         $this->db = Shop::Container()->getDB();
         $this->loadPluginSettings();
+
         return $this;
     }
+
     /** overwrite */
     public function getSetting(string $key): mixed
     {
@@ -165,10 +168,9 @@ class AxytosPaymentMethod extends Method
         $orderDataRaw = $this->getCache('order_data');
         $orderData = $orderDataRaw ? json_decode($orderDataRaw, true) : null;
         $precheckResponse = $this->getCache('precheck_response');
-        $this->addOrderAttribute($order, 'axytos_precheck_response', $precheckResponse);
         $precheckResponseJson = json_decode($precheckResponse, true);
-        $transactionID = $precheckResponseJson['transactionMetadata']['transactionId'] ?? '';
-        $client       = $this->createApiClient();
+        $this->addOrderAttribute($order, 'axytos_precheck_response', $precheckResponse);
+
         $dataFormatter = $this->createDataFormatter($order);
         if ($orderData === null) {
             $this->getLogger()->warning(
@@ -178,103 +180,37 @@ class AxytosPaymentMethod extends Method
             $orderData = $dataFormatter->createOrderData();
         }
         $confirmData  = $dataFormatter->createConfirmData($precheckResponseJson, $orderData);
-        $confirmationSuccessful = false;
-        try {
-            $response = $client->orderConfirm($confirmData);
-            $confirmationSuccessful = true;
-        } catch (\Exception $e) {
-            $this->doLog("Payment confirmation failed for order {$order->kBestellung}: " . $e->getMessage(), \LOGLEVEL_ERROR);
-            $message = "Axytos payment confirmation failed for order {$order->kBestellung}: " . $e->getMessage();
-            $this->getLogger()->error($message);
-            // TODO: better handling (with cron job)
-            $this->sendErrorMail($message);
-        }
-        if ($confirmationSuccessful) {
+
+        $orderId = $order->kBestellung;
+        $transactionID = $precheckResponseJson['transactionMetadata']['transactionId'] ?? '';
+        
+        $actionHandler = $this->createActionHandler();
+        $actionHandler->addPendingAction($orderId, 'confirm', $confirmData);
+        $successful = $actionHandler->processPendingActionsForOrder($orderId);
+        if ($successful) {
             $this->addOrderAttribute($order, 'axytos_confirmed', '1');
             $this->doLog("Payment for order {$order->kBestellung} accepted with transaction ID {$transactionID}.", \LOGLEVEL_NOTICE);
             $this->getLogger()->info(
                 'Axytos payment accepted for order {kBestellung} with transaction ID {transactionID}.',
                 ['kBestellung' => $order->kBestellung, 'transactionID' => $transactionID],
             );
-            $this->setOrderStatusToProcessing($order);
             $this->addSuccessMessage('payment_accepted');
         } else {
+            $this->doLog("Order confirmation failed for order {$order->kBestellung}.", \LOGLEVEL_ERROR);
             $this->addErrorMessage('error_order_confirmation_failed', 'confirmation_error');
         }
-    }
-
-    public function createInvoice(int $orderID, int $languageID): object
-    {
-        $result = parent::createInvoice($orderID, $languageID);
-        $order = new Bestellung($orderID);
-        $order->fuelleBestellung(false);
-        $invoiceNumber = $this->createInvoiceAtProvider($order);
-        if (!empty($invoiceNumber)) {
-            $msg = $this->getTranslation('invoice_reference');
-            $result->cInfo = $msg . ' ' . $invoiceNumber;
-            $result->nType = 1;
-        }
-        return $result;
-    }
-
-    private function createInvoiceAtProvider(Bestellung $order): string
-    {
-        $dataFormatter = $this->createDataFormatter($order);
-        $invoiceData = $dataFormatter->createInvoiceData();
-        $client = $this->createApiClient();
-        $invoiceNumber = '';
-        try {
-            $response = $client->createInvoice($invoiceData);
-            $responseJson = json_decode($response, true);
-            $invoiceNumber = $responseJson['invoiceNumber'] ?? '';
-            if (!empty($invoiceNumber)) {
-                $this->addOrderAttribute($order, 'axytos_invoice_number', $invoiceNumber);
-            }
-            $this->getLogger()->info(
-                'Axytos payment invoice creation successful for order {kBestellung} - invoice number {invoiceNumber}.',
-                ['kBestellung' => $order->kBestellung, 'invoiceNumber' => $invoiceNumber],
-            );
-            $this->doLog("Invoice creation successful for order {$order->kBestellung} - received invoice number {$invoiceNumber}.", \LOGLEVEL_NOTICE);
-        } catch (\Exception $e) {
-            $this->getLogger()->error(
-                'Axytos invoice creation failed for order {kBestellung}: {message}',
-                ['kBestellung' => $order->kBestellung, 'message' => $e->getMessage()],
-            );
-            $this->doLog("Invoice creation failed for order {$order->kBestellung}: " . $e->getMessage(), \LOGLEVEL_ERROR);
-        }
-        return $invoiceNumber;
     }
 
     public function cancelOrder(int $orderID, bool $delete = false): void
     {
         parent::cancelOrder($orderID, $delete);
-        // parent::cancelOrder does send mails - we don't want that in VersionMigrator->migrateVersion_0_9_3
-        $this->doCancelOrder($orderID);
-    }
-
-    public function doCancelOrder(int $orderID): bool
-    {
         $order = new Bestellung($orderID);
         $order->fuelleBestellung(false);
         $dataFormatter = $this->createDataFormatter($order);
-        $client = $this->createApiClient();
-        $successful = false;
-        try {
-            $response = $client->cancelOrder($dataFormatter->getExternalOrderId());
-            $this->getLogger()->info(
-                'Axytos payment order cancellation successful for order {orderID}.',
-                ['orderID' => $orderID],
-            );
-            $this->doLog("Order cancellation successful for order {$orderID}.", \LOGLEVEL_NOTICE);
-            $successful = true;
-        } catch (\Exception $e) {
-            $this->getLogger()->error(
-                'Axytos payment order cancellation failed for order {orderID}: {message}',
-                ['orderID' => $orderID, 'message' => $e->getMessage()],
-            );
-            $this->doLog("Order cancellation failed for order {$orderID}: " . $e->getMessage(), \LOGLEVEL_ERROR);
-        }
-        return $successful;
+        $externalOrderId = $dataFormatter->getExternalOrderId();
+        $actionHandler = $this->createActionHandler();
+        $actionHandler->addPendingAction($orderID, 'cancel', ['externalOrderId' => $externalOrderId]);
+        $actionHandler->processPendingActionsForOrder($orderID);
     }
 
     public function reactivateOrder(int $orderID): void
@@ -283,21 +219,22 @@ class AxytosPaymentMethod extends Method
         $order = new Bestellung($orderID);
         $order->fuelleBestellung(false);
         $dataFormatter = $this->createDataFormatter($order);
-        $client = $this->createApiClient();
-        try {
-            $response = $client->reverseCancelOrder($dataFormatter->getExternalOrderId());
-            $this->getLogger()->info(
-                'Axytos payment order reactivation successful for order {orderID}.',
-                ['orderID' => $orderID],
-            );
-            $this->doLog("Order reactivation successful for order {$orderID}.", \LOGLEVEL_NOTICE);
-        } catch (\Exception $e) {
-            $this->getLogger()->error(
-                'Axytos payment order reactivation failed for order {orderID}: {message}',
-                ['orderID' => $orderID, 'message' => $e->getMessage()],
-            );
-            $this->doLog("Order reactivation failed for order {$orderID}: " . $e->getMessage(), \LOGLEVEL_ERROR);
+        $externalOrderId = $dataFormatter->getExternalOrderId();
+        $actionHandler = $this->createActionHandler();
+        $actionHandler->addPendingAction($orderID, 'reverse_cancel', ['externalOrderId' => $externalOrderId]);
+        $actionHandler->processPendingActionsForOrder($orderID);
+    }
+
+    public function createInvoice(int $orderID, int $languageID): object
+    {
+        $result = parent::createInvoice($orderID, $languageID);
+        $invoiceNumber = $this->getOrderAttribute(new Bestellung($orderID), 'axytos_invoice_number');
+        if (!empty($invoiceNumber)) {
+            $msg = $this->getTranslation('invoice_reference');
+            $result->cInfo = $msg . ' ' . $invoiceNumber;
+            $result->nType = 1;
         }
+        return $result;
     }
 
     /**** END Payment Method Interface  */
@@ -308,35 +245,16 @@ class AxytosPaymentMethod extends Method
         $order->fuelleBestellung(false);
         $dataFormatter = $this->createDataFormatter($order);
         $shippingData = $dataFormatter->createShippingData();
-        $client = $this->createApiClient();
-        try {
-            $response = $client->updateShippingStatus($shippingData);
-            $this->addOrderAttribute($order, 'axytos_shipped', '1');
-            $this->getLogger()->info(
-                'Axytos payment order shipping status update successful for order {orderID}.',
-                ['orderID' => $orderID],
-            );
-            $this->doLog("Order shipping status update successful for order {$orderID}.", \LOGLEVEL_NOTICE);
-        } catch (\Exception $e) {
-            $this->getLogger()->error(
-                'Axytos payment order shipping status update failed for order {orderID}: {message}',
-                ['orderID' => $orderID, 'message' => $e->getMessage()],
-            );
-            $this->doLog("Order shipping status update failed for order {$orderID}: " . $e->getMessage(), \LOGLEVEL_ERROR);
-        }
-        $invoiceNumber = $this->getOrderAttribute($order, 'axytos_invoice_number');
-        if (empty($invoiceNumber)) {
-            // create invoice if not already created
-            $this->createInvoiceAtProvider($order);
-        }
-    }
+        $invoiceData = $dataFormatter->createInvoiceData();
 
-    public function setOrderStatusToProcessing(Bestellung $order)
-    {
-        $upd                = new stdClass();
-        $upd->cStatus       = \BESTELLUNG_STATUS_IN_BEARBEITUNG;
-        $this->db->update('tbestellung', 'kBestellung', (int)$order->kBestellung, $upd);
-        return $this;
+        $actionHandler = $this->createActionHandler();
+        $actionHandler->addPendingAction($orderID, 'shipped', $shippingData);
+        $actionHandler->addPendingAction($orderID, 'invoice', $invoiceData);
+        $successful = $actionHandler->processPendingActionsForOrder($orderID);
+        
+        if ($successful) {
+            $this->doLog("Order {$orderID} shipped and invoice created successfully.", \LOGLEVEL_NOTICE);
+        }
     }
 
     private function loadPluginSettings(): void
@@ -394,6 +312,13 @@ class AxytosPaymentMethod extends Method
         $pluginVersion = $this->plugin->getMeta()->getVersion();
         $client = new ApiClient($this->getSetting('api_key'), $this->getSetting('use_sandbox'), $pluginVersion);
         return $client;
+    }
+
+    public function createActionHandler(): ActionHandler
+    {
+        $apiClient = $this->createApiClient();
+        $logger = $this->getLogger();
+        return new ActionHandler($this, $apiClient, $logger);
     }
 
     private function createDataFormatter(Bestellung $order): DataFormatter

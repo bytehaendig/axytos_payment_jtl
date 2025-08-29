@@ -13,6 +13,7 @@ use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
 use Plugin\axytos_payment\helpers\CronHelper;
 use Plugin\axytos_payment\helpers\VersionMigrator;
+use Plugin\axytos_payment\helpers\Utils;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 use Plugin\axytos_payment\adminmenu\SetupHandler;
 use Plugin\axytos_payment\adminmenu\ToolsHandler;
@@ -30,8 +31,7 @@ class Bootstrap extends Bootstrapper
      */
     public function boot(Dispatcher $dispatcher): void
     {
-        $this->method = Method::create($this->getModuleID());
-        $this->method = $this->getMethod();
+        $this->method = Utils::createPaymentMethod($this->getDB());
         parent::boot($dispatcher);
 
         if (Shop::isFrontend()) {
@@ -65,15 +65,12 @@ class Bootstrap extends Bootstrapper
         return $moduleId;
     }
 
-    private function getZahlungsart(): \stdClass
+    private function getPaymentMethodId(): ?int
     {
-        $db = $this->getDB();
-        $moduleID = $this->getModuleID();
-        $result = $db->select('tzahlungsart', 'cModulId', $moduleID);
-        return $result;
+        return Utils::getPaymentMethodId($this->getDB());
     }
 
-    public function getMethod(): AxytosPaymentMethod
+    public function getMethod(): ?AxytosPaymentMethod
     {
         return $this->method;
     }
@@ -85,12 +82,13 @@ class Bootstrap extends Bootstrapper
     {
         /** @var PaymentMethod $paymentMethod */
         $method = $this->getMethod();
-        if ($method instanceof AxytosPaymentMethod && $method->duringCheckout !== 1) {
+        if ($method && $method->duringCheckout !== 1) {
+            $paymentMethodId = $this->getPaymentMethodId();
             $note = new NotificationEntry(
                 NotificationEntry::TYPE_WARNING,
-                $paymentMethod->getName(),
+                $method->getName(),
                 __('This payment method can only be used with payment before order completion'),
-                Shop::getAdminURL() . '/paymentmethods?kZahlungsart=' . $method->kZahlungsart
+                Shop::getAdminURL() . '/paymentmethods?kZahlungsart=' . $paymentMethodId
                     . '&token=' . $_SESSION['jtl_token']
             );
             $note->setPluginId($this->getPlugin()->getPluginID());
@@ -103,10 +101,11 @@ class Bootstrap extends Bootstrapper
         $status = $args['status'];
         $order = $args['oBestellung'];
         if ($status === \BESTELLUNG_STATUS_VERSANDT) {
-            $zahlungsart = $this->getZahlungsart();
-            if ($order->kZahlungsart == $zahlungsart->kZahlungsart) {
+            if (Utils::isAxytosOrder($this->getDB(), $order)) {
                 $paymentMethod = $this->getMethod();
-                $paymentMethod->orderWasShipped($order->kBestellung);
+                if ($paymentMethod) {
+                    $paymentMethod->orderWasShipped($order->kBestellung);
+                }
             }
         }
     }
@@ -161,19 +160,19 @@ class Bootstrap extends Bootstrapper
     {
     }
 
-    // public function installed(): void
-    // {
-    //     parent::installed();
-    //     $cronHelper = new CronHelper();
-    //     $cronHelper->installCron();
-    // }
-    //
-    // public function uninstalled(bool $deleteData = true): void
-    // {
-    //     parent::uninstalled($deleteData);
-    //     $cronHelper = new CronHelper();
-    //     $cronHelper->uninstallCron();
-    // }
+    public function installed(): void
+    {
+        parent::installed();
+        $cronHelper = new CronHelper();
+        $cronHelper->installCron();
+    }
+
+    public function uninstalled(bool $deleteData = true): void
+    {
+        parent::uninstalled($deleteData);
+        $cronHelper = new CronHelper();
+        $cronHelper->uninstallCron();
+    }
 
     /**
      * @inheritdoc

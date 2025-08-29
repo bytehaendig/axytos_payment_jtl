@@ -2,6 +2,7 @@
 
 namespace Plugin\axytos_payment\helpers;
 
+use JTL\Checkout\Bestellung;
 use JTL\Plugin\Payment\Method;
 
 class VersionMigrator
@@ -40,11 +41,16 @@ class VersionMigrator
         $redoIds = array_diff($cancelIds, $reactIds);
         $method = Method::create($moduleID);
         $db = $this->bootstrapper->getDB();
+        $actionHandler = $method->createActionHandler();
         foreach ($redoIds as $orderId) {
             error_log("migrateVersion_0_9_3:: re-cancel order $orderId");
-            $method->doCancelOrder($orderId);
-            $upd                = new \stdClass();
-            $upd->cStatus       = \BESTELLUNG_STATUS_STORNO;
+            $order = new Bestellung($orderId);
+            $order->fuelleBestellung(false);
+            $actionHandler->addPendingAction($orderId, 'cancel', ['externalOrderId' => $order->cBestellNr]);
+            
+            // Set order status to cancelled like the original code
+            $upd = new \stdClass();
+            $upd->cStatus = \BESTELLUNG_STATUS_STORNO;
             $db->update('tbestellung', 'kBestellung', $orderId, $upd);
         }
     }
