@@ -6,7 +6,7 @@
  * @created Fri, 22 Aug 2025 10:53:04 +0200
  */
 
-namespace Plugin\axytos_payment\Migration;
+namespace Plugin\axytos_payment\Migrations;
 
 use JTL\Plugin\Migration;
 use JTL\Update\IMigration;

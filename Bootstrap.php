@@ -7,15 +7,16 @@ namespace Plugin\axytos_payment;
 use JTL\Backend\Notification;
 use JTL\Backend\NotificationEntry;
 use JTL\Events\Dispatcher;
+use JTL\Events\Event;
 use JTL\Plugin\Bootstrapper;
 use JTL\Plugin\Payment\Method;
 use JTL\Shop;
 use JTL\Smarty\JTLSmarty;
 use Plugin\axytos_payment\helpers\CronHelper;
-use Plugin\axytos_payment\helpers\VersionMigrator;
 use Plugin\axytos_payment\helpers\Utils;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 use Plugin\axytos_payment\adminmenu\SetupHandler;
+use Plugin\axytos_payment\adminmenu\StatusHandler;
 use Plugin\axytos_payment\adminmenu\ToolsHandler;
 use Plugin\axytos_payment\frontend\AgreementController;
 
@@ -25,15 +26,14 @@ use Plugin\axytos_payment\frontend\AgreementController;
  */
 class Bootstrap extends Bootstrapper
 {
-    private Method $method;
+    private ?Method $method = null;
+    private bool $cronHooksRegistered = false;
     /**
      * @inheritDoc
      */
     public function boot(Dispatcher $dispatcher): void
     {
-        $this->method = Utils::createPaymentMethod($this->getDB());
         parent::boot($dispatcher);
-
         if (Shop::isFrontend()) {
             // Add hook for modifying checkout page to add agreement link
             $dispatcher->hookInto(\HOOK_SMARTY_OUTPUTFILTER, [$this, 'addAgreementLink']);
@@ -47,9 +47,7 @@ class Bootstrap extends Bootstrapper
             $dispatcher->listen('backend.notification', [$this, 'checkPayments']);
         }
         $dispatcher->hookInto(\HOOK_BESTELLUNGEN_XML_BESTELLSTATUS, [$this, 'onUpdateOrderStatus']);
-        $cronHelper = new CronHelper();
-        $dispatcher->listen(\JTL\Events\Event::GET_AVAILABLE_CRONJOBS, [$cronHelper, 'availableCronjobType']);
-        $dispatcher->listen(\JTL\Events\Event::MAP_CRONJOB_TYPE, [$cronHelper, 'mappingCronjobType']);
+        $this->setupCronHooks($dispatcher);
     }
 
     private function createAgreementController()
@@ -72,6 +70,9 @@ class Bootstrap extends Bootstrapper
 
     public function getMethod(): ?AxytosPaymentMethod
     {
+        if ($this->method === null) {
+            $this->method = Utils::createPaymentMethod($this->getDB());
+        }
         return $this->method;
     }
 
@@ -144,11 +145,29 @@ class Bootstrap extends Bootstrapper
         return $result;
     }
 
+    private function setupCronHooks(Dispatcher $dispatcher = null, CronHelper $cronHelper = null)
+    {
+        if ($this->cronHooksRegistered) {
+            return;
+        }
+        
+        $dispatcher = $dispatcher ?: Dispatcher::getInstance();
+        $cronHelper = $cronHelper ?: new CronHelper();
+        $dispatcher->listen(Event::GET_AVAILABLE_CRONJOBS, [$cronHelper, 'availableCronjobType']);
+        $dispatcher->listen(Event::MAP_CRONJOB_TYPE, [$cronHelper, 'mappingCronjobType']);
+        
+        $this->cronHooksRegistered = true;
+    }
+
     /**
      * @inheritdoc
      */
     public function updated($oldVersion, $newVersion): void
     {
+        parent::updated($oldVersion, $newVersion);
+        $cronHelper = new CronHelper();
+        $this->setupCronHooks(null, $cronHelper);
+        $cronHelper->installCronIfMissing();
         // don't run this migration because it exceeds PHP request limits
         // if ($newVersion === '0.9.3') {
         //     $versionMigrator = new VersionMigrator($this);
@@ -156,15 +175,27 @@ class Bootstrap extends Bootstrapper
         // }
     }
 
-    public function enabled()
+    public function enabled(): void
     {
+        parent::enabled();
+        $cronHelper = new CronHelper();
+        $this->setupCronHooks(null, $cronHelper);
+        $cronHelper->installCronIfMissing();
+    }
+
+    public function disabled(): void
+    {
+        parent::disabled();
+        $cronHelper = new CronHelper();
+        $cronHelper->uninstallCron();
     }
 
     public function installed(): void
     {
         parent::installed();
         $cronHelper = new CronHelper();
-        $cronHelper->installCron();
+        $this->setupCronHooks(null, $cronHelper);
+        $cronHelper->installCronIfMissing();
     }
 
     public function uninstalled(bool $deleteData = true): void
@@ -181,6 +212,10 @@ class Bootstrap extends Bootstrapper
     {
         if ($tabName == "API Setup") {
             $handler = new SetupHandler($this->getPlugin(), $this->getMethod());
+            return $handler->render($tabName, $menuID, $smarty);
+        }
+        if ($tabName == "Status") {
+            $handler = new StatusHandler($this->getPlugin(), $this->getMethod(), $this->getDB());
             return $handler->render($tabName, $menuID, $smarty);
         }
         if ($tabName == "Tools") {

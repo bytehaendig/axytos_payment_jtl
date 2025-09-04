@@ -2,17 +2,20 @@
 <jtlshopplugin>
   <Name>Axytos Payment</Name>
   <PluginID>axytos_payment</PluginID>
-  <XMLVersion>006</XMLVersion>
+  <XMLVersion>007</XMLVersion>
   <Description>Axytos payment integration for JTL Shop</Description>
   <Author>Bytehaendig Software Manufaktur</Author>
   <URL>https://bytehaendig.de</URL>
-  <Version>0.9.3</Version>
+  <Version>0.9.4</Version>
   <CreateDate>2025-04-25</CreateDate>
   <ShopVersion>5.0.0</ShopVersion>
   <Install>
     <Adminmenu>
       <Customlink sort="1">
         <Name>API Setup</Name>
+      </Customlink>
+      <Customlink sort="2">
+        <Name>Status</Name>
       </Customlink>
     </Adminmenu>
     <PaymentMethod>
