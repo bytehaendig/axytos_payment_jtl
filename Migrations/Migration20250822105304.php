@@ -36,7 +36,7 @@ class Migration20250822105304 extends Migration implements IMigration
             `kAxytosAction` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
             `kBestellung` int(10) UNSIGNED NOT NULL,
             `cAction` varchar(50) NOT NULL,
-            `cStatus` enum('pending','completed','failed') NOT NULL DEFAULT 'pending',
+            `bDone` boolean DEFAULT FALSE,
             `dCreatedAt` datetime NOT NULL,
             `dFailedAt` datetime NULL,
             `nFailedCount` int(10) UNSIGNED NOT NULL DEFAULT 0,
@@ -45,8 +45,6 @@ class Migration20250822105304 extends Migration implements IMigration
             `cData` json NULL,
             PRIMARY KEY (`kAxytosAction`),
             INDEX `idx_bestellung` (`kBestellung`),
-            INDEX `idx_status` (`cStatus`),
-            INDEX `idx_bestellung_status` (`kBestellung`, `cStatus`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
         $this->execute("CREATE TABLE IF NOT EXISTS `axytos_actionslog` (

@@ -18,6 +18,7 @@ use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 use Plugin\axytos_payment\adminmenu\SetupHandler;
 use Plugin\axytos_payment\adminmenu\StatusHandler;
 use Plugin\axytos_payment\adminmenu\ToolsHandler;
+use Plugin\axytos_payment\adminmenu\DevHandler;
 use Plugin\axytos_payment\frontend\AgreementController;
 
 /**
@@ -222,6 +223,11 @@ class Bootstrap extends Bootstrapper
             $handler = new ToolsHandler($this->getPlugin(), $this->getMethod(), $this->getDB());
             return $handler->render($tabName, $menuID, $smarty);
         }
+        // Only show Development tab in development mode
+        if ($tabName == "Development" && $this->isDevMode()) {
+            $handler = new DevHandler($this->getPlugin(), $this->getMethod(), $this->getDB());
+            return $handler->render($tabName, $menuID, $smarty);
+        }
     }
 
     /**
@@ -257,5 +263,16 @@ class Bootstrap extends Bootstrapper
         }
         // Return the modified HTML
         return $doc->htmlOuter();
+    }
+
+    /**
+     * Check if development mode is enabled
+     * 
+     * @return bool
+     */
+    private function isDevMode(): bool
+    {
+        return (defined('PLUGIN_DEV_MODE') && PLUGIN_DEV_MODE) ||
+               (defined('SHOW_DEBUG_BAR') && SHOW_DEBUG_BAR);
     }
 }

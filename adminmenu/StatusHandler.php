@@ -11,6 +11,7 @@ use JTL\Checkout\Bestellung;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 use Plugin\axytos_payment\helpers\ActionHandler;
 use Plugin\axytos_payment\helpers\Utils;
+use Plugin\axytos_payment\helpers\CronHelper;
 
 class StatusHandler
 {
@@ -18,6 +19,7 @@ class StatusHandler
     private AxytosPaymentMethod $method;
     private DbInterface $db;
     private ActionHandler $actionHandler;
+    private CronHelper $cronHelper;
 
     public function __construct(PluginInterface $plugin, AxytosPaymentMethod $method, DbInterface $db)
     {
@@ -25,6 +27,7 @@ class StatusHandler
         $this->method = $method;
         $this->db = $db;
         $this->actionHandler = $this->method->createActionHandler();
+        $this->cronHelper = new CronHelper();
     }
 
     public function render(string $tabname, int $menuID, JTLSmarty $smarty): string
@@ -38,6 +41,15 @@ class StatusHandler
             $messages = array_merge($messages, $results);
         }
 
+        if (Request::postInt('remove_action') === 1 && Form::validateToken()) {
+            $smarty->assign('defaultTabbertab', $menuID);
+            $orderId = Request::postInt('order_id');
+            $actionName = Request::postVar('action_name', '');
+            if ($orderId > 0 && !empty($actionName)) {
+                $results = $this->removeBrokenAction($orderId, $actionName);
+                $messages = array_merge($messages, $results);
+            }
+        }
         if (Request::postInt('retry_broken') === 1 && Form::validateToken()) {
             $smarty->assign('defaultTabbertab', $menuID);
             $orderId = Request::postInt('order_id');
@@ -47,9 +59,16 @@ class StatusHandler
             }
         }
 
-        if (Request::postInt('search_order') === 1 && Form::validateToken()) {
+        if (Request::postInt('reset_stuck_cron') === 1 && Form::validateToken()) {
             $smarty->assign('defaultTabbertab', $menuID);
-            $orderIdOrNumber = trim(Request::postVar('order_search', ''));
+            $results = $this->resetStuckCronJobs();
+            $messages = array_merge($messages, $results);
+        }
+
+        // Handle GET parameter for order search AFTER all POST actions (no CSRF token needed for read operations)
+        $orderIdOrNumber = trim(Request::getVar('order_search', ''));
+        if (!empty($orderIdOrNumber)) {
+            $smarty->assign('defaultTabbertab', $menuID);
             $orderDetails = $this->searchOrderDetails($orderIdOrNumber);
             $smarty->assign('searchResult', $orderDetails);
             if (!$orderDetails) {
@@ -57,16 +76,16 @@ class StatusHandler
             }
         }
 
-        // Get status overview data
+        // Get status overview data AFTER processing all actions
         $statusOverview = $this->getStatusOverview();
-        $recentOrders = $this->getRecentOrdersWithActions(10);
-        $brokenOrders = $this->getBrokenOrders(5);
+        $unifiedActions = $this->getUnifiedActionsTable(50);
+        $recentOrders = empty($unifiedActions) ? $this->getRecentOrdersWithActions(10) : [];
 
         // Assign variables to template
         $smarty->assign('messages', $messages);
         $smarty->assign('statusOverview', $statusOverview);
-        $smarty->assign('recentOrders', $recentOrders);
-        $smarty->assign('brokenOrders', $brokenOrders);
+        $smarty->assign('ordersData', !empty($unifiedActions) ? $unifiedActions : $recentOrders);
+        $smarty->assign('showActions', !empty($unifiedActions)); // Show different header text based on data source
         $smarty->assign('token', Form::getTokenInput());
         
         return $smarty->fetch($this->plugin->getPaths()->getAdminPath() . 'template/status.tpl');
@@ -148,6 +167,69 @@ class StatusHandler
         return $messages;
     }
 
+    private function removeBrokenAction(int $orderId, string $actionName): array
+    {
+        $messages = [];
+        
+        try {
+            $success = $this->actionHandler->removeBrokenAction($orderId, $actionName);
+            
+            if ($success) {
+                $messages[] = [
+                    'type' => 'success',
+                    'text' => sprintf('Successfully removed broken action "%s" for order #%d.', $actionName, $orderId)
+                ];
+            } else {
+                $messages[] = [
+                    'type' => 'warning',
+                    'text' => sprintf('Action "%s" for order #%d could not be removed (may not be broken or not exist).', $actionName, $orderId)
+                ];
+            }
+            
+        } catch (\Exception $e) {
+            $messages[] = [
+                'type' => 'danger',
+                'text' => 'Error removing action: ' . $e->getMessage()
+            ];
+        }
+        
+        return $messages;
+    }
+
+    private function resetStuckCronJobs(): array
+    {
+        $messages = [];
+        
+        try {
+            $results = $this->cronHelper->resetStuckCronJobs();
+            
+            if ($results['found_count'] === 0) {
+                $messages[] = [
+                    'type' => 'info',
+                    'text' => 'No stuck Axytos cron jobs found.'
+                ];
+            } elseif ($results['reset_count'] > 0) {
+                $messages[] = [
+                    'type' => 'success',
+                    'text' => sprintf('Successfully reset %d stuck Axytos cron job(s).', $results['reset_count'])
+                ];
+            } else {
+                $messages[] = [
+                    'type' => 'warning',
+                    'text' => 'Failed to reset any stuck cron jobs.'
+                ];
+            }
+            
+        } catch (\Exception $e) {
+            $messages[] = [
+                'type' => 'danger',
+                'text' => 'Error resetting stuck cron jobs: ' . $e->getMessage()
+            ];
+        }
+        
+        return $messages;
+    }
+
     private function searchOrderDetails(string $orderIdOrNumber): ?array
     {
         if (empty($orderIdOrNumber)) {
@@ -183,114 +265,84 @@ class StatusHandler
             return null;
         }
 
+        // Get both pending and broken actions via ActionHandler
+        $pendingAndBrokenActions = $this->actionHandler->getPendingAndBrokenActions($order->kBestellung);
+        
         $allActions = $this->actionHandler->getAllActions($order->kBestellung);
+        
+        // Add pre-computed status fields to pending/broken actions
+        $pendingAndBrokenActions = $this->addStatusFieldsToActions($pendingAndBrokenActions);
+        
+        // Sort completed actions by creation time (most recent first) 
+        $completedActions = $allActions['completed'];
+        usort($completedActions, function($a, $b) {
+            $timeA = strtotime($a['dCreatedAt'] ?? '1970-01-01');
+            $timeB = strtotime($b['dCreatedAt'] ?? '1970-01-01');
+            return $timeB - $timeA;
+        });
+        
+        // Add pre-computed status fields to completed actions
+        $completedActions = $this->addStatusFieldsToActions($completedActions);
+        
         $actionLogs = $this->actionHandler->getActionLogs($order->kBestellung);
+
+        // Extract customer info
+        $customerInfo = $this->getCustomerInfo($order);
 
         return [
             'order' => $order,
-            'pendingActions' => $allActions['pending'],
-            'completedActions' => $allActions['completed'],
-            'actionLogs' => $actionLogs
+            'customerName' => $customerInfo['name'],
+            'customerEmail' => $customerInfo['email'],
+            'pendingActions' => $pendingAndBrokenActions, // Includes both pending and broken actions, already sorted by time
+            'completedActions' => $completedActions, // Sorted by time
+            'actionLogs' => $actionLogs // Already sorted by time in getActionLogs()
         ];
     }
 
     private function getStatusOverview(): array
     {
-        // Get counts for different action states
-        $pendingCount = $this->db->getSingleObject(
-            "SELECT COUNT(DISTINCT kBestellung) as count FROM axytos_actions WHERE cStatus = 'pending'"
-        );
-        
-        $brokenCount = $this->db->getSingleObject(
-            "SELECT COUNT(DISTINCT kBestellung) as count FROM axytos_actions WHERE cStatus = 'failed'"
-        );
-        
-        $totalOrdersCount = $this->db->getSingleObject(
-            "SELECT COUNT(DISTINCT kBestellung) as count FROM axytos_actions"
-        );
+        // Get action counts from ActionHandler
+        $actionOverview = $this->actionHandler->getStatusOverview();
 
-        // Get last cron run (latest action that was processed)
-        $lastCronRun = $this->db->getSingleObject(
-            "SELECT MAX(dProcessedAt) as last_run FROM axytos_actions WHERE cStatus = 'completed' AND dProcessedAt IS NOT NULL"
-        );
+        // Get actual cron run times from JTL's cron system via CronHelper
+        $lastCronRun = $this->cronHelper->getLastCronRun();
+        $nextCronRun = $this->cronHelper->getNextCronRun();
+        $cronStatus = $this->cronHelper->getCronStatus();
 
-        // Get next cron run from JTL's cron system
-        $nextCronRun = $this->getNextCronRun();
-
-        return [
-            'pending_orders' => (int) ($pendingCount->count ?? 0),
-            'broken_orders' => (int) ($brokenCount->count ?? 0),
-            'total_orders' => (int) ($totalOrdersCount->count ?? 0),
-            'last_cron_run' => $lastCronRun->last_run ?? null,
-            'next_cron_run' => $nextCronRun
-        ];
+        return array_merge($actionOverview, [
+            'last_cron_run' => $lastCronRun,
+            'next_cron_run' => $nextCronRun,
+            'cron_status' => $cronStatus
+        ]);
     }
 
     private function getRecentOrdersWithActions(int $limit): array
     {
-        $orderIds = $this->db->getCollection(
-            "SELECT DISTINCT kBestellung FROM axytos_actions ORDER BY dCreatedAt DESC LIMIT $limit"
-        )->map(static function ($row): int {
-            return (int) $row->kBestellung;
-        })->toArray();
+        $orderIds = $this->actionHandler->getRecentOrdersWithActions($limit);
 
         $orders = [];
         foreach ($orderIds as $orderId) {
             $order = new Bestellung($orderId);
             $order->fuelleBestellung(false);
             
-            $allActions = $this->actionHandler->getAllActions($orderId);
+            $customerInfo = $this->getCustomerInfo($order);
             
-            $orders[] = [
+            // Get detailed actions breakdown via ActionHandler (same as unified actions)
+            $actionsBreakdown = $this->actionHandler->getOrderActionsBreakdown($orderId);
+
+            $orders[] = array_merge($actionsBreakdown, [
                 'order' => $order,
-                'pending_count' => count($allActions['pending']),
-                'completed_count' => count($allActions['completed']),
-                'has_broken' => $this->hasOrderBrokenActions($orderId)
-            ];
+                'customerName' => $customerInfo['name'],
+                'customerEmail' => $customerInfo['email']
+            ]);
         }
 
         return $orders;
     }
 
-    private function getBrokenOrders(int $limit): array
-    {
-        $orderIds = $this->db->getCollection(
-            "SELECT DISTINCT kBestellung FROM axytos_actions WHERE cStatus = 'failed' ORDER BY dFailedAt DESC LIMIT $limit"
-        )->map(static function ($row): int {
-            return (int) $row->kBestellung;
-        })->toArray();
 
-        $orders = [];
-        foreach ($orderIds as $orderId) {
-            $order = new Bestellung($orderId);
-            $order->fuelleBestellung(false);
-            
-            $brokenActions = $this->db->selectAll(
-                'axytos_actions',
-                ['kBestellung', 'cStatus'],
-                [$orderId, 'failed'],
-                'cAction, nFailedCount, cFailReason, dFailedAt'
-            );
-            
-            $orders[] = [
-                'order' => $order,
-                'broken_actions' => $brokenActions
-            ];
-        }
 
-        return $orders;
-    }
 
-    private function hasOrderBrokenActions(int $orderId): bool
-    {
-        $brokenAction = $this->db->select(
-            'axytos_actions',
-            ['kBestellung', 'cStatus'],
-            [$orderId, 'failed']
-        );
-        
-        return $brokenAction !== null;
-    }
 
     private function formatActionTime($timeString): string
     {
@@ -312,20 +364,130 @@ class StatusHandler
             return 'pending';
         }
 
-        if ($this->actionHandler->isBroken($action)) {
+        if ($this->actionHandler->getStatus($action) === 'broken') {
             return sprintf('failed %dx, broken', $action['nFailedCount']);
         } else {
             return sprintf('failed %dx, will retry', $action['nFailedCount']);
         }
     }
 
-    private function getNextCronRun(): ?string
+
+
+    private function getCustomerInfo($order): array
     {
-        // Get the next scheduled run for Axytos cron jobs from JTL's cron system
-        $cronJob = $this->db->getSingleObject(
-            "SELECT dNaechsterLauf FROM tcron WHERE cKey LIKE '%axytos%' ORDER BY dNaechsterLauf ASC LIMIT 1"
-        );
-        
-        return $cronJob->dNaechsterLauf ?? null;
+        $name = 'N/A';
+        $email = '';
+
+        if ($order->oKunde) {
+            $name = trim(($order->oKunde->cVorname ?? '') . ' ' . ($order->oKunde->cNachname ?? ''));
+            $email = $order->oKunde->cMail ?? '';
+        } elseif ($order->oRechnungsadresse) {
+            $name = trim(($order->oRechnungsadresse->cVorname ?? '') . ' ' . ($order->oRechnungsadresse->cNachname ?? ''));
+            $email = $order->oRechnungsadresse->cMail ?? '';
+        }
+
+        if (empty($name) || $name === ' ') {
+            $name = 'N/A';
+        }
+
+        return [
+            'name' => $name,
+            'email' => $email
+        ];
+    }
+
+    private function getUnifiedActionsTable(int $limit): array
+    {
+        // Get all orders with any actions (pending or broken) via ActionHandler
+        $orderIds = $this->actionHandler->getOrdersWithActions($limit);
+
+        $ordersWithActions = [];
+        foreach ($orderIds as $orderId) {
+            $order = new Bestellung($orderId);
+            $order->fuelleBestellung(false);
+            
+            $customerInfo = $this->getCustomerInfo($order);
+            
+            // Get detailed actions breakdown via ActionHandler
+            $actionsBreakdown = $this->actionHandler->getOrderActionsBreakdown($orderId);
+
+            // Only include orders that have actions
+            if ($actionsBreakdown['total_actions'] > 0) {
+                $ordersWithActions[] = array_merge($actionsBreakdown, [
+                    'order' => $order,
+                    'customerName' => $customerInfo['name'],
+                    'customerEmail' => $customerInfo['email']
+                ]);
+            }
+        }
+
+        return $ordersWithActions;
+    }
+
+    /**
+     * Add pre-computed status fields to action arrays using ActionHandler's getStatus() method
+     */
+    private function addStatusFieldsToActions(array $actions): array
+    {
+        return array_map(function($action) {
+            // Convert to array if it's an object for getStatus() method
+            $actionArray = is_object($action) ? (array) $action : $action;
+            
+            // Get the computed status using ActionHandler's logic
+            $status = $this->actionHandler->getStatus($actionArray);
+            
+            // Add status fields
+            if (is_object($action)) {
+                $action->status = $status;
+                $action->statusText = $this->getStatusText($status, $actionArray);
+                $action->statusColor = $this->getStatusColor($status);
+            } else {
+                $action['status'] = $status;
+                $action['statusText'] = $this->getStatusText($status, $actionArray);
+                $action['statusColor'] = $this->getStatusColor($status);
+            }
+            
+            return $action;
+        }, $actions);
+    }
+
+    /**
+     * Get human-readable status text
+     */
+    private function getStatusText(string $status, array $actionArray): string
+    {
+        switch ($status) {
+            case 'completed':
+                return 'completed';
+            case 'broken':
+                $failedCount = $actionArray['nFailedCount'] ?? 0;
+                return "broken (failed {$failedCount}x)";
+            case 'pending':
+                if (empty($actionArray['dFailedAt'])) {
+                    return 'pending';
+                } else {
+                    $failedCount = $actionArray['nFailedCount'] ?? 0;
+                    return "retry (failed {$failedCount}x)";
+                }
+            default:
+                return $status;
+        }
+    }
+
+    /**
+     * Get status color for UI
+     */
+    private function getStatusColor(string $status): string
+    {
+        switch ($status) {
+            case 'completed':
+                return '#28a745'; // green
+            case 'broken':
+                return '#dc3545'; // red
+            case 'pending':
+                return '#fd7e14'; // orange
+            default:
+                return '#6c757d'; // gray
+        }
     }
 }

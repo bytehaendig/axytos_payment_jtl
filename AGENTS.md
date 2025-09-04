@@ -25,6 +25,50 @@ This is the Axytos Payment Plugin for JTL Shop - a payment integration that prov
 
 Note: No automated testing framework is currently configured in this codebase.
 
+## Security Guidelines
+
+### SQL Query Security - CRITICAL
+
+**🚨 NEVER use string concatenation for SQL queries - this creates SQL injection vulnerabilities!**
+
+**❌ WRONG - Vulnerable to SQL injection:**
+```php
+$sql = "SELECT * FROM table WHERE id = $id AND name = '$name'";
+$sql = "SELECT * FROM table WHERE count > " . $maxCount;
+```
+
+**✅ CORRECT - Use parameterized queries:**
+```php
+$sql = "SELECT * FROM table WHERE id = :id AND name = :name";
+$result = $this->db->getCollection($sql, ['id' => $id, 'name' => $name]);
+
+$sql = "SELECT * FROM table WHERE count > :maxCount";
+$result = $this->db->getSingleObject($sql, ['maxCount' => $maxCount]);
+```
+
+**Key principles:**
+- All user inputs MUST be parameterized
+- Use named placeholders (`:parameter`) in queries
+- Pass parameters as associative arrays
+- Never concatenate variables directly into SQL strings
+- This applies to ALL query types: SELECT, INSERT, UPDATE, DELETE
+
+**JTL Database Methods with Parameters:**
+- `$db->getCollection($sql, $params)` - Returns Collection of objects
+- `$db->getSingleObject($sql, $params)` - Returns single object or null
+- `$db->getObjects($sql, $params)` - Returns array of objects  
+- `$db->getArrays($sql, $params)` - Returns array of associative arrays
+- `$db->getSingleArray($sql, $params)` - Returns single associative array
+- `$db->getAffectedRows($sql, $params)` - Returns number of affected rows
+- `$db->queryPrepared($sql, $params, $returnType)` - Generic prepared query method
+- `$db->select()`, `$db->selectAll()` - Use for simple WHERE conditions with arrays
+- `$db->insert()`, `$db->update()`, `$db->delete()` - Pass data as objects/arrays for table operations
+
+**Parameter Binding:**
+- Use named parameters: `:paramName` in SQL, `['paramName' => $value]` in params array
+- All parameters are automatically escaped and type-checked by PDO
+- Never use `$db->quote()` or `$db->escape()` with parameterized queries
+
 ## High-Level Architecture
 
 ### Core Components
@@ -72,9 +116,67 @@ Note: No automated testing framework is currently configured in this codebase.
 
 ### Admin Interface
 
+The admin interface provides comprehensive monitoring and management tools across multiple tabs:
+
 - **API Setup Tab**: Configuration of API key and sandbox/production mode
-- **Tools Tab**: Administrative tools for order management
+- **Tools Tab**: Administrative tools for order management  
+- **Status Tab**: Real-time monitoring and action processing dashboard
 - Settings are encrypted using JTL's XTEA encryption service
+
+#### Status Handler (`adminmenu/StatusHandler.php`)
+The StatusHandler provides comprehensive order and action monitoring through the admin interface:
+
+**Key Components:**
+- **Status Overview**: Real-time dashboard showing pending orders, broken actions, total orders, and cron job status
+- **Action Processing**: Manual trigger for processing pending/retryable actions via "Process All" button
+- **Order Search**: Detailed order lookup by ID or order number with full action history
+- **Cron Management**: Monitoring and reset functionality for stuck cron jobs
+- **Broken Action Management**: Tools to retry or remove permanently failed actions
+
+**Critical Logic:**
+- **Action Status Determination (using new schema)**:
+  - `bDone = FALSE` with no failures (`dFailedAt IS NULL`) = truly pending
+  - `bDone = FALSE` with `dFailedAt` but `nFailedCount <= MAX_RETRIES` = retryable
+  - `bDone = FALSE` with `nFailedCount > MAX_RETRIES` = permanently broken
+  - `bDone = TRUE` = completed
+- **Action Processing**: Individual actions are processed separately; broken actions are skipped but don't prevent processing of retryable actions in the same order
+- **Cron Status Detection**: Jobs running >2 hours are considered "stuck"
+
+#### Status Template (`adminmenu/template/status.tpl`)
+The template provides a responsive admin dashboard with:
+- **Status Cards**: Visual overview of system health (cron, pending, broken actions)
+- **Conditional UI**: Reset buttons only appear when needed (e.g., stuck cron jobs)
+- **Unified Actions Table**: Shows orders with detailed action breakdowns (pending/retry/broken columns)
+- **Interactive Elements**: Click-to-search orders, confirmation dialogs for destructive actions
+- **Bootstrap Styling**: Consistent with JTL Shop admin interface patterns
+
+#### Database Schema Interactions
+The status system queries several key tables:
+- `axytos_actions`: Main actions table with status tracking (uses `bDone` boolean + `nFailedCount` for status determination)
+- `axytos_actionslog`: Detailed logging for troubleshooting
+- `tjobqueue`: JTL's cron job queue for monitoring stuck jobs
+- `tcron`: Cron job definitions and scheduling
+- `tbestellung`: Order data integration
+
+**Action Status Logic:**
+- Status is determined by `ActionHandler->getStatus()` method using `bDone` and `nFailedCount` fields
+- Centralized status logic prevents inconsistencies between database queries and business logic
+
+#### Common Admin Tasks
+- **"Process All" Button**: Processes all retryable actions across all orders
+- **Order Search**: Deep-dive into specific order issues with action logs
+- **Cron Reset**: Unstick hung background jobs by resetting `isRunning` flags
+- **Action Management**: Retry broken actions or remove them entirely
+- **Status Monitoring**: Real-time view of system health and processing queues
+
+#### Development Notes
+- All admin actions use CSRF tokens for security
+- Error handling provides user-friendly messages with technical details logged
+- The interface gracefully handles edge cases (no data, failed operations)
+- Confirmation dialogs prevent accidental destructive operations
+- The status system is designed to be self-diagnostic for troubleshooting
+
+This admin interface serves as the primary tool for monitoring and maintaining the Axytos payment integration's health and resolving processing issues.
 
 ### Key Integration Points
 

@@ -53,9 +53,9 @@ class ActionHandler
         // Check if this action is already pending
         $existingAction = $this->db->selectArray(
             'axytos_actions',
-            ['kBestellung', 'cAction', 'cStatus'],
-            [$orderId, $action, 'pending'],
-            'kAxytosAction'
+            ['kBestellung', 'cAction', 'bDone'],
+            [$orderId, $action, false],
+            '*'
         );
 
         if (!empty($existingAction)) {
@@ -65,7 +65,7 @@ class ActionHandler
         $insertData = new \stdClass();
         $insertData->kBestellung = $orderId;
         $insertData->cAction = $action;
-        $insertData->cStatus = 'pending';
+        $insertData->bDone = false;
         $insertData->dCreatedAt = date('Y-m-d H:i:s');
         $insertData->dFailedAt = null;
         $insertData->nFailedCount = 0;
@@ -95,10 +95,10 @@ class ActionHandler
     {
         $actions = $this->db->selectAll(
             'axytos_actions',
-            ['kBestellung', 'cStatus'],
-            [$orderId, 'pending'],
-            'kAxytosAction, kBestellung, cAction, dCreatedAt, dFailedAt, nFailedCount, cFailReason, cData',
-            'dCreatedAt ASC'
+            ['kBestellung', 'bDone'],
+            [$orderId, false],
+            '*',
+            'dCreatedAt DESC'
         );
 
         return $this->deserializeActionsArray($actions);
@@ -111,9 +111,9 @@ class ActionHandler
     {
         $actions = $this->db->selectAll(
             'axytos_actions',
-            ['kBestellung', 'cStatus'],
-            [$orderId, 'completed'],
-            'kAxytosAction, kBestellung, cAction, dCreatedAt, dProcessedAt, cData',
+            ['kBestellung', 'bDone'],
+            [$orderId, true],
+            '*',
             'dProcessedAt DESC'
         );
 
@@ -132,7 +132,7 @@ class ActionHandler
     }
 
     /**
-     * Process all pending actions for an order
+     * Process pending actions for an order
      */
     public function processPendingActionsForOrder(int $orderId): bool
     {
@@ -146,26 +146,27 @@ class ActionHandler
             return false;
         }
 
-        // Check if any action has exceeded retry limit - if so, skip this order
+        $processedAny = false;
         foreach ($pendingActions as $actionData) {
-            if ($this->isBroken($actionData)) {
-                $this->logger->warning(
-                    'Order #{orderId} has actions that exceeded max retries, skipping processing',
-                    ['orderId' => $orderId],
+            if ($this->getStatus($actionData) === 'broken') {
+                $this->logger->debug(
+                    'Skipping broken action {action} for order #{orderId} (exceeded max retries)',
+                    ['action' => $actionData['cAction'], 'orderId' => $orderId]
                 );
-                return false;
+                // don't process further actions
+                break;
             }
-        }
 
-        foreach ($pendingActions as $actionData) {
             $success = $this->processAction($order, $actionData);
-            if (!$success) {
-                // Stop processing further actions for this order
+            if ($success) {
+                $processedAny = true;
+            } else {
+                // Stop processing further actions for this order if one fails
                 break;
             }
         }
 
-        return true;
+        return $processedAny;
     }
 
     /**
@@ -348,7 +349,7 @@ class ActionHandler
     private function markActionAsCompleted(int $actionId): bool
     {
         $updateData = new \stdClass();
-        $updateData->cStatus = 'completed';
+        $updateData->bDone = true;
         $updateData->dProcessedAt = date('Y-m-d H:i:s');
         
         return $this->db->update(
@@ -366,7 +367,7 @@ class ActionHandler
     private function recordActionFailure(int $actionId, string $failReason): bool
     {
         // Get current failed_count
-        $currentAction = $this->db->select('axytos_actions', 'kAxytosAction', $actionId, null, null, null, null, false, 'nFailedCount');
+        $currentAction = $this->db->select('axytos_actions', 'kAxytosAction', $actionId);
         $failedCount = ($currentAction->nFailedCount ?? 0) + 1;
 
         $updateData = new \stdClass();
@@ -374,12 +375,9 @@ class ActionHandler
         $updateData->nFailedCount = $failedCount;
         $updateData->cFailReason = $failReason;
 
-        $isPermanentlyFailed = $failedCount >= self::MAX_RETRIES;
+        $isPermanentlyFailed = $failedCount > self::MAX_RETRIES;
         
-        // If max retries reached, mark as failed
-        if ($isPermanentlyFailed) {
-            $updateData->cStatus = 'failed';
-        }
+        // With new schema, 'broken' status is determined by bDone=false + nFailedCount>=MAX_RETRIES
 
         $this->db->update('axytos_actions', 'kAxytosAction', $actionId, $updateData);
         
@@ -394,7 +392,8 @@ class ActionHandler
     public function getOrdersWithPendingActions(int $limit = 50): array
     {
         $result = $this->db->getCollection(
-            "SELECT DISTINCT kBestellung FROM axytos_actions WHERE cStatus = 'pending' LIMIT $limit"
+            "SELECT DISTINCT kBestellung FROM axytos_actions WHERE bDone = FALSE AND nFailedCount <= :maxRetries LIMIT :limit",
+            ['maxRetries' => self::MAX_RETRIES, 'limit' => $limit]
         )->map(static function ($row): int {
             return (int) $row->kBestellung;
         })->toArray();
@@ -408,7 +407,8 @@ class ActionHandler
     public function getOrdersWithBrokenActions(int $limit = 50): array
     {
         $result = $this->db->getCollection(
-            "SELECT DISTINCT kBestellung FROM axytos_actions WHERE cStatus = 'failed' LIMIT $limit"
+            "SELECT DISTINCT kBestellung FROM axytos_actions WHERE bDone = FALSE AND nFailedCount > :maxRetries LIMIT :limit",
+            ['maxRetries' => self::MAX_RETRIES, 'limit' => $limit]
         )->map(static function ($row): int {
             return (int) $row->kBestellung;
         })->toArray();
@@ -422,7 +422,8 @@ class ActionHandler
     public function getOrdersWithBrokenActionsCount(): int
     {
         $result = $this->db->getSingleObject(
-            "SELECT COUNT(DISTINCT kBestellung) as count FROM axytos_actions WHERE cStatus = 'failed'"
+            "SELECT COUNT(DISTINCT kBestellung) as count FROM axytos_actions WHERE bDone = FALSE AND nFailedCount > :maxRetries",
+            ['maxRetries' => self::MAX_RETRIES]
         );
 
         return (int) ($result->count ?? 0);
@@ -440,18 +441,14 @@ class ActionHandler
 
         do {
             $orderIds = $this->db->getCollection(
-                "SELECT DISTINCT kBestellung FROM axytos_actions WHERE cStatus = 'pending' LIMIT $batchSize OFFSET $offset"
+                "SELECT DISTINCT kBestellung FROM axytos_actions WHERE bDone = FALSE AND nFailedCount <= :maxRetries LIMIT :batchSize OFFSET :offset",
+                ['maxRetries' => self::MAX_RETRIES, 'batchSize' => $batchSize, 'offset' => $offset]
             )->map(static function ($row): int {
                 return (int) $row->kBestellung;
             })->toArray();
 
             foreach ($orderIds as $orderId) {
                 try {
-                    // Skip orders that have actions exceeding retry limits
-                    if ($this->hasActionsExceedingRetryLimit($orderId)) {
-                        continue;
-                    }
-
                     $success = $this->processPendingActionsForOrder($orderId);
                     if ($success) {
                         $processedCount++;
@@ -508,53 +505,52 @@ class ActionHandler
     }
 
     /**
-     * Check if an action is broken (has exceeded max retry count)
+     * Get the status of an action based on bDone and nFailedCount
+     * 
+     * @param array $action Action data with bDone and nFailedCount fields
+     * @return string 'completed', 'pending', or 'broken'
      */
-    public function isBroken(array $action): bool
+    public function getStatus(array $action): string
     {
-        return ($action['nFailedCount'] ?? 0) >= self::MAX_RETRIES;
+        if ($action['bDone'] ?? false) {
+            return 'completed';
+        }
+        
+        $failedCount = (int) ($action['nFailedCount'] ?? 0);
+        if ($failedCount > self::MAX_RETRIES) {
+            return 'broken';
+        }
+        
+        return 'pending';
     }
 
-    /**
-     * Check if order has actions that have exceeded max retry count
-     */
-    private function hasActionsExceedingRetryLimit(int $orderId): bool
-    {
-        $failedActions = $this->db->selectAll(
-            'axytos_actions',
-            ['kBestellung', 'cStatus'],
-            [$orderId, 'failed'],
-            'COUNT(*) as count'
-        );
 
-        return !empty($failedActions) && count($failedActions) > 0;
-    }
 
     /**
-     * Remove a specific failed pending action
+     * Remove a specific broken action
      */
-    public function removeFailedAction(int $orderId, string $actionName): bool
+    public function removeBrokenAction(int $orderId, string $actionName): bool
     {
-        $actions = $this->db->selectAll(
-            'axytos_actions',
-            ['kBestellung', 'cAction', 'cStatus'],
-            [$orderId, $actionName, 'failed'],
-            'kAxytosAction, nFailedCount'
-        );
+        // Find actions that are broken: not done AND exceeded max retries
+        $actions = $this->db->getCollection(
+            "SELECT * FROM axytos_actions WHERE kBestellung = :orderId AND cAction = :actionName AND bDone = FALSE AND nFailedCount > :maxRetries",
+            ['orderId' => $orderId, 'actionName' => $actionName, 'maxRetries' => self::MAX_RETRIES]
+        )->toArray();
         
         $action = !empty($actions) ? $actions[0] : null;
 
-        if (!$action || ($action->nFailedCount ?? 0) < self::MAX_RETRIES) {
+        if (!$action) {
             return false;
         }
 
-        $result = $this->db->delete('axytos_actions', (int) $action->kAxytosAction) > 0;
+        $result = $this->db->delete('axytos_actions', 'kAxytosAction', (int) $action->kAxytosAction) > 0;
 
         if ($result) {
-            $this->logger->info('Manually removed failed action {action} for order #{orderId}', [
+            $this->logger->info('Manually removed broken action {action} for order #{orderId}', [
                 'action' => $actionName,
                 'orderId' => $orderId
             ]);
+            $this->addActionLog($orderId, $actionName, 'info', "Broken action manually removed from admin interface");
         }
 
         return $result;
@@ -570,31 +566,29 @@ class ActionHandler
             return ['processed' => 0, 'failed' => 0, 'total_broken' => 0];
         }
 
-        // Get failed actions
-        $failedActions = $this->db->selectAll(
-            'axytos_actions',
-            ['kBestellung', 'cStatus'],
-            [$orderId, 'failed'],
-            'kAxytosAction, cAction, cData',
-            'dCreatedAt ASC'
-        );
+        // Get broken actions
+        // Find broken actions: not done AND exceeded max retries
+        $brokenActions = $this->db->getCollection(
+            "SELECT * FROM axytos_actions WHERE kBestellung = :orderId AND bDone = FALSE AND nFailedCount > :maxRetries ORDER BY dCreatedAt DESC",
+            ['orderId' => $orderId, 'maxRetries' => self::MAX_RETRIES]
+        )->toArray();
 
-        if (empty($failedActions)) {
+        if (empty($brokenActions)) {
             return ['processed' => 0, 'failed' => 0, 'total_broken' => 0];
         }
 
         $processedCount = 0;
         $failedCount = 0;
 
-        foreach ($failedActions as $failedAction) {
+        foreach ($brokenActions as $brokenAction) {
             $this->logger->info('Retrying broken action {action} for order #{orderId}', [
-                'action' => $failedAction->cAction,
+                'action' => $brokenAction->cAction,
                 'orderId' => $orderId
             ]);
 
             // Reset action to pending with reset counters
             $resetData = new \stdClass();
-            $resetData->cStatus = 'pending';
+            $resetData->bDone = false;
             $resetData->dFailedAt = null;
             $resetData->nFailedCount = 0;
             $resetData->cFailReason = null;
@@ -602,16 +596,18 @@ class ActionHandler
             $this->db->update(
                 'axytos_actions',
                 'kAxytosAction',
-                (int) $failedAction->kAxytosAction,
+                (int) $brokenAction->kAxytosAction,
                 $resetData
             );
 
-            $actionData = $this->deserializeActionFromDb($failedAction);
+            $this->addActionLog($orderId, $brokenAction->cAction, 'info', "Broken action manually retried from admin interface");
+
+            $actionData = $this->deserializeActionFromDb($brokenAction);
             $success = $this->processAction($order, $actionData);
             if ($success) {
                 $processedCount++;
                 $this->logger->info('Successfully retried broken action {action} for order #{orderId}', [
-                    'action' => $failedAction->cAction,
+                    'action' => $brokenAction->cAction,
                     'orderId' => $orderId
                 ]);
             } else {
@@ -621,7 +617,8 @@ class ActionHandler
         }
 
         $totalBroken = $this->db->getSingleObject(
-            "SELECT COUNT(*) as count FROM axytos_actions WHERE kBestellung = $orderId AND cStatus = 'failed'"
+            "SELECT COUNT(*) as count FROM axytos_actions WHERE kBestellung = :orderId AND bDone = FALSE AND nFailedCount > :maxRetries",
+            ['orderId' => $orderId, 'maxRetries' => self::MAX_RETRIES]
         );
 
         return [
@@ -668,7 +665,7 @@ class ActionHandler
             ['kBestellung'],
             [$orderId],
             'kAxytosActionsLog, cAction, dProcessedAt, cLevel, cMessage',
-            'dProcessedAt ASC'
+            'dProcessedAt DESC'
         );
 
         return array_map(function($log) {
@@ -683,15 +680,211 @@ class ActionHandler
     }
 
     /**
+     * Get both pending and broken actions for an order (for search results)
+     */
+    public function getPendingAndBrokenActions(int $orderId): array
+    {
+        $actions = $this->db->getCollection(
+            "SELECT * FROM axytos_actions
+             WHERE kBestellung = :orderId AND bDone = FALSE
+             ORDER BY dCreatedAt DESC",
+            ['orderId' => $orderId]
+        )->toArray();
+
+        return $this->deserializeActionsArray($actions);
+    }
+
+    /**
+     * Get status overview counts
+     */
+    public function getStatusOverview(): array
+    {
+        // Get counts for different action states
+        $pendingCount = $this->db->getSingleObject(
+            "SELECT COUNT(DISTINCT kBestellung) as count FROM axytos_actions WHERE bDone = FALSE AND nFailedCount <= :maxRetries",
+            ['maxRetries' => self::MAX_RETRIES]
+        );
+        
+        $brokenCount = $this->db->getSingleObject(
+            "SELECT COUNT(DISTINCT kBestellung) as count FROM axytos_actions WHERE bDone = FALSE AND nFailedCount > :maxRetries",
+            ['maxRetries' => self::MAX_RETRIES]
+        );
+        
+        $totalOrdersCount = $this->db->getSingleObject(
+            "SELECT COUNT(DISTINCT kBestellung) as count FROM axytos_actions"
+        );
+
+        return [
+            'pending_orders' => (int) ($pendingCount->count ?? 0),
+            'broken_orders' => (int) ($brokenCount->count ?? 0),
+            'total_orders' => (int) ($totalOrdersCount->count ?? 0)
+        ];
+    }
+
+    /**
+     * Get orders with any actions (pending or broken) for unified table
+     */
+    public function getOrdersWithActions(int $limit = 50): array
+    {
+        $orderIds = $this->db->getCollection(
+            "SELECT DISTINCT kBestellung FROM axytos_actions 
+             WHERE bDone = FALSE 
+             ORDER BY dCreatedAt DESC LIMIT $limit"
+        )->map(static function ($row): int {
+            return (int) $row->kBestellung;
+        })->toArray();
+
+        return $orderIds;
+    }
+
+    /**
+     * Get detailed actions breakdown for unified actions table
+     */
+    public function getOrderActionsBreakdown(int $orderId): array
+    {
+        // Get all actions for this order in a single query
+        $allActionsData = $this->db->selectAll(
+            'axytos_actions',
+            ['kBestellung'],
+            [$orderId],
+            '*',
+            'dCreatedAt DESC'
+        );
+
+        // Separate actions by their actual status
+        $pendingActions = [];
+        $retryableActions = [];
+        $brokenActions = [];
+        $completedActions = [];
+
+        foreach ($allActionsData as $actionData) {
+            $action = [
+                'cAction' => $actionData->cAction,
+                'bDone' => $actionData->bDone,
+                'dCreatedAt' => $actionData->dCreatedAt,
+                'dProcessedAt' => $actionData->dProcessedAt,
+                'dFailedAt' => $actionData->dFailedAt,
+                'nFailedCount' => $actionData->nFailedCount,
+                'cFailReason' => $actionData->cFailReason
+            ];
+
+            $actionStatus = $this->getStatus($action);
+            if ($actionStatus === 'completed') {
+                $completedActions[] = [
+                    'action' => $action['cAction'],
+                    'created_at' => $action['dCreatedAt'],
+                    'completed_at' => $action['dProcessedAt'],
+                    'status' => 'completed',
+                    'status_text' => 'completed',
+                    'status_color' => '#198754', // green
+                    'fail_reason' => null
+                ];
+            } elseif ($actionStatus === 'broken') {
+                $brokenActions[] = [
+                    'action' => $action['cAction'],
+                    'created_at' => $action['dCreatedAt'],
+                    'failed_at' => $action['dFailedAt'],
+                    'failed_count' => $action['nFailedCount'],
+                    'status' => 'broken',
+                    'status_text' => sprintf('failed %dx, broken', $action['nFailedCount']),
+                    'status_color' => '#dc3545', // red
+                    'fail_reason' => $action['cFailReason'] ?? null
+                ];
+            } elseif ($actionStatus === 'pending') {
+                if (empty($action['dFailedAt'])) {
+                    // True pending actions (never failed)
+                    $pendingActions[] = [
+                        'action' => $action['cAction'],
+                        'created_at' => $action['dCreatedAt'],
+                        'status' => 'pending',
+                        'status_text' => 'pending',
+                        'status_color' => '#fd7e14', // orange
+                        'fail_reason' => null
+                    ];
+                } else {
+                    // Failed pending actions - check if broken or retryable
+                    if ($this->getStatus($action) === 'broken') {
+                        $brokenActions[] = [
+                            'action' => $action['cAction'],
+                            'created_at' => $action['dCreatedAt'],
+                            'failed_at' => $action['dFailedAt'],
+                            'failed_count' => $action['nFailedCount'],
+                            'status' => 'broken',
+                            'status_text' => sprintf('failed %dx, broken', $action['nFailedCount']),
+                            'status_color' => '#dc3545', // red
+                            'fail_reason' => $action['cFailReason'] ?? null
+                        ];
+                    } else {
+                        $retryableActions[] = [
+                            'action' => $action['cAction'],
+                            'created_at' => $action['dCreatedAt'],
+                            'failed_at' => $action['dFailedAt'],
+                            'failed_count' => $action['nFailedCount'],
+                            'status' => 'retryable',
+                            'status_text' => sprintf('failed %dx, will retry', $action['nFailedCount']),
+                            'status_color' => '#ffc107', // yellow/orange
+                            'fail_reason' => $action['cFailReason'] ?? null
+                        ];
+                    }
+                }
+            }
+        }
+
+        return [
+            'pending_actions' => $pendingActions,
+            'retryable_actions' => $retryableActions,
+            'broken_actions' => $brokenActions,
+            'completed_actions' => $completedActions,
+            'has_pending' => !empty($pendingActions),
+            'has_retryable' => !empty($retryableActions),
+            'has_broken' => !empty($brokenActions),
+            'has_completed' => !empty($completedActions),
+            'total_actions' => count($pendingActions) + count($retryableActions) + count($brokenActions) + count($completedActions),
+            // Add fields to match recentOrders format for consistent template
+            'pending_count' => count($pendingActions) + count($retryableActions), // Pending + retry actions
+            'completed_count' => count($completedActions)
+        ];
+    }
+
+    /**
+     * Check if an order has broken actions
+     */
+    public function hasOrderBrokenActions(int $orderId): bool
+    {
+        $brokenAction = $this->db->getSingleObject(
+            "SELECT * FROM axytos_actions WHERE kBestellung = :orderId AND bDone = FALSE AND nFailedCount > :maxRetries LIMIT 1",
+            ['orderId' => $orderId, 'maxRetries' => self::MAX_RETRIES]
+        );
+        
+        return $brokenAction !== null;
+    }
+
+    /**
+     * Get recent orders with basic action counts (fallback when no pending/broken actions exist)
+     */
+    public function getRecentOrdersWithActions(int $limit = 10): array
+    {
+        $orderIds = $this->db->getCollection(
+            "SELECT DISTINCT kBestellung FROM axytos_actions ORDER BY dCreatedAt DESC LIMIT :limit",
+            ['limit' => $limit]
+        )->map(static function ($row): int {
+            return (int) $row->kBestellung;
+        })->toArray();
+
+        return $orderIds;
+    }
+
+    /**
      * Deserialize single action from database result
      */
     private function deserializeActionFromDb($action): array
     {
         $data = !empty($action->cData) ? json_decode($action->cData, true) : [];
-        
+
         return [
             'kAxytosAction' => (int) $action->kAxytosAction,
             'cAction' => $action->cAction,
+            'bDone' => (bool) $action->bDone,
             'dCreatedAt' => $action->dCreatedAt,
             'dFailedAt' => $action->dFailedAt ?? null,
             'nFailedCount' => (int) ($action->nFailedCount ?? 0),

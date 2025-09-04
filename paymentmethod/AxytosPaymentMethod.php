@@ -338,7 +338,7 @@ class AxytosPaymentMethod extends Method
         Shop::Container()->getAlertService()->addSuccess($message, 'axytos_' . $key, ['saveInSession' => true]);
     }
 
-    private function getLogger()
+    public function getLogger()
     {
         if (\method_exists($this->plugin, 'getLogger')) {
             $logger = $this->plugin->getLogger();

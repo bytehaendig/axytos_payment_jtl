@@ -4,8 +4,10 @@ namespace Plugin\axytos_payment\helpers;
 
 use JTL\Shop;
 use JTL\Cron\JobInterface;
+use JTL\Cron\Queue;
 use JTL\Router\Controller\Backend\CronController;
 use Plugin\axytos_payment\helpers\UpdatesCronJob;
+use JTL\DB\DbInterface;
 
 class CronHelper
 {
@@ -106,5 +108,127 @@ class CronHelper
         if (\count($cron) !== 0) {
             $controller->deleteQueueEntry(\array_shift($cron)->getCronID());
         }
+    }
+
+    public function resetStuckCronJobs(): array
+    {
+        $db = Shop::Container()->getDB();
+        $logger = Shop::Container()->getLogService();
+        
+        try {
+            // First, count stuck Axytos cron jobs before reset using JTL's criteria (QUEUE_MAX_STUCK_HOURS = 1 hour)
+            $stuckJobs = $db->getCollection(
+                "SELECT jq.jobQueueID, c.jobType 
+                 FROM tjobqueue jq 
+                 JOIN tcron c ON c.cronID = jq.cronID 
+                 WHERE c.jobType LIKE '%axytos%' 
+                 AND jq.isRunning = 1 
+                 AND jq.lastStart IS NOT NULL 
+                 AND DATE_SUB(NOW(), INTERVAL :ntrvl Hour) > jq.lastStart",
+                ['ntrvl' => \QUEUE_MAX_STUCK_HOURS]
+            );
+            
+            $foundCount = count($stuckJobs);
+            if ($foundCount === 0) {
+                return ['reset_count' => 0, 'found_count' => 0];
+            }
+            
+            // Use JTL-Shop's built-in Queue::unStuckQueues() method to reset ALL stuck jobs
+            // Note: This will reset ALL stuck jobs system-wide, not just Axytos jobs
+            $queue = Shop::Container()->get(Queue::class);
+            $totalReset = $queue->unStuckQueues();
+            
+            // Count how many of the reset jobs were Axytos jobs by checking if they're no longer stuck
+            $stillStuckJobs = $db->getCollection(
+                "SELECT jq.jobQueueID 
+                 FROM tjobqueue jq 
+                 JOIN tcron c ON c.cronID = jq.cronID 
+                 WHERE c.jobType LIKE '%axytos%' 
+                 AND jq.isRunning = 1 
+                 AND jq.lastStart IS NOT NULL 
+                 AND DATE_SUB(NOW(), INTERVAL :ntrvl Hour) > jq.lastStart",
+                ['ntrvl' => \QUEUE_MAX_STUCK_HOURS]
+            );
+            
+            $axytosResetCount = $foundCount - count($stillStuckJobs);
+            
+            $logger->info('Reset stuck {axytos_reset} Axytos cron jobs', [
+                'axytos_reset' => $axytosResetCount,
+            ]);
+            
+            return [
+                'reset_count' => $axytosResetCount,
+                'found_count' => $foundCount
+            ];
+            
+        } catch (\Exception $e) {
+            $logger->error('Failed to reset stuck Axytos cron jobs: {error}', [
+                'error' => $e->getMessage()
+            ]);
+            throw $e; // Re-throw so StatusHandler can handle the error message
+        }
+    }
+
+    public function getNextCronRun(): ?string
+    {
+        $db = Shop::Container()->getDB();
+        
+        // Get the next scheduled run for Axytos cron jobs from JTL's cron system
+        $cronJob = $db->getSingleObject(
+            "SELECT nextStart FROM tcron WHERE jobType LIKE '%axytos%' ORDER BY nextStart ASC LIMIT 1"
+        );
+        
+        return $cronJob->nextStart ?? null;
+    }
+
+    public function getLastCronRun(): ?string
+    {
+        $db = Shop::Container()->getDB();
+        
+        // Get the most recent completion time from tcron for Axytos jobs
+        $lastJob = $db->getSingleObject(
+            "SELECT MAX(lastFinish) as lastFinish 
+             FROM tcron 
+             WHERE jobType LIKE '%axytos%' 
+             AND lastFinish IS NOT NULL"
+        );
+        
+        return $lastJob->lastFinish ?? null;
+    }
+
+    public function getCronStatus(): array
+    {
+        $db = Shop::Container()->getDB();
+        
+        // Check if any Axytos cron jobs are currently running
+        $runningJobs = $db->getSingleObject(
+            "SELECT COUNT(*) as running_count 
+             FROM tjobqueue jq 
+             JOIN tcron c ON c.cronID = jq.cronID 
+             WHERE c.jobType LIKE '%axytos%' 
+             AND jq.isRunning = 1"
+        );
+        
+        // Check if any jobs are stuck (running for too long) - use JTL's QUEUE_MAX_STUCK_HOURS constant
+        $stuckJobs = $db->getSingleObject(
+            "SELECT COUNT(*) as stuck_count 
+             FROM tjobqueue jq 
+             JOIN tcron c ON c.cronID = jq.cronID 
+             WHERE c.jobType LIKE '%axytos%' 
+             AND jq.isRunning = 1 
+             AND jq.lastStart IS NOT NULL 
+             AND DATE_SUB(NOW(), INTERVAL :ntrvl HOUR) > jq.lastStart",
+            ['ntrvl' => \QUEUE_MAX_STUCK_HOURS]
+        );
+        
+        $isRunning = (int)($runningJobs->running_count ?? 0) > 0;
+        $hasStuck = (int)($stuckJobs->stuck_count ?? 0) > 0;
+        
+        return [
+            'is_running' => $isRunning,
+            'has_stuck' => $hasStuck,
+            'running_count' => (int)($runningJobs->running_count ?? 0),
+            'stuck_count' => (int)($stuckJobs->stuck_count ?? 0)
+        ];
     }
 }
