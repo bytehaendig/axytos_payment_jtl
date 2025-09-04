@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "reference": {
+      "type": "local",
+      "command": ["docker",
+        "run",
+        "-i",
+        "--rm",
+        "--mount",
+        "type=bind,src=/Users/mat/work/axytos-wp/wp-content/plugins/axytos-woocommerce,dst=/reference/axytos-woocommerce,ro",
+        "--mount",
+        "type=bind,src=/Users/mat/work/jtl/shop,dst=/reference/jtl-shop,ro",
+        "mcp/filesystem",
+        "/reference"
+      ]
+    }
+  }
+}

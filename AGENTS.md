@@ -5,9 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## JTL Shop
 
 This is a JTL-Shop plugin - a shop system written in PHP.
-The source code for JTL-Shop can be found at '../..' (relative to this plugin directory).
+The source code for JTL-Shop can be accessed with the `reference` MCP server under `/reference/jtl-shop`.
 Documentation for JTL-Shop for plugin developers is at https://jtl-devguide.readthedocs.io/projects/jtl-shop/de/latest/index.html .
-Use the JTL-Shop source code (at '../..') to understand how it works and how it interacts with plugins.
+Use the JTL-Shop source code to understand how it works and how it interacts with plugins.
 
 ## Project Overview
 
@@ -94,4 +94,12 @@ This ensures Axytos receives identical data in both API calls, which is a strict
 
 ## Sister Project
 
-A sister project exists at `/Users/mat/work/axytos-wp/wp-content/plugins/axytos-woocommerce` - an Axytos payment plugin for WooCommerce with the same functionality. In the long run, there should be feature parity between both plugins.
+A sister project axytos-woocommerce exists - it is an Axytos payment plugin for WooCommerce with the same functionality. In the long run, there should be feature parity between both plugins.
+Use the `reference` MCP server under the path `/reference/axytos-woocommerce`.
+
+## MCP servers 
+
+### reference 
+
+- `/reference/jtl-shop`: the source code of the JTL shop. Use it to understand how the shop system works and interacts with plugins
+- `/reference/axytos-woocommerce`: the source code of the sister project, which implements same functionality for WooCommerce
