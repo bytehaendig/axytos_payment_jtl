@@ -191,15 +191,15 @@ class DevHandler
             return null;
         }
 
-        // Try to find order by order number
-        $result = $this->db->select('tbestellung', 'cBestellNr', $orderNumber);
-        if ($result) {
-            $order = new Bestellung((int)$result->kBestellung);
-            $order->fuelleBestellung(false);
-            
-            if ($order->kBestellung > 0) {
+        // Try to find order by order number using Utils
+        try {
+            $order = Utils::loadOrderByOrderNumber($this->db, $orderNumber);
+            if ($order && $order->kBestellung > 0) {
                 return $order;
             }
+        } catch (\Exception $e) {
+            // Order exists but is not Axytos order
+            return null;
         }
 
         // If not found by order number, try as order ID (fallback for numeric input)

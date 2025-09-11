@@ -8,6 +8,7 @@ use JTL\DB\DbInterface;
 use JTL\Helpers\Form;
 use JTL\Helpers\Request;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
+use Plugin\axytos_payment\helpers\CSVHelper;
 
 /** this is currently not used */
 class ToolsHandler
@@ -16,6 +17,7 @@ class ToolsHandler
     private $method;
     private DbInterface $db;
     private $client;
+    private CSVHelper $csvHelper;
 
     public function __construct(PluginInterface $plugin, AxytosPaymentMethod $method, DbInterface $db)
     {
@@ -23,6 +25,7 @@ class ToolsHandler
         $this->method = $method;
         $this->db = $db;
         $this->client = $this->method->createApiClient();
+        $this->csvHelper = new CSVHelper();
     }
 
     public function render(string $tabname, int $menuID, JTLSmarty $smarty): string
@@ -53,26 +56,15 @@ class ToolsHandler
         }
 
         $csvFile = $_FILES['csv_file']['tmp_name'];
-        $csvData = $this->parseCsv($csvFile);
+        $csvData = $this->csvHelper->parseCsv($csvFile);
 
         if (empty($csvData)) {
             return [['type' => 'warning', 'text' => 'No valid data found in CSV file.']];
         }
 
-        $processedCount = 0;
-        $results = [];
-
-        foreach ($csvData as $row) {
-            if (isset($row['id']) && !empty($row['id'])) {
-                $status = $this->processId($row['id'], $row['timestamp'] ?? '');
-                $results[] = [
-                    'id' => $row['id'],
-                    'timestamp' => $row['timestamp'] ?? '',
-                    'status' => $status
-                ];
-                $processedCount++;
-            }
-        }
+        $processingResult = $this->processCsvData($csvData);
+        $processedCount = $processingResult['processedCount'];
+        $results = $processingResult['results'];
 
         $messages[] = ['type' => 'success', 'text' => "Successfully processed {$processedCount} IDs from CSV file."];
         foreach ($results as $result) {
@@ -86,31 +78,59 @@ class ToolsHandler
         return $messages;
     }
 
-    private function parseCsv(string $filePath): array
+    private function processCsvData(array $csvData): array
     {
-        $data = [];
-        if (($handle = fopen($filePath, 'r')) !== false) {
-            $header = fgetcsv($handle, 1000, ',');
-            if ($header === false || count($header) < 2) {
-                fclose($handle);
-                return [];
+        $processedCount = 0;
+        $results = [];
+
+        foreach ($csvData as $row) {
+            // Look for common ID field names (case-insensitive)
+            $idField = $this->findIdField($row);
+            $timestampField = $this->findTimestampField($row);
+
+            if ($idField && !empty($row[$idField])) {
+                $timestamp = $timestampField ? $row[$timestampField] : '';
+                $status = $this->processId($row[$idField], $timestamp);
+                $results[] = [
+                    'id' => $row[$idField],
+                    'timestamp' => $timestamp,
+                    'status' => $status
+                ];
+                $processedCount++;
             }
-            while (($row = fgetcsv($handle, 1000, ',')) !== false) {
-                if (count($row) >= 2) {
-                    $data[] = [
-                        'timestamp' => trim($row[0]),
-                        'id' => trim($row[1])
-                    ];
-                }
-            }
-            fclose($handle);
         }
-        return $data;
+
+        return [
+            'processedCount' => $processedCount,
+            'results' => $results
+        ];
     }
 
-    private function processId(string $orderID, string $timestamp): string
+    private function findIdField(array $row): ?string
     {
-        error_log("Processing ID: {$id} with timestamp: {$timestamp}");
+        $possibleIdFields = ['id', 'order_id', 'orderid', 'reference', 'reference_id'];
+        foreach ($possibleIdFields as $field) {
+            if (isset($row[$field])) {
+                return $field;
+            }
+        }
+        return null;
+    }
+
+    private function findTimestampField(array $row): ?string
+    {
+        $possibleTimestampFields = ['timestamp', 'date', 'created_at', 'time'];
+        foreach ($possibleTimestampFields as $field) {
+            if (isset($row[$field])) {
+                return $field;
+            }
+        }
+        return null;
+    }
+
+    private function processId(string $orderId, string $timestamp): string
+    {
+        error_log("Processing ID: {$orderId} with timestamp: {$timestamp}");
         return 'success';
     }
 }

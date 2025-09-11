@@ -498,10 +498,8 @@ class ActionHandler
         
         // Log critical actions to payment method log
         if (in_array($action, ['confirm', 'invoice', 'cancel', 'reverse_cancel'])) {
-            $this->method->doLog("Critical action '{$action}' failed permanently for order {$orderId} after " . self::MAX_RETRIES . " retries.", \LOGLEVEL_ERROR);
+            $this->method->doLog("Action '{$action}' failed permanently for order {$orderId} after " . self::MAX_RETRIES . " retries.", \LOGLEVEL_ERROR);
         }
-
-
     }
 
     /**

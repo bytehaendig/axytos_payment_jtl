@@ -7,7 +7,7 @@ class AgreementController
     private $plugin;
     private $paymentMethod;
     private $cache;
-    private string $path = '/axytos-agreement';
+    private string $path = '/axytos/v1/agreement';
 
     public function __construct($plugin, $paymentMethod, $cache)
     {

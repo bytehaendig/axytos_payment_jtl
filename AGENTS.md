@@ -35,6 +35,86 @@ This is the Axytos Payment Plugin for JTL Shop - a payment integration that prov
 
 Note: No automated testing framework is currently configured in this codebase.
 
+## Plugin Routes (JTL Shop 5.2.0+)
+
+### Route Registration
+- Register routes via `HOOK_ROUTER_PRE_DISPATCH` hook in Bootstrap.php
+- Use `Router::addRoute($path, $callback, $name, $methods, $middleware)` method
+- Callbacks must return `ResponseInterface` (use `JsonResponse` or `$smarty->getResponse()`)
+
+### Route Parameters
+- Dynamic segments: `/automation/{id:number}` or `/automation/{action:word}`
+- Optional parameters: `/automation[/{id}]`
+- Parameters passed in `$args` array to callback
+
+### Callback Signature
+```php
+function (ServerRequestInterface $request, array $args, JTLSmarty $smarty) {
+    // $request: HTTP request object
+    // $args: Route parameters
+    // $smarty: Template renderer
+    return new JsonResponse(['data' => 'response']);
+}
+```
+
+### URL Generation
+- Generate URLs: `$router->getNamedPath('routeName', ['param' => 'value'])`
+- Route names: `'routeName' + HTTP method` (e.g., `'myRouteGET'`)
+
+### Frontend Folder Structure
+- Place controllers in `/frontend/` directory
+- Use controller classes with `getPath()` and `getResponse()` methods
+- Register in Bootstrap via factory method pattern
+
+### Example Implementation
+```php
+// In Bootstrap.php
+$dispatcher->hookInto(\HOOK_ROUTER_PRE_DISPATCH, function (array $args) {
+    $router = $args['router'];
+    $controller = $this->createAutomationController();
+    $router->addRoute($controller->getPath(), [$controller, 'getResponse'], 'automation');
+});
+```
+
+### Implemented Endpoints
+
+#### Agreement Endpoint
+- **Path**: `/axytos-agreement`
+- **Methods**: GET
+- **Purpose**: Displays Axytos payment terms and conditions
+- **Controller**: `AgreementController`
+- **Response**: HTML template with agreement text
+
+#### Update Invoice IDs Endpoint
+- **Path**: `/axytos/v1/invoice-ids`
+- **Methods**: POST
+- **Purpose**: REST API endpoint for updating invoice IDs
+- **Controller**: `ApiInvoiceIdsController`
+- **Request Body**: JSON with `invoice_ids` object
+- **Response**: JSON with success status and update results
+- **Example Request**:
+  ```json
+  {
+    "invoice_ids": {
+      "INV001": "NEW001",
+      "INV002": "NEW002"
+    }
+  }
+  ```
+- **Example Response**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "updated_count": 2,
+      "errors": [],
+      "total_processed": 2
+    }
+  }
+  ```
+
+This routing approach is the official JTL Shop method and should be used instead of standalone PHP files for better integration and maintainability.
+
 ## Security Guidelines
 
 ### SQL Query Security - CRITICAL

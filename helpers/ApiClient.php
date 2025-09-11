@@ -95,25 +95,25 @@ class ApiClient
         return $response;
     }
 
-    public function getPaymentStatus($orderID)
+    public function getPaymentStatus($orderId)
     {
-        $apiUrl = '/Payments/invoice/order/paymentstate/' . $orderID;
+        $apiUrl = '/Payments/invoice/order/paymentstate/' . $orderId;
         $response = $this->makeRequest($apiUrl);
         return $response;
     }
 
-    public function cancelOrder($orderID)
+    public function cancelOrder($orderId)
     {
-        $apiUrl = '/Payments/invoice/order/cancel/' . $orderID;
+        $apiUrl = '/Payments/invoice/order/cancel/' . $orderId;
         $response = $this->makeRequest($apiUrl, 'POST');
         return $response;
     }
 
-    public function reverseCancelOrder($orderID)
+    public function reverseCancelOrder($orderId)
     {
         $apiUrl = '/Payments/invoice/order/reverseCancellation';
         $data = [
-            'externalOrderId' => $orderID,
+            'externalOrderId' => $orderId,
         ];
         $response = $this->makeRequest($apiUrl, 'POST', $data);
         return $response;

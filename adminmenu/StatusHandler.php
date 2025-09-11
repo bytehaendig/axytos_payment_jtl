@@ -260,22 +260,12 @@ class StatusHandler
             }
         }
 
-        // If not found by ID, try by order number
+        // If not found by ID, try by order number using Utils
         if (!$order) {
-            $result = $this->db->select('tbestellung', 'cBestellNr', $orderIdOrNumber);
-            if ($result) {
-                $order = new Bestellung((int)$result->kBestellung);
-                $order->fuelleBestellung(false);
-            }
+            $order = Utils::loadOrderByOrderNumber($this->db, $orderIdOrNumber);
         }
 
         if (!$order || $order->kBestellung === 0) {
-            return null;
-        }
-
-        // Check if it's an Axytos order
-        $axytosPaymentId = Utils::getPaymentMethodId($this->db);
-        if ($order->kZahlungsart !== $axytosPaymentId) {
             return null;
         }
 

@@ -20,6 +20,7 @@ use Plugin\axytos_payment\adminmenu\StatusHandler;
 use Plugin\axytos_payment\adminmenu\ToolsHandler;
 use Plugin\axytos_payment\adminmenu\DevHandler;
 use Plugin\axytos_payment\frontend\AgreementController;
+use Plugin\axytos_payment\frontend\ApiInvoiceIdsController;
 
 /**
  * Class Bootstrap
@@ -41,8 +42,17 @@ class Bootstrap extends Bootstrapper
             $dispatcher->hookInto(\HOOK_ROUTER_PRE_DISPATCH, function (array $args) {
                 /** @var Router $router */
                 $router = $args['router'];
-                $controller = $this->createAgreementController();
-                $router->addRoute($controller->getPath(), [$controller, 'getResponse'], 'axytosAgreement');
+                $agreementController = $this->createAgreementController();
+                $router->addRoute($agreementController->getPath(), [$agreementController, 'getResponse'], 'axytosAgreement');
+
+                // Register update-invoice-ids endpoint
+                $updateController = $this->createApiInvoiceIdsController();
+                $router->addRoute(
+                    $updateController->getPath(),
+                    [$updateController, 'getResponse'],
+                    'axytosApiInvoiceIds',
+                    ['POST']
+                );
             });
         } else {
             $dispatcher->listen('backend.notification', [$this, 'checkPayments']);
@@ -54,6 +64,12 @@ class Bootstrap extends Bootstrapper
     private function createAgreementController()
     {
         $controller = new AgreementController($this->getPlugin(), $this->getMethod(), Shop::Container()->getCache());
+        return $controller;
+    }
+
+    private function createApiInvoiceIdsController()
+    {
+        $controller = new ApiInvoiceIdsController($this->getPlugin(), $this->getMethod());
         return $controller;
     }
 

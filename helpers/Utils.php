@@ -88,7 +88,7 @@ class Utils
 
     /**
      * Create and return the Axytos payment method instance
-     * 
+     *
      * @param DbInterface $db
      * @return AxytosPaymentMethod|null Returns payment method instance or null if not found
      */
@@ -98,9 +98,49 @@ class Utils
         if (!$moduleId) {
             return null;
         }
-        
+
         $method = Method::create($moduleId);
-        
+
         return ($method instanceof AxytosPaymentMethod) ? $method : null;
+    }
+
+    /**
+     * Load order by order number (cBestellNr)
+     *
+     * This method loads an order from the database using its order number and verifies
+     * that it uses the Axytos payment method. This ensures that only Axytos orders
+     * are processed by the payment integration.
+     *
+     * @param DbInterface $db Database connection instance
+     * @param string $orderNumber The order number (cBestellNr) to search for
+     * @return Bestellung|null Returns the order instance if found and is an Axytos order, null if order doesn't exist
+     * @throws \Exception If order exists in database but does not use Axytos payment method
+     *
+     * @example
+     * ```php
+     * $order = Utils::loadOrderByOrderNumber($db, 'ORDER123');
+     * if ($order) {
+     *     // Order exists and is guaranteed to be an Axytos order
+     *     $this->processAxytosOrder($order);
+     * }
+     * ```
+     */
+    public static function loadOrderByOrderNumber(DbInterface $db, string $orderNumber): ?Bestellung
+    {
+        // Try to find order by order number
+        $result = $db->select('tbestellung', 'cBestellNr', $orderNumber);
+        if ($result) {
+            $order = new Bestellung((int)$result->kBestellung);
+            $order->fuelleBestellung(false);
+
+            // Verify that this is an Axytos order
+            if (!self::isAxytosOrder($db, $order)) {
+                throw new \Exception("Order '{$orderNumber}' exists but is not an Axytos order");
+            }
+
+            return $order;
+        }
+
+        return null;
     }
 }

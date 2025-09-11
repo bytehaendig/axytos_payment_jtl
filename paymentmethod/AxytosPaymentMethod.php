@@ -15,6 +15,7 @@ use JTL\Cart\Cart;
 use Plugin\axytos_payment\helpers\ApiClient;
 use Plugin\axytos_payment\helpers\DataFormatter;
 use Plugin\axytos_payment\helpers\ActionHandler;
+use Plugin\axytos_payment\helpers\Utils;
 use stdClass;
 
 class AxytosPaymentMethod extends Method
@@ -201,59 +202,75 @@ class AxytosPaymentMethod extends Method
         }
     }
 
-    public function cancelOrder(int $orderID, bool $delete = false): void
+    public function cancelOrder(int $orderId, bool $delete = false): void
     {
-        parent::cancelOrder($orderID, $delete);
-        $order = new Bestellung($orderID);
+        parent::cancelOrder($orderId, $delete);
+        $order = new Bestellung($orderId);
         $order->fuelleBestellung(false);
         $dataFormatter = $this->createDataFormatter($order);
         $externalOrderId = $dataFormatter->getExternalOrderId();
         $actionHandler = $this->createActionHandler();
-        $actionHandler->addPendingAction($orderID, 'cancel', ['externalOrderId' => $externalOrderId]);
-        $actionHandler->processPendingActionsForOrder($orderID);
+        $actionHandler->addPendingAction($orderId, 'cancel', ['externalOrderId' => $externalOrderId]);
+        $actionHandler->processPendingActionsForOrder($orderId);
     }
 
-    public function reactivateOrder(int $orderID): void
+    public function reactivateOrder(int $orderId): void
     {
-        parent::reactivateOrder($orderID);
-        $order = new Bestellung($orderID);
+        parent::reactivateOrder($orderId);
+        $order = new Bestellung($orderId);
         $order->fuelleBestellung(false);
         $dataFormatter = $this->createDataFormatter($order);
         $externalOrderId = $dataFormatter->getExternalOrderId();
         $actionHandler = $this->createActionHandler();
-        $actionHandler->addPendingAction($orderID, 'reverse_cancel', ['externalOrderId' => $externalOrderId]);
-        $actionHandler->processPendingActionsForOrder($orderID);
-    }
-
-    public function createInvoice(int $orderID, int $languageID): object
-    {
-        $result = parent::createInvoice($orderID, $languageID);
-        $invoiceNumber = $this->getOrderAttribute(new Bestellung($orderID), 'axytos_invoice_number');
-        if (!empty($invoiceNumber)) {
-            $msg = $this->getTranslation('invoice_reference');
-            $result->cInfo = $msg . ' ' . $invoiceNumber;
-            $result->nType = 1;
-        }
-        return $result;
+        $actionHandler->addPendingAction($orderId, 'reverse_cancel', ['externalOrderId' => $externalOrderId]);
+        $actionHandler->processPendingActionsForOrder($orderId);
     }
 
     /**** END Payment Method Interface  */
 
-    public function orderWasShipped(int $orderID): void
+    public function orderWasShipped(int $orderId): void
     {
-        $order = new Bestellung($orderID);
+        $order = new Bestellung($orderId);
         $order->fuelleBestellung(false);
         $dataFormatter = $this->createDataFormatter($order);
         $shippingData = $dataFormatter->createShippingData();
-        $invoiceData = $dataFormatter->createInvoiceData();
+        // $invoiceData = $dataFormatter->createInvoiceData();
+        // $actionHandler->addPendingAction($orderId, 'invoice', $invoiceData);
 
         $actionHandler = $this->createActionHandler();
-        $actionHandler->addPendingAction($orderID, 'shipped', $shippingData);
-        $actionHandler->addPendingAction($orderID, 'invoice', $invoiceData);
-        $successful = $actionHandler->processPendingActionsForOrder($orderID);
+        $actionHandler->addPendingAction($orderId, 'shipped', $shippingData);
+        $successful = $actionHandler->processPendingActionsForOrder($orderId);
         
         if ($successful) {
-            $this->doLog("Order {$orderID} shipped and invoice created successfully.", \LOGLEVEL_NOTICE);
+            $this->doLog("Order {$orderId} marked as shipped.", \LOGLEVEL_NOTICE);
+        }
+    }
+
+    public function invoiceWasCreated(string $orderNumber, string $invoiceNumber = null): void
+    {
+        // Load the order by order number
+        $order = Utils::loadOrderByOrderNumber($this->db, $orderNumber);
+
+        if ($order === null) {
+            throw new \Exception("Order with order number '{$orderNumber}' not found");
+        }
+
+        $orderId = $order->kBestellung;
+
+        $dataFormatter = $this->createDataFormatter($order);
+        $invoiceData = $dataFormatter->createInvoiceData();
+
+        // Store invoice number if provided
+        if ($invoiceNumber !== null) {
+            $this->addOrderAttribute($order, 'invoice_number', $invoiceNumber);
+        }
+
+        $actionHandler = $this->createActionHandler();
+        $actionHandler->addPendingAction($orderId, 'invoice', $invoiceData);
+        $successful = $actionHandler->processPendingActionsForOrder($orderId);
+
+        if ($successful) {
+            $this->doLog("Order {$order->kBestellung} marked as invoice created.", \LOGLEVEL_NOTICE);
         }
     }
 
@@ -372,4 +389,6 @@ class AxytosPaymentMethod extends Method
         $localization = $this->plugin->getLocalization();
         return $localization->getTranslation($key);
     }
+
+
 }
