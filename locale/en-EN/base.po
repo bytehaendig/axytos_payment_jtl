@@ -17,3 +17,174 @@ msgstr "Pay Later"
 msgid "This payment method can only be used with payment before order completion"
 msgstr "This payment method can only be used with payment before order completion"
 
+msgid "Cron Status"
+msgstr "Cron Status"
+
+msgid "Last Run:"
+msgstr "Last Run:"
+
+msgid "Never"
+msgstr "Never"
+
+msgid "Next Run:"
+msgstr "Next Run:"
+
+msgid "Unknown"
+msgstr "Unknown"
+
+msgid "Are you sure you want to reset stuck cron jobs? This will set their isRunning status to 0."
+msgstr "Are you sure you want to reset stuck cron jobs? This will set their isRunning status to 0."
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "Total Orders"
+msgstr "Total Orders"
+
+msgid "Orders with actions"
+msgstr "Orders with actions"
+
+msgid "Order ID/Number"
+msgstr "Order ID/Number"
+
+msgid "Pending"
+msgstr "Pending"
+
+msgid "Actions waiting"
+msgstr "Actions waiting"
+
+msgid "Process All"
+msgstr "Process All"
+
+msgid "Broken"
+msgstr "Broken"
+
+msgid "Need attention"
+msgstr "Need attention"
+
+msgid "Order Details:"
+msgstr "Order Details:"
+
+msgid "Customer:"
+msgstr "Customer:"
+
+msgid "Total:"
+msgstr "Total:"
+
+msgid "Status:"
+msgstr "Status:"
+
+msgid "Date:"
+msgstr "Date:"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Created:"
+msgstr "Created:"
+
+msgid "Order Actions"
+msgstr "Order Actions"
+
+msgid "Are you sure you want to retry all broken actions for this order? This will attempt to process them immediately."
+msgstr "Are you sure you want to retry all broken actions for this order? This will attempt to process them immediately."
+
+msgid "Retry Broken Actions"
+msgstr "Retry Broken Actions"
+
+msgid "Are you sure you want to remove the failed '%s' action? You are responsible for communicating the necessary changes to Axytos to ensure that further processing of the order is guaranteed. This action cannot be undone."
+msgstr "Are you sure you want to remove the failed '%s' action? You are responsible for communicating the necessary changes to Axytos to ensure that further processing of the order is guaranteed. This action cannot be undone."
+
+msgid "Remove Broken Action"
+msgstr "Remove Broken Action"
+
+msgid "Action Log"
+msgstr "Action Log"
+
+msgid "Time"
+msgstr "Time"
+
+msgid "Level"
+msgstr "Level"
+
+msgid "Action"
+msgstr "Action"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Orders with Pending and Broken Actions"
+msgstr "Orders with Pending and Broken Actions"
+
+msgid "Recent Orders"
+msgstr "Recent Orders"
+
+msgid "Order Number"
+msgstr "Order Number"
+
+msgid "Customer"
+msgstr "Customer"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Pending/Broken Actions"
+msgstr "Pending/Broken Actions"
+
+msgid "pending"
+msgstr "pending"
+
+msgid "retry (failed %dx)"
+msgstr "retry (failed %dx)"
+
+msgid "broken (failed %dx)"
+msgstr "broken (failed %dx)"
+
+msgid "completed"
+msgstr "completed"
+
+msgid "Orders"
+msgstr "Orders"
+
+msgid "No orders found."
+msgstr "No orders found."
+
+msgid "Successfully processed %d pending action(s)."
+msgstr "Successfully processed %d pending action(s)."
+
+msgid "%d action(s) failed processing."
+msgstr "%d action(s) failed processing."
+
+msgid "No pending actions found to process."
+msgstr "No pending actions found to process."
+
+msgid "Are you sure you want to process all pending actions?"
+msgstr "Are you sure you want to process all pending actions?"
+
+msgid "Successfully retried %d broken action(s) for order #%d."
+msgstr "Successfully retried %d broken action(s) for order #%d."
+
+msgid "%d action(s) still failed for order #%d."
+msgstr "%d action(s) still failed for order #%d."
+
+msgid "No broken actions found for order #%d."
+msgstr "No broken actions found for order #%d."
+
+msgid "Successfully removed broken action \"%s\" for order #%d."
+msgstr "Successfully removed broken action \"%s\" for order #%d."
+
+msgid "Action \"%s\" for order #%d could not be removed (may not be broken or not exist)."
+msgstr "Action \"%s\" for order #%d could not be removed (may not be broken or not exist)."
+
+msgid "No stuck Axytos cron jobs found."
+msgstr "No stuck Axytos cron jobs found."
+
+msgid "Successfully reset %d stuck Axytos cron job(s)."
+msgstr "Successfully reset %d stuck Axytos cron job(s)."
+
+msgid "Failed to reset any stuck cron jobs."
+msgstr "Failed to reset any stuck cron jobs."
+
+msgid "Order not found or not using Axytos payment method."
+msgstr "Order not found or not using Axytos payment method."
+

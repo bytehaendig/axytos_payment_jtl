@@ -16,3 +16,174 @@ msgstr "Zahlen auf Rechnung"
 
 msgid "This payment method can only be used with payment before order completion"
 msgstr "Die Zahlungsart kann nur mit Zahlung vor Bestellabschluss verwendet werden"
+
+msgid "Cron Status"
+msgstr "Cron Status"
+
+msgid "Last Run:"
+msgstr "Letzte Ausführung:"
+
+msgid "Never"
+msgstr "Nie"
+
+msgid "Next Run:"
+msgstr "Nächste Ausführung:"
+
+msgid "Unknown"
+msgstr "Unbekannt"
+
+msgid "Are you sure you want to reset stuck cron jobs? This will set their isRunning status to 0."
+msgstr "Sind Sie sicher, dass Sie hängende Cron-Jobs zurücksetzen möchten? Dies setzt ihren isRunning-Status auf 0."
+
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+msgid "Total Orders"
+msgstr "Gesamt Bestellungen"
+
+msgid "Orders with actions"
+msgstr "Bestellungen mit Aktionen"
+
+msgid "Order ID/Number"
+msgstr "Bestell-ID/-Nummer"
+
+msgid "Pending"
+msgstr "Ausstehend"
+
+msgid "Actions waiting"
+msgstr "Aktionen warten"
+
+msgid "Process All"
+msgstr "Alle verarbeiten"
+
+msgid "Broken"
+msgstr "Defekt"
+
+msgid "Need attention"
+msgstr "Benötigt Aufmerksamkeit"
+
+msgid "Order Details:"
+msgstr "Bestelldetails:"
+
+msgid "Customer:"
+msgstr "Kunde:"
+
+msgid "Total:"
+msgstr "Gesamt:"
+
+msgid "Status:"
+msgstr "Status:"
+
+msgid "Date:"
+msgstr "Datum:"
+
+msgid "Actions"
+msgstr "Aktionen"
+
+msgid "Created:"
+msgstr "Erstellt:"
+
+msgid "Order Actions"
+msgstr "Bestellaktionen"
+
+msgid "Are you sure you want to retry all broken actions for this order? This will attempt to process them immediately."
+msgstr "Sind Sie sicher, dass Sie alle defekten Aktionen für diese Bestellung erneut versuchen möchten? Dies wird versuchen, sie sofort zu verarbeiten."
+
+msgid "Retry Broken Actions"
+msgstr "Defekte Aktionen wiederholen"
+
+msgid "Are you sure you want to remove the failed '%s' action? You are responsible for communicating the necessary changes to Axytos to ensure that further processing of the order is guaranteed. This action cannot be undone."
+msgstr "Sind Sie sicher, dass Sie die fehlgeschlagene '%s' Aktion entfernen möchten? Sie sind verantwortlich für die Kommunikation der notwendigen Änderungen an Axytos, um sicherzustellen, dass die weitere Verarbeitung der Bestellung gewährleistet ist. Diese Aktion kann nicht rückgängig gemacht werden."
+
+msgid "Remove Broken Action"
+msgstr "Defekte Aktion entfernen"
+
+msgid "Action Log"
+msgstr "Aktionsprotokoll"
+
+msgid "Time"
+msgstr "Zeit"
+
+msgid "Level"
+msgstr "Level"
+
+msgid "Action"
+msgstr "Aktion"
+
+msgid "Message"
+msgstr "Nachricht"
+
+msgid "Orders with Pending and Broken Actions"
+msgstr "Bestellungen mit ausstehenden und defekten Aktionen"
+
+msgid "Recent Orders"
+msgstr "Aktuelle Bestellungen"
+
+msgid "Order Number"
+msgstr "Bestellnummer"
+
+msgid "Customer"
+msgstr "Kunde"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Pending/Broken Actions"
+msgstr "Ausstehende/defekte Aktionen"
+
+msgid "pending"
+msgstr "ausstehend"
+
+msgid "retry (failed %dx)"
+msgstr "wiederholen (fehlgeschlagen %dx)"
+
+msgid "broken (failed %dx)"
+msgstr "defekt (fehlgeschlagen %dx)"
+
+msgid "completed"
+msgstr "abgeschlossen"
+
+msgid "Orders"
+msgstr "Bestellungen"
+
+msgid "No orders found."
+msgstr "Keine Bestellungen gefunden."
+
+msgid "Successfully processed %d pending action(s)."
+msgstr "%d ausstehende Aktion(en) erfolgreich verarbeitet."
+
+msgid "%d action(s) failed processing."
+msgstr "%d Aktion(en) konnten nicht verarbeitet werden."
+
+msgid "No pending actions found to process."
+msgstr "Keine ausstehenden Aktionen zum Verarbeiten gefunden."
+
+msgid "Are you sure you want to process all pending actions?"
+msgstr "Sind Sie sicher, dass Sie alle ausstehenden Aktionen verarbeiten möchten?"
+
+msgid "Successfully retried %d broken action(s) for order #%d."
+msgstr "%d defekte Aktion(en) für Bestellung #%d erfolgreich wiederholt."
+
+msgid "%d action(s) still failed for order #%d."
+msgstr "%d Aktion(en) für Bestellung #%d sind immer noch fehlgeschlagen."
+
+msgid "No broken actions found for order #%d."
+msgstr "Keine defekten Aktionen für Bestellung #%d gefunden."
+
+msgid "Successfully removed broken action \"%s\" for order #%d."
+msgstr "Defekte Aktion \"%s\" für Bestellung #%d erfolgreich entfernt."
+
+msgid "Action \"%s\" for order #%d could not be removed (may not be broken or not exist)."
+msgstr "Aktion \"%s\" für Bestellung #%d konnte nicht entfernt werden (ist möglicherweise nicht defekt oder existiert nicht)."
+
+msgid "No stuck Axytos cron jobs found."
+msgstr "Keine hängenden Axytos Cron-Jobs gefunden."
+
+msgid "Successfully reset %d stuck Axytos cron job(s)."
+msgstr "%d hängende Axytos Cron-Job(s) erfolgreich zurückgesetzt."
+
+msgid "Failed to reset any stuck cron jobs."
+msgstr "Fehler beim Zurücksetzen hängender Cron-Jobs."
+
+msgid "Order not found or not using Axytos payment method."
+msgstr "Bestellung nicht gefunden oder verwendet keine Axytos-Zahlungsmethode."

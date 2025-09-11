@@ -9,6 +9,16 @@ The source code for JTL-Shop can be accessed with the `reference` MCP server und
 Documentation for JTL-Shop for plugin developers is at https://jtl-devguide.readthedocs.io/projects/jtl-shop/de/latest/index.html .
 Use the JTL-Shop source code to understand how it works and how it interacts with plugins.
 
+## UI Framework
+
+JTL Shop uses **Bootstrap 4** as its primary UI framework:
+
+- **Admin Interface**: Uses "Bootstrap Admin for JTL Shop" template with Bootstrap components (bootstrap.js, bootstrap-ladda, bootstrap-notify, bootstrap-select, etc.)
+- **Frontend (NOVA Template)**: Explicitly declares `<Framework>Bootstrap4</Framework>` in template.xml and includes bootstrap.bundle.min.js
+- **Additional Libraries**: Includes jQuery UI, Font Awesome, various Bootstrap extensions, and other UI components like TinyMCE, CodeMirror, and Slick carousel
+
+The framework provides responsive design, components, and utilities throughout both admin and customer-facing interfaces.
+
 ## Project Overview
 
 This is the Axytos Payment Plugin for JTL Shop - a payment integration that provides "pay later" functionality through the Axytos payment provider. The plugin is built for JTL Shop version 5.0.0+ and implements a full payment workflow including precheck, confirmation, invoice creation, shipping notifications, and order management.

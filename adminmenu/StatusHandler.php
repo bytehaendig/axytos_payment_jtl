@@ -32,6 +32,20 @@ class StatusHandler
 
     public function render(string $tabname, int $menuID, JTLSmarty $smarty): string
     {
+        // Setup gettext for template translations
+        $localePath = $this->plugin->getPaths()->getBasePath() . 'locale';
+        $currentLocale = setlocale(LC_MESSAGES, 0);
+
+        // Set text domain for this plugin
+        bindtextdomain('axytos_payment', $localePath);
+        textdomain('axytos_payment');
+
+        // Make __() function available in Smarty templates
+        $smarty->registerPlugin('modifier', '__', function($string) {
+            return __($string);
+        });
+        $smarty->registerPlugin('modifier', 'sprintf', 'sprintf');
+
         $messages = [];
         
         // Handle form submissions
@@ -72,7 +86,7 @@ class StatusHandler
             $orderDetails = $this->searchOrderDetails($orderIdOrNumber);
             $smarty->assign('searchResult', $orderDetails);
             if (!$orderDetails) {
-                $messages[] = ['type' => 'warning', 'text' => 'Order not found or not using Axytos payment method.'];
+                $messages[] = ['type' => 'warning', 'text' => __('Order not found or not using Axytos payment method.')];
             }
         }
 
@@ -101,21 +115,21 @@ class StatusHandler
             if ($results['processed'] > 0) {
                 $messages[] = [
                     'type' => 'success',
-                    'text' => sprintf('Successfully processed %d pending action(s).', $results['processed'])
+                    'text' => sprintf(__('Successfully processed %d pending action(s).'), $results['processed'])
                 ];
             }
-            
+
             if ($results['failed'] > 0) {
                 $messages[] = [
-                    'type' => 'warning', 
-                    'text' => sprintf('%d action(s) failed processing.', $results['failed'])
+                    'type' => 'warning',
+                    'text' => sprintf(__('%d action(s) failed processing.'), $results['failed'])
                 ];
             }
-            
+
             if ($results['processed'] === 0 && $results['failed'] === 0) {
                 $messages[] = [
                     'type' => 'info',
-                    'text' => 'No pending actions found to process.'
+                    'text' => __('No pending actions found to process.')
                 ];
             }
             
@@ -139,21 +153,21 @@ class StatusHandler
             if ($results['processed'] > 0) {
                 $messages[] = [
                     'type' => 'success',
-                    'text' => sprintf('Successfully retried %d broken action(s) for order #%d.', $results['processed'], $orderId)
+                    'text' => sprintf(__('Successfully retried %d broken action(s) for order #%d.'), $results['processed'], $orderId)
                 ];
             }
-            
+
             if ($results['failed'] > 0) {
                 $messages[] = [
                     'type' => 'warning',
-                    'text' => sprintf('%d action(s) still failed for order #%d.', $results['failed'], $orderId)
+                    'text' => sprintf(__('%d action(s) still failed for order #%d.'), $results['failed'], $orderId)
                 ];
             }
-            
+
             if ($results['total_broken'] === 0) {
                 $messages[] = [
                     'type' => 'info',
-                    'text' => sprintf('No broken actions found for order #%d.', $orderId)
+                    'text' => sprintf(__('No broken actions found for order #%d.'), $orderId)
                 ];
             }
             
@@ -177,12 +191,12 @@ class StatusHandler
             if ($success) {
                 $messages[] = [
                     'type' => 'success',
-                    'text' => sprintf('Successfully removed broken action "%s" for order #%d.', $actionName, $orderId)
+                    'text' => sprintf(__('Successfully removed broken action "%s" for order #%d.'), $actionName, $orderId)
                 ];
             } else {
                 $messages[] = [
                     'type' => 'warning',
-                    'text' => sprintf('Action "%s" for order #%d could not be removed (may not be broken or not exist).', $actionName, $orderId)
+                    'text' => sprintf(__('Action "%s" for order #%d could not be removed (may not be broken or not exist).'), $actionName, $orderId)
                 ];
             }
             
@@ -206,17 +220,17 @@ class StatusHandler
             if ($results['found_count'] === 0) {
                 $messages[] = [
                     'type' => 'info',
-                    'text' => 'No stuck Axytos cron jobs found.'
+                    'text' => __('No stuck Axytos cron jobs found.')
                 ];
             } elseif ($results['reset_count'] > 0) {
                 $messages[] = [
                     'type' => 'success',
-                    'text' => sprintf('Successfully reset %d stuck Axytos cron job(s).', $results['reset_count'])
+                    'text' => sprintf(__('Successfully reset %d stuck Axytos cron job(s).'), $results['reset_count'])
                 ];
             } else {
                 $messages[] = [
                     'type' => 'warning',
-                    'text' => 'Failed to reset any stuck cron jobs.'
+                    'text' => __('Failed to reset any stuck cron jobs.')
                 ];
             }
             
