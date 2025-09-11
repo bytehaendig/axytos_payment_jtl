@@ -11,7 +11,7 @@ use Plugin\axytos_payment\helpers\ActionHandler;
 use Plugin\axytos_payment\helpers\Utils;
 use Exception;
 
-class UpdatesCronJob extends Job
+class CronJobRunActions extends Job
 {
     public function start(QueueEntry $entry): JobInterface
     {

@@ -6,7 +6,7 @@ use JTL\Shop;
 use JTL\Cron\JobInterface;
 use JTL\Cron\Queue;
 use JTL\Router\Controller\Backend\CronController;
-use Plugin\axytos_payment\helpers\UpdatesCronJob;
+use Plugin\axytos_payment\helpers\CronJobRunActions;
 use JTL\DB\DbInterface;
 
 class CronHelper
@@ -34,10 +34,10 @@ class CronHelper
         $logger->debug('Axytos mappingCronjobType called', ['type' => $type]);
         
         if ($type === self::CRON_TYPE) {
-            $args['mapping'] = UpdatesCronJob::class;
+            $args['mapping'] = CronJobRunActions::class;
             $logger->info('Mapped Axytos cron job type to class', [
                 'type' => self::CRON_TYPE,
-                'class' => UpdatesCronJob::class
+                'class' => CronJobRunActions::class
             ]);
         }
     }
