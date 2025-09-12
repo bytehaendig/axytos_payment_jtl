@@ -170,8 +170,6 @@ class AxytosPaymentMethod extends Method
         $orderData = $orderDataRaw ? json_decode($orderDataRaw, true) : null;
         $precheckResponse = $this->getCache('precheck_response');
         $precheckResponseJson = json_decode($precheckResponse, true);
-        $this->addOrderAttribute($order, 'axytos_precheck_response', $precheckResponse);
-
         $dataFormatter = $this->createDataFormatter($order);
         if ($orderData === null) {
             $this->getLogger()->warning(
@@ -181,23 +179,14 @@ class AxytosPaymentMethod extends Method
             $orderData = $dataFormatter->createOrderData();
         }
         $confirmData  = $dataFormatter->createConfirmData($precheckResponseJson, $orderData);
-
         $orderId = $order->kBestellung;
-        $transactionID = $precheckResponseJson['transactionMetadata']['transactionId'] ?? '';
-        
         $actionHandler = $this->createActionHandler();
         $actionHandler->addPendingAction($orderId, 'confirm', $confirmData);
         $successful = $actionHandler->processPendingActionsForOrder($orderId);
         if ($successful) {
-            $this->addOrderAttribute($order, 'axytos_confirmed', '1');
-            $this->doLog("Payment for order {$order->kBestellung} accepted with transaction ID {$transactionID}.", \LOGLEVEL_NOTICE);
-            $this->getLogger()->info(
-                'Axytos payment accepted for order {kBestellung} with transaction ID {transactionID}.',
-                ['kBestellung' => $order->kBestellung, 'transactionID' => $transactionID],
-            );
             $this->addSuccessMessage('payment_accepted');
         } else {
-            $this->doLog("Order confirmation failed for order {$order->kBestellung}.", \LOGLEVEL_ERROR);
+            // TODO: what to do in case of error - does a user error make any sense?
             $this->addErrorMessage('error_order_confirmation_failed', 'confirmation_error');
         }
     }
@@ -239,11 +228,7 @@ class AxytosPaymentMethod extends Method
 
         $actionHandler = $this->createActionHandler();
         $actionHandler->addPendingAction($orderId, 'shipped', $shippingData);
-        $successful = $actionHandler->processPendingActionsForOrder($orderId);
-        
-        if ($successful) {
-            $this->doLog("Order {$orderId} marked as shipped.", \LOGLEVEL_NOTICE);
-        }
+        $actionHandler->processPendingActionsForOrder($orderId);
     }
 
     public function invoiceWasCreated(string $orderNumber, string $invoiceNumber = null): void
@@ -267,11 +252,7 @@ class AxytosPaymentMethod extends Method
 
         $actionHandler = $this->createActionHandler();
         $actionHandler->addPendingAction($orderId, 'invoice', $invoiceData);
-        $successful = $actionHandler->processPendingActionsForOrder($orderId);
-
-        if ($successful) {
-            $this->doLog("Order {$order->kBestellung} marked as invoice created.", \LOGLEVEL_NOTICE);
-        }
+        $actionHandler->processPendingActionsForOrder($orderId);
     }
 
     private function loadPluginSettings(): void

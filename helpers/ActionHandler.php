@@ -19,7 +19,6 @@ class ActionHandler
     private ApiClient $apiClient;
     private DbInterface $db;
     private $logger;
-    private ?int $axytosPaymentMethodId = null;
 
     /**
      * Constructor for the action handler.
@@ -30,19 +29,6 @@ class ActionHandler
         $this->apiClient = $apiClient;
         $this->db = $method->getDB();
         $this->logger = $logger;
-        
-        // Cache the Axytos payment method ID for efficient order checking
-        $this->axytosPaymentMethodId = Utils::getPaymentMethodId($this->db);
-    }
-
-    /**
-     * Check if an order uses this payment method
-     */
-    private function isAxytosOrder(Bestellung $order): bool
-    {
-        return $order->kBestellung 
-            && $this->axytosPaymentMethodId 
-            && $order->kZahlungsart === $this->axytosPaymentMethodId;
     }
 
     /**
@@ -137,10 +123,6 @@ class ActionHandler
     public function processPendingActionsForOrder(int $orderId): bool
     {
         $order = new Bestellung($orderId);
-        if (!$this->isAxytosOrder($order)) {
-            return false;
-        }
-
         $pendingActions = $this->getPendingActions($orderId);
         if (empty($pendingActions)) {
             return false;
@@ -175,37 +157,11 @@ class ActionHandler
     private function processAction(Bestellung $order, array $actionData): bool
     {
         try {
-            // Dispatch to specific action handler
             $this->dispatchAction($order, $actionData);
-            
-            // Mark as completed on success
-            $this->markActionAsCompleted($actionData['kAxytosAction']);
-
-            $this->logger->info('Successfully processed action {action} for order #{orderId}', [
-                'action' => $actionData['cAction'],
-                'orderId' => $order->kBestellung
-            ]);
-            // Individual action handlers already log completion with context
-            
+            $this->recordActionSuccess($actionData);
             return true;
-            
         } catch (Exception $e) {
-            // Record failure and check if permanently failed
-            $isPermanentlyFailed = $this->recordActionFailure($actionData['kAxytosAction'], $e->getMessage());
-            $failedCount = ($actionData['nFailedCount'] ?? 0) + 1;
-            
-            $this->logger->error('Failed to process action {action} for order #{orderId} (attempt #{attempt}): {error}', [
-                'action' => $actionData['cAction'],
-                'orderId' => $order->kBestellung,
-                'attempt' => $failedCount,
-                'error' => $e->getMessage()
-            ]);
-            $this->addActionLog($order->kBestellung, $actionData['cAction'], 'warning', "Action failed on attempt $failedCount: " . $e->getMessage());
-            
-            if ($isPermanentlyFailed) {
-                $this->handleMaxRetriesExceeded($order, $actionData);
-            }
-            
+            $this->recordActionFailure($actionData, $e->getMessage());
             return false;
         }
     }
@@ -255,9 +211,12 @@ class ActionHandler
         $data = $actionData['data'];
         $precheckResponse = $data['orderPrecheckResponse'] ?? [];
         $transactionID = $precheckResponse['transactionMetadata']['transactionId'] ?? '';
-        
-        $response = $this->apiClient->orderConfirm($data);
-        
+        try {
+            $response = $this->apiClient->orderConfirm($data);
+        } catch (Exception $ex) {
+            $this->method->doLog("Order confirmation failed for order {$order->kBestellung}.", \LOGLEVEL_ERROR);
+            throw $ex;
+        }
         // Update order status to processing
         $upd = new \stdClass();
         $upd->cStatus = \BESTELLUNG_STATUS_IN_BEARBEITUNG;
@@ -267,6 +226,7 @@ class ActionHandler
         $queueTime = $actionData['dCreatedAt'] ?? '';
         $timingInfo = $queueTime ? " (queued: $queueTime)" : '';
         $this->addActionLog($order->kBestellung, 'confirm', 'info', "Payment confirmed with Axytos (Transaction ID: $transactionID)$timingInfo");
+        $this->method->doLog("Payment for order {$order->kBestellung} accepted with transaction ID {$transactionID}.", \LOGLEVEL_NOTICE);
     }
 
     /**
@@ -346,29 +306,31 @@ class ActionHandler
     /**
      * Mark action as completed
      */
-    private function markActionAsCompleted(int $actionId): bool
+    private function recordActionSuccess(array $action): bool
     {
         $updateData = new \stdClass();
         $updateData->bDone = true;
         $updateData->dProcessedAt = date('Y-m-d H:i:s');
-        
-        return $this->db->update(
+        $this->db->update(
             'axytos_actions',
             'kAxytosAction',
-            $actionId,
+            $action['kAxytosAction'],
             $updateData
-        ) > 0;
+        );
+        $this->logger->info('Successfully processed action {action} for order #{orderId}', [
+            'action' => $action['cAction'],
+            'orderId' => $action['kBestellung']
+        ]);
     }
 
     /**
      * Record action failure attempt and mark as failed if max retries reached
      * @return bool true if action is now permanently failed (max retries reached)
      */
-    private function recordActionFailure(int $actionId, string $failReason): bool
+    private function recordActionFailure(array $action, string $failReason): bool
     {
         // Get current failed_count
-        $currentAction = $this->db->select('axytos_actions', 'kAxytosAction', $actionId);
-        $failedCount = ($currentAction->nFailedCount ?? 0) + 1;
+        $failedCount = ($action->nFailedCount ?? 0) + 1;
 
         $updateData = new \stdClass();
         $updateData->dFailedAt = date('Y-m-d H:i:s');
@@ -376,11 +338,22 @@ class ActionHandler
         $updateData->cFailReason = $failReason;
 
         $isPermanentlyFailed = $failedCount > self::MAX_RETRIES;
-        
-        // With new schema, 'broken' status is determined by bDone=false + nFailedCount>=MAX_RETRIES
-
-        $this->db->update('axytos_actions', 'kAxytosAction', $actionId, $updateData);
-        
+        $this->db->update('axytos_actions', 'kAxytosAction', $action['kAxytosAction'], $updateData);
+        $this->logger->warning('Failed to process action {action} for order {orderId} (attempt #{attempt}): {error}', [
+            'action' => $action['cAction'],
+            'orderId' => $action['kBestellung'],
+            'attempt' => $failedCount,
+            'error' => $failReason,
+        ]);
+        $this->addActionLog($order->kBestellung, $actionData['cAction'], 'warning', "Action failed on attempt $failedCount: " . $e->getMessage());
+        if ($isPermanentlyFailed) {
+            $this->method->doLog("Action {$action['cAction']} for order {$action['kBestellung']} failed {$failedCount} - manual interaction required");
+            $this->logger->error('Action {action} for order #{orderId} exceeded max retries ({maxRetries}) - manual interaction requried', [
+                'action' => $action['cAction'],
+                'orderId' => $action['kBestellung'],
+                'maxRetries' => self::MAX_RETRIES
+            ]);
+        }
         return $isPermanentlyFailed;
     }
 
@@ -489,16 +462,10 @@ class ActionHandler
         $action = $actionData['cAction'];
 
         // Log the error
-        $this->logger->critical('Action {action} for order #{orderId} exceeded max retries ({maxRetries})', [
-            'action' => $action,
-            'orderId' => $orderId,
-            'maxRetries' => self::MAX_RETRIES
-        ]);
         $this->addActionLog($orderId, $action, 'error', "Action failed permanently after " . self::MAX_RETRIES . " attempts - manual intervention required");
         
         // Log critical actions to payment method log
         if (in_array($action, ['confirm', 'invoice', 'cancel', 'reverse_cancel'])) {
-            $this->method->doLog("Action '{$action}' failed permanently for order {$orderId} after " . self::MAX_RETRIES . " retries.", \LOGLEVEL_ERROR);
         }
     }
 
@@ -560,10 +527,6 @@ class ActionHandler
     public function retryBrokenActionsForOrder(int $orderId): array
     {
         $order = new Bestellung($orderId);
-        if (!$this->isAxytosOrder($order)) {
-            return ['processed' => 0, 'failed' => 0, 'total_broken' => 0];
-        }
-
         // Get broken actions
         // Find broken actions: not done AND exceeded max retries
         $brokenActions = $this->db->getCollection(
@@ -613,16 +576,9 @@ class ActionHandler
                 break; // Stop processing further actions if this one failed
             }
         }
-
-        $totalBroken = $this->db->getSingleObject(
-            "SELECT COUNT(*) as count FROM axytos_actions WHERE kBestellung = :orderId AND bDone = FALSE AND nFailedCount > :maxRetries",
-            ['orderId' => $orderId, 'maxRetries' => self::MAX_RETRIES]
-        );
-
         return [
             'processed' => $processedCount,
             'failed' => $failedCount,
-            'total_broken' => (int) ($totalBroken->count ?? 0)
         ];
     }
 

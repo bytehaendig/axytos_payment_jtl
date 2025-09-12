@@ -156,21 +156,12 @@ class StatusHandler
                     'text' => sprintf(__('Successfully retried %d broken action(s) for order #%d.'), $results['processed'], $orderId)
                 ];
             }
-
             if ($results['failed'] > 0) {
                 $messages[] = [
                     'type' => 'warning',
                     'text' => sprintf(__('%d action(s) still failed for order #%d.'), $results['failed'], $orderId)
                 ];
             }
-
-            if ($results['total_broken'] === 0) {
-                $messages[] = [
-                    'type' => 'info',
-                    'text' => sprintf(__('No broken actions found for order #%d.'), $orderId)
-                ];
-            }
-            
         } catch (\Exception $e) {
             $messages[] = [
                 'type' => 'danger',
