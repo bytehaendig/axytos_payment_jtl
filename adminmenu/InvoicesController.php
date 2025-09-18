@@ -12,7 +12,7 @@ use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 use Plugin\axytos_payment\helpers\Utils;
 use Plugin\axytos_payment\helpers\CSVHelper;
 
-class InvoicesHandler
+class InvoicesController
 {
     private PluginInterface $plugin;
     private AxytosPaymentMethod $method;

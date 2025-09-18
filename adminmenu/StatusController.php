@@ -13,7 +13,7 @@ use Plugin\axytos_payment\helpers\ActionHandler;
 use Plugin\axytos_payment\helpers\Utils;
 use Plugin\axytos_payment\helpers\CronHelper;
 
-class StatusHandler
+class StatusController
 {
     private PluginInterface $plugin;
     private AxytosPaymentMethod $method;

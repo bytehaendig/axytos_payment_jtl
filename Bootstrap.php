@@ -15,10 +15,10 @@ use JTL\Smarty\JTLSmarty;
 use Plugin\axytos_payment\helpers\CronHelper;
 use Plugin\axytos_payment\helpers\Utils;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
-use Plugin\axytos_payment\adminmenu\SetupHandler;
-use Plugin\axytos_payment\adminmenu\StatusHandler;
-use Plugin\axytos_payment\adminmenu\DevHandler;
-use Plugin\axytos_payment\adminmenu\InvoicesHandler;
+use Plugin\axytos_payment\adminmenu\SetupController;
+use Plugin\axytos_payment\adminmenu\StatusController;
+use Plugin\axytos_payment\adminmenu\DevController;
+use Plugin\axytos_payment\adminmenu\InvoicesController;
 use Plugin\axytos_payment\frontend\AgreementController;
 use Plugin\axytos_payment\frontend\ApiInvoiceIdsController;
 
@@ -230,20 +230,20 @@ class Bootstrap extends Bootstrapper
         // Setup gettext and Smarty plugins for all admin tabs
         $this->setupSmartyForAdmin($smarty);
         if ($tabName == "API Setup") {
-            $handler = new SetupHandler($this->getPlugin(), $this->getMethod());
+            $handler = new SetupController($this->getPlugin(), $this->getMethod());
             return $handler->render($tabName, $menuID, $smarty);
         }
         if ($tabName == "Status") {
-            $handler = new StatusHandler($this->getPlugin(), $this->getMethod(), $this->getDB());
+            $handler = new StatusController($this->getPlugin(), $this->getMethod(), $this->getDB());
             return $handler->render($tabName, $menuID, $smarty);
         }
         if ($tabName == "Invoices") {
-            $handler = new InvoicesHandler($this->getPlugin(), $this->getMethod(), $this->getDB());
+            $handler = new InvoicesController($this->getPlugin(), $this->getMethod(), $this->getDB());
             return $handler->render($tabName, $menuID, $smarty);
         }
         // Only show Development tab in development mode
         if ($tabName == "Development" && $this->isDevMode()) {
-            $handler = new DevHandler($this->getPlugin(), $this->getMethod(), $this->getDB());
+            $handler = new DevController($this->getPlugin(), $this->getMethod(), $this->getDB());
             return $handler->render($tabName, $menuID, $smarty);
         }
     }

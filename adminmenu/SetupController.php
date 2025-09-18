@@ -8,7 +8,7 @@ use JTL\Helpers\Form;
 use JTL\Helpers\Request;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 
-class Handler
+class SetupController
 {
     private PluginInterface $plugin;
     private $method;

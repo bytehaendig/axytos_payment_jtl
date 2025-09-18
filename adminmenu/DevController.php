@@ -13,7 +13,7 @@ use Plugin\axytos_payment\helpers\ActionHandler;
 use Plugin\axytos_payment\helpers\DataFormatter;
 use Plugin\axytos_payment\helpers\Utils;
 
-class DevHandler
+class DevController
 {
     private PluginInterface $plugin;
     private AxytosPaymentMethod $method;
