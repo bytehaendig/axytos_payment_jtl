@@ -17,8 +17,8 @@ use Plugin\axytos_payment\helpers\Utils;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 use Plugin\axytos_payment\adminmenu\SetupHandler;
 use Plugin\axytos_payment\adminmenu\StatusHandler;
-use Plugin\axytos_payment\adminmenu\ToolsHandler;
 use Plugin\axytos_payment\adminmenu\DevHandler;
+use Plugin\axytos_payment\adminmenu\InvoicesHandler;
 use Plugin\axytos_payment\frontend\AgreementController;
 use Plugin\axytos_payment\frontend\ApiInvoiceIdsController;
 
@@ -227,6 +227,8 @@ class Bootstrap extends Bootstrapper
      */
     public function renderAdminMenuTab(string $tabName, int $menuID, JTLSmarty $smarty): string
     {
+        // Setup gettext and Smarty plugins for all admin tabs
+        $this->setupSmartyForAdmin($smarty);
         if ($tabName == "API Setup") {
             $handler = new SetupHandler($this->getPlugin(), $this->getMethod());
             return $handler->render($tabName, $menuID, $smarty);
@@ -235,8 +237,8 @@ class Bootstrap extends Bootstrapper
             $handler = new StatusHandler($this->getPlugin(), $this->getMethod(), $this->getDB());
             return $handler->render($tabName, $menuID, $smarty);
         }
-        if ($tabName == "Tools") {
-            $handler = new ToolsHandler($this->getPlugin(), $this->getMethod(), $this->getDB());
+        if ($tabName == "Invoices") {
+            $handler = new InvoicesHandler($this->getPlugin(), $this->getMethod(), $this->getDB());
             return $handler->render($tabName, $menuID, $smarty);
         }
         // Only show Development tab in development mode
@@ -279,6 +281,58 @@ class Bootstrap extends Bootstrapper
         }
         // Return the modified HTML
         return $doc->htmlOuter();
+    }
+
+    /**
+     * Setup gettext and Smarty plugins for admin interface
+     * 
+     * @param JTLSmarty $smarty
+     * @return void
+     */
+    private function setupSmartyForAdmin(JTLSmarty $smarty): void
+    {
+        // Setup gettext for template translations
+        $localePath = $this->getPlugin()->getPaths()->getBasePath() . 'locale';
+        bindtextdomain('axytos_payment', $localePath);
+        textdomain('axytos_payment');
+
+        // Register Smarty plugins (use try-catch to handle already registered plugins)
+        try {
+            $smarty->registerPlugin('modifier', '__', function($string) {
+                return __($string);
+            });
+        } catch (\Exception $e) {
+            // Plugin already registered, ignore
+        }
+        
+        try {
+            $smarty->registerPlugin('modifier', 'sprintf', 'sprintf');
+        } catch (\Exception $e) {
+            // Plugin already registered, ignore
+        }
+        
+        try {
+            $smarty->registerPlugin('modifier', 'germanDate', function($timestamp, $includeTime = true, $includeSeconds = false) {
+                if (empty($timestamp) || $timestamp === '0000-00-00 00:00:00') {
+                    return '-';
+                }
+                
+                // Convert to Unix timestamp if it's a datetime string
+                if (!is_numeric($timestamp)) {
+                    $timestamp = strtotime($timestamp);
+                }
+                
+                if ($includeSeconds) {
+                    return date('d. M Y H:i:s', $timestamp);
+                } elseif ($includeTime) {
+                    return date('d. M Y H:i', $timestamp);
+                } else {
+                    return date('d. M Y', $timestamp);
+                }
+            });
+        } catch (\Exception $e) {
+            // Plugin already registered, ignore
+        }
     }
 
     /**

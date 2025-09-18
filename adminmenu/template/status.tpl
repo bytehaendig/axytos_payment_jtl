@@ -22,20 +22,20 @@
                                  <span>{$statusOverview.cron_status.stuck_count} job(s)</span>
                              {else}
                                  <strong>{__("Last Run:")}</strong>
-                                 {if $statusOverview.last_cron_run}
-                                     {$statusOverview.last_cron_run|date_format:"%m/%d %H:%M"}
-                                 {else}
-                                     {__("Never")}
-                                 {/if}
+                                   {if $statusOverview.last_cron_run}
+                                       {$statusOverview.last_cron_run|germanDate}
+                                   {else}
+                                      {__("Never")}
+                                  {/if}
                              {/if}
                         </div>
                          <div class="status-info {if $statusOverview.cron_status.has_stuck}mb-2{/if}">
                              <strong>{__("Next Run:")}</strong>
-                             {if $statusOverview.next_cron_run}
-                                 {$statusOverview.next_cron_run|date_format:"%m/%d %H:%M"}
-                             {else}
-                                 {__("Unknown")}
-                             {/if}
+                               {if $statusOverview.next_cron_run}
+                                   {$statusOverview.next_cron_run|germanDate}
+                               {else}
+                                  {__("Unknown")}
+                              {/if}
                          </div>
                         {if $statusOverview.cron_status.has_stuck}
                             <form method="post" style="margin-top: auto;">
@@ -100,9 +100,12 @@
                       <div class="card-header text-center status-card-header">
                           <strong>{__("Broken")}</strong>
                       </div>
-                      <div class="card-body text-center d-flex flex-column justify-content-center status-card-body-compact">
-                         <h2 style="margin-bottom: 5px;">{$statusOverview.broken_orders}</h2>
-                         <small>{__("Need attention")}</small>
+                       <div class="card-body text-center d-flex flex-column justify-content-center status-card-body-compact">
+                          <h2 style="margin-bottom: 5px;">{$statusOverview.broken_orders}</h2>
+                          <small style="margin-bottom: 8px;">{__("Need attention")}</small>
+                        <div style="margin-top: auto; min-height: 31px;">
+                            {* Placeholder for consistent spacing with other cards *}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -112,13 +115,19 @@
 
 
 
-        <!-- Search Results -->
+        <!-- Search Results Modal -->
         {if isset($searchResult) && $searchResult}
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="card" style="background-color: #f8f9fa;">
-                         <div class="card-header" style="background-color: #e9ecef;">
-                             <h5>{__("Order Details:")} {$searchResult.order->cBestellNr}</h5>
+            <!-- Modal Backdrop -->
+            <div class="modal-backdrop show" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1040;"></div>
+
+            <div class="modal fade show" id="orderModal" tabindex="-1" role="dialog" aria-labelledby="orderModalLabel" aria-hidden="false" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1050; display: flex; align-items: flex-start; justify-content: center; padding-top: 2rem;">
+                <div class="modal-dialog modal-xl" role="document" style="width: 60%; max-width: 60%;">
+                    <div class="modal-content">
+                         <div class="modal-header">
+                             <h5 class="modal-title" id="orderModalLabel">{__("Order Details:")} {$searchResult.order->cBestellNr}</h5>
+                             <button type="button" class="close" onclick="closeOrderModal()" aria-label="Close">
+                                 <span aria-hidden="true">&times;</span>
+                             </button>
                          </div>
                          <div class="card-body status-card-body">
                              <div class="mb-3 section-divider">
@@ -130,44 +139,75 @@
                                  </p>
                                  <p class="mb-1"><strong>{__("Total:")}</strong> {$searchResult.order->fGesamtsumme|number_format:2:',':"."} EUR</p>
                                  <p class="mb-1"><strong>{__("Status:")}</strong> {$searchResult.order->Status}</p>
-                                 <p class="mb-0"><strong>{__("Date:")}</strong> {$searchResult.order->dErstellt}</p>
+                                   <p class="mb-0"><strong>{__("Date:")}</strong> {$searchResult.order->dErstellt|germanDate}</p>
                              </div>
 
-                            {* Combined Actions List *}
-                            {assign var="hasActions" value=false}
-                            {if !empty($searchResult.pendingActions) || !empty($searchResult.completedActions)}
-                                {assign var="hasActions" value=true}
-                              <div class="mb-3 section-divider">
-                                     <h6 class="mb-2" style="color: #495057;">{__("Actions")}</h6>
-                                                     <div class="actions-list">
-                                         {* Pending and Failed Actions *}
-                                         {if !empty($searchResult.pendingActions)}
-                                             {foreach $searchResult.pendingActions as $action}
-                                                  <div class="action-item">
-                                                      {* Use pre-computed status from backend *}
-                                                      <div class="status-{$action.status}">
-                                                          <strong>{$action.cAction}</strong>
-                                                          <span class="badge {if $action.status == 'completed'}badge-success{elseif $action.status == 'broken'}badge-danger{else}badge-warning{/if} badge-small">{$action.statusText}</span>
-                                                      </div>
-                                                       <div class="action-timestamp">{__("Created:")} {$action.dCreatedAt}</div>
-                                                  </div>
-                                             {/foreach}
-                                         {/if}
-                                        
-                                        {* Completed Actions *}
-                                        {if !empty($searchResult.completedActions)}
-                                            {foreach $searchResult.completedActions as $action}
-                                                 <div class="action-item">
-                                                     <div class="status-completed">
-                                                         <strong>{$action.cAction}</strong>
-                                                          <span class="badge badge-success badge-small">{if $action.statusText}{$action.statusText}{else}{__("completed")}{/if}</span>
-                                                     </div>
-                                                     <div class="action-timestamp">Completed: {$action.dCreatedAt}</div>
-                                                 </div>
-                                            {/foreach}
-                                        {/if}
+                             {* Compact Timeline *}
+                             <div class="mb-3 section-divider">
+                                 <h6 class="mb-2" style="color: #495057;">{__("Actions Overview")}</h6>
+                                 {if !empty($searchResult.timeline)}
+                                     <div class="compact-timeline-container" style="max-height: calc(100vh - 20rem); overflow-y: auto;">
+                                        {foreach $searchResult.timeline as $index => $action}
+                                            <div class="compact-timeline-entry status-{$action.status}">
+                                                <div class="timeline-action-header" data-toggle="collapse" data-target="#action-logs-{$index}" style="cursor: pointer;">
+                                                    <div class="action-summary">
+                                                        <div class="action-info">
+                                                            <span class="action-icon">
+                                                                <i class="{if $action.status == 'completed'}fas fa-check-circle text-success{elseif $action.status == 'broken'}fas fa-exclamation-circle text-danger{elseif $action.status == 'retryable'}fas fa-exclamation-triangle text-warning{else}fas fa-clock text-info{/if}"></i>
+                                                            </span>
+                                                            <span class="action-name">{$action.action}</span>
+                                                            <span class="action-status badge badge-{$action.level} badge-small">
+                                                                {if $action.status == 'completed'}{__("completed")}{elseif $action.status == 'broken'}{__("broken")}{elseif $action.status == 'retryable'}{__("retrying")}{else}{__("pending")}{/if}
+                                                            </span>
+                                                        </div>
+                                                        <div class="action-meta">
+                                                            <div class="action-timestamp-line">
+                                                                <span class="action-timestamp-prominent">{$action.latest_timestamp|germanDate}</span>
+                                                            </div>
+                                                            {if $action.log_count > 0}
+                                                                <div class="log-count-line">
+                                                                    <i class="fas fa-chevron-down expand-icon-prominent"></i>
+                                                                    <span class="log-count-text">{$action.log_count} {if $action.log_count == 1}{__("log entry")}{else}{__("log entries")}{/if}</span>
+                                                                </div>
+                                                            {/if}
+                                                        </div>
+                                                    </div>
+                                                    <div class="action-summary-message">
+                                                        {$action.summary}
+                                                    </div>
+                                                </div>
+                                                
+                                                {if $action.log_count > 0}
+                                                    <div class="collapse action-logs-section" id="action-logs-{$index}">
+                                                        <div class="logs-container">
+                                                            <div class="logs-header">
+                                                                <small class="text-muted">{__("Detailed log entries for")} {$action.action}:</small>
+                                                            </div>
+                                                            {foreach $action.logs as $log}
+                                                                <div class="log-entry level-{$log.level}">
+                                                                    <div class="log-header">
+                                                                        <span class="log-level badge badge-{if $log.level == 'error'}danger{elseif $log.level == 'warning'}warning{elseif $log.level == 'info'}info{else}secondary{/if} badge-small">
+                                                                            {$log.level}
+                                                                        </span>
+                                                                          <span class="log-timestamp">{$log.timestamp|germanDate:true:true}</span>
+                                                                    </div>
+                                                                    <div class="log-message">
+                                                                        {$log.message}
+                                                                    </div>
+                                                                </div>
+                                                            {/foreach}
+                                                        </div>
+                                                    </div>
+                                                {/if}
+                                            </div>
+                                        {/foreach}
                                     </div>
-                                </div>
+                                {else}
+                                    <div class="text-center text-muted py-3">
+                                        <p>{__("No actions found for this order")}</p>
+                                    </div>
+                                {/if}
+                            </div>
 
                                  {* Order Action Buttons - Only if broken actions exist *}
                                  {assign var="hasBrokenActions" value=false}
@@ -212,40 +252,10 @@
                                              {/foreach}
                                         </div>
                                     </div>
-                                {/if}
-                            {/if}
+                                 {/if}
 
-                            {if !empty($searchResult.actionLogs)}
-                                <div class="mb-0">
-                                     <h6 class="mb-2" style="color: #495057;">{__("Action Log")}</h6>
-                                     <div class="table-responsive action-log-container">
-                                        <table class="table table-sm">
-                                            <thead>
-                                                 <tr>
-                                                     <th class="time-column">{__("Time")}</th>
-                                                     <th>{__("Level")}</th>
-                                                     <th>{__("Action")}</th>
-                                                     <th>{__("Message")}</th>
-                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                {foreach $searchResult.actionLogs as $log}
-                                                    <tr>
-                                                         <td class="text-nowrap">{$log.processedAt}</td>
-                                                        <td>
-                                                            <span class="badge badge-{if $log.level == 'error'}danger{elseif $log.level == 'warning'}warning{elseif $log.level == 'info'}info{else}secondary{/if}">
-                                                                {$log.level}
-                                                            </span>
-                                                        </td>
-                                                        <td>{$log.action}</td>
-                                                        <td>{$log.message}</td>
-                                                    </tr>
-                                                {/foreach}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            {/if}
+
+
 
 
                         </div>
@@ -269,15 +279,19 @@
                                          <tr>
                                              <th>{__("Order Number")}</th>
                                              <th>{__("Customer")}</th>
+                                             <th>{__("Date")}</th>
+                                             <th>{__("Total")}</th>
                                              <th>{__("Status")}</th>
                                              <th>{__("Pending/Broken Actions")}</th>
                                          </tr>
                                      </thead>
                                     <tbody>
                                         {foreach $ordersData as $orderInfo}
-                                            <tr style="cursor: pointer;" onclick="searchOrder({$orderInfo.order->kBestellung})">
+                                            <tr class="status-row" style="cursor: pointer;" onclick="searchOrder({$orderInfo.order->kBestellung})">
                                                 <td>{$orderInfo.order->cBestellNr}</td>
                                                 <td>{$orderInfo.customerName}</td>
+                                                 <td data-order="{$orderInfo.order->dErstellt|strtotime}">{$orderInfo.order->dErstellt|germanDate:false}</td>
+                                                <td>{$orderInfo.order->fGesamtsumme|number_format:2:',':"."} {if $orderInfo.order->Waehrung}{$orderInfo.order->Waehrung->cName}{else}EUR{/if}</td>
                                                 <td>{$orderInfo.order->Status}</td>
                                                 <td>
                                                     {assign var="hasAnyActions" value=false}
@@ -299,7 +313,7 @@
                                                                 {assign var="hasAnyActions" value=true}
                                                                   <div class="action-item status-retryable">
                                                                       <strong>{$action.action}</strong>
-                                                                      <span class="badge badge-warning badge-small">{sprintf(__("retry (failed %dx)"), $action.failed_count)}</span>
+                                                                       <span class="badge badge-warning badge-small">{if $action.failed_count > 0}{sprintf(__("retry (failed %dx)"), $action.failed_count)}{else}{__("retry")}{/if}</span>
                                                                   </div>
                                                             {/foreach}
                                                         {/if}
@@ -310,7 +324,7 @@
                                                                 {assign var="hasAnyActions" value=true}
                                                                   <div class="action-item status-broken">
                                                                       <strong>{$action.action}</strong>
-                                                                      <span class="badge badge-danger badge-small">{sprintf(__("broken (failed %dx)"), $action.failed_count)}</span>
+                                                                       <span class="badge badge-danger badge-small">{if $action.failed_count > 0}{sprintf(__("broken (failed %dx)"), $action.failed_count)}{else}{__("broken")}{/if}</span>
                                                                   </div>
                                                             {/foreach}
                                                         {/if}
@@ -344,6 +358,15 @@
             </div>
         {/if}
 
+        <form method="post" class="mt-4">
+            {$token}
+            <input type="hidden" name="save_status" value="1">
+            <input type="hidden" name="tab" value="Status">
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">{'Refresh Data'|__}</button>
+            </div>
+        </form>
 
     </div>
 </div>
@@ -362,6 +385,44 @@ function confirmAction(button) {
     var message = button.getAttribute('data-confirm-message');
     return confirm(message);
 }
+
+function closeOrderModal() {
+    // Hide the modal and backdrop
+    var modal = document.querySelector('.modal');
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (modal) modal.style.display = 'none';
+    if (backdrop) backdrop.style.display = 'none';
+}
+
+// Add click handler to backdrop to close modal
+document.addEventListener('DOMContentLoaded', function() {
+    var backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.addEventListener('click', closeOrderModal);
+    }
+});
+
+// Handle expand/collapse for action logs
+$(document).ready(function() {
+    $('.timeline-action-header').on('click', function() {
+        var $this = $(this);
+        var target = $this.attr('data-target');
+        var $icon = $this.find('.expand-icon-prominent, .expand-icon');
+        var $collapse = $(target);
+        
+        // Toggle collapse
+        $collapse.collapse('toggle');
+        
+        // Update icon
+        $collapse.on('shown.bs.collapse', function() {
+            $icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+        });
+        
+        $collapse.on('hidden.bs.collapse', function() {
+            $icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+        });
+    });
+});
 
 
 
@@ -455,4 +516,216 @@ function confirmAction(button) {
 .actions-list {
     font-size: 12px;
 }
+
+/* Status row hover styling */
+.status-row:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* Compact Timeline styling */
+.compact-timeline-container {
+    border-left: 3px solid #dee2e6;
+    padding-left: 15px;
+    max-height: calc(100vh - 20rem);
+    overflow-y: auto;
+}
+
+.compact-timeline-entry {
+    margin-bottom: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: #fff;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+
+.compact-timeline-entry:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-action-header {
+    padding: 12px 15px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    user-select: none;
+}
+
+.timeline-action-header:hover {
+    background: #e9ecef;
+}
+
+.action-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.action-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.action-icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.action-name {
+    font-weight: bold;
+    color: #495057;
+    text-transform: capitalize;
+}
+
+.action-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.action-timestamp-line {
+    display: flex;
+    align-items: center;
+}
+
+.action-timestamp-prominent {
+    font-family: monospace;
+    font-weight: 600;
+    font-size: 13px;
+    color: #495057;
+}
+
+.log-count-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.expand-icon-prominent {
+    font-size: 14px;
+    font-weight: bold;
+    color: #495057;
+    transition: transform 0.2s ease;
+}
+
+.log-count-text {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.expand-icon {
+    transition: transform 0.2s ease;
+}
+
+.action-summary-message {
+    font-size: 13px;
+    color: #495057;
+    margin: 0;
+}
+
+/* Action Logs Section */
+.action-logs-section {
+    border-top: 1px solid #dee2e6;
+}
+
+.logs-container {
+    padding: 0;
+}
+
+.logs-header {
+    padding: 10px 15px 5px;
+    background: #f1f3f4;
+}
+
+.log-entry {
+    padding: 8px 15px;
+    border-bottom: 1px solid #eee;
+    font-size: 12px;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+.log-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.log-timestamp {
+    margin-left: auto;
+    font-family: monospace;
+    color: #6c757d;
+}
+
+.log-message {
+    color: #495057;
+    line-height: 1.4;
+}
+
+/* Status-based styling for action entries */
+.compact-timeline-entry.status-completed {
+    border-left: 4px solid #28a745;
+}
+
+.compact-timeline-entry.status-broken {
+    border-left: 4px solid #dc3545;
+}
+
+.compact-timeline-entry.status-retryable {
+    border-left: 4px solid #ffc107;
+}
+
+.compact-timeline-entry.status-pending {
+    border-left: 4px solid #17a2b8;
+}
+
+/* Modal styling for order details */
+.modal-backdrop {
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 8px 8px 0 0;
+}
+
+.modal-title {
+    font-weight: 600;
+    color: #495057;
+}
+
+.modal .close {
+    padding: 0;
+    margin: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.modal .close:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.modal .close span {
+    font-size: 24px;
+    line-height: 1;
+}
+
 </style>

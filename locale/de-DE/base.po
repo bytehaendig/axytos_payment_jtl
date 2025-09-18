@@ -134,8 +134,14 @@ msgstr "Ausstehende/defekte Aktionen"
 msgid "pending"
 msgstr "ausstehend"
 
+msgid "retry"
+msgstr "wiederholen"
+
 msgid "retry (failed %dx)"
 msgstr "wiederholen (fehlgeschlagen %dx)"
+
+msgid "broken"
+msgstr "defekt"
 
 msgid "broken (failed %dx)"
 msgstr "defekt (fehlgeschlagen %dx)"
@@ -187,3 +193,24 @@ msgstr "Fehler beim Zurücksetzen hängender Cron-Jobs."
 
 msgid "Order not found or not using Axytos payment method."
 msgstr "Bestellung nicht gefunden oder verwendet keine Axytos-Zahlungsmethode."
+
+msgid "Actions Overview"
+msgstr "Aktionsübersicht"
+
+msgid "log entry"
+msgstr "Log-Eintrag"
+
+msgid "log entries"
+msgstr "Log-Einträge"
+
+msgid "Detailed log entries for"
+msgstr "Detaillierte Log-Einträge für"
+
+msgid "retrying"
+msgstr "wiederholt"
+
+msgid "queued"
+msgstr "eingereiht"
+
+msgid "No actions found for this order"
+msgstr "Keine Aktionen für diese Bestellung gefunden"

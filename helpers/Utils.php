@@ -42,7 +42,8 @@ class Utils
         }
         
         $result = $db->getCollection(
-            "SELECT cModulId FROM tzahlungsart WHERE cModulId LIKE '" . $prefix . "%'"
+            "SELECT cModulId FROM tzahlungsart WHERE cModulId LIKE :pattern",
+            ['pattern' => $prefix . '%']
         );
         
         if ($result->isEmpty()) {
@@ -142,5 +143,41 @@ class Utils
         }
 
         return null;
+    }
+
+    /**
+     * Sanitize error messages to prevent information disclosure
+     * Removes sensitive data like API keys, tokens, and stack traces
+     *
+     * @param string $message The error message to sanitize
+     * @return string The sanitized error message
+     */
+    public static function sanitizeErrorMessage(string $message): string
+    {
+        // Remove potential sensitive patterns
+        $patterns = [
+            // API keys and tokens
+            '/(api[_-]?key|token|secret|password|auth[_-]?key)[^=]*[=:]?\s*["\']?[^"\s\'&]+/i',
+            // URLs with potential sensitive parameters
+            '/https?:\/\/[^\/\s]+\/[^&\s]*(?:api[_-]?key|token|secret)[^&\s]*/i',
+            // Stack traces
+            '/#[\d]+[^\n]*\n/i',
+            '/Stack trace:[\s\S]*/i',
+            '/at\s+[^\n]+\.php[\s\S]*/i',
+            // Exception class names that might reveal internal structure
+            '/(Exception|Error)[^:]*:/i',
+        ];
+
+        $sanitized = $message;
+        foreach ($patterns as $pattern) {
+            $sanitized = preg_replace($pattern, '[REDACTED]', $sanitized);
+        }
+
+        // Limit message length to prevent extremely long error messages
+        if (strlen($sanitized) > 500) {
+            $sanitized = substr($sanitized, 0, 500) . '... [TRUNCATED]';
+        }
+
+        return $sanitized;
     }
 }

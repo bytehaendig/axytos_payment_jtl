@@ -33,6 +33,11 @@ This is the Axytos Payment Plugin for JTL Shop - a payment integration that prov
 - **Install dependencies**: `composer install`
 - **Update dependencies**: `composer update`
 
+### Database Access
+- **Read database**: `ddev mysql -e "COMMAND"` - **READ-ONLY ACCESS ONLY!** Never use for INSERT/UPDATE/DELETE operations
+- Main database name: `db`
+- Example: `ddev mysql -e "SELECT COUNT(*) FROM axytos_actions;"`
+
 Note: No automated testing framework is currently configured in this codebase.
 
 ## Plugin Routes (JTL Shop 5.2.0+)
@@ -114,6 +119,59 @@ $dispatcher->hookInto(\HOOK_ROUTER_PRE_DISPATCH, function (array $args) {
   ```
 
 This routing approach is the official JTL Shop method and should be used instead of standalone PHP files for better integration and maintainability.
+
+## Date/Time Formatting & Localization
+
+### Date Formatting in Templates
+
+**✅ PREFERRED - Use custom germanDate modifier (Axytos plugin):**
+```smarty
+{$timestamp|germanDate}                    <!-- German: 12. Sep 2025 14:30 -->
+{$timestamp|germanDate:false}              <!-- Date only: 12. Sep 2025 -->
+{$timestamp|germanDate:true:true}          <!-- With seconds: 12. Sep 2025 14:30:45 -->
+```
+
+**✅ ALTERNATIVE - Use date modifier with PHP date format and strtotime:**
+```smarty
+{"d. M Y H:i"|date:{$timestamp|strtotime}}     <!-- German: 12. Sep 2025 14:30 -->
+{"d. M Y"|date:{$timestamp|strtotime}}         <!-- Date only: 12. Sep 2025 -->
+{"d. M Y H:i:s"|date:{$timestamp|strtotime}}   <!-- With seconds: 12. Sep 2025 14:30:45 -->
+```
+
+**❌ WRONG - Avoid date_format with strftime patterns:**
+```smarty
+{* Less common pattern, use the date modifier instead *}
+{$timestamp|date_format:"%d.%m.%Y %H:%M"}
+```
+
+**❌ WRONG - Avoid string_date_format:**
+```smarty
+{* Causes fatal errors due to missing smarty_make_timestamp() function *}
+{$timestamp|string_date_format}
+```
+
+**Custom germanDate Modifier:**
+The `germanDate` modifier is registered in Bootstrap.php and provides:
+- **Parameters**: `germanDate:includeTime:includeSeconds`
+- **Default**: `germanDate` = `germanDate:true:false` (date + time, no seconds)
+- **Handles null/empty values**: Returns "-" for empty timestamps
+- **Auto-conversion**: Accepts both datetime strings and Unix timestamps
+
+**Key Points:**
+- Prefer the custom `germanDate` modifier for cleaner, more readable templates
+- Use `data-order="{$timestamp|strtotime}"` for DataTables sorting
+- The format follows German conventions used across JTL plugins
+
+### Secondary Sorting for Timestamps
+
+**Always use primary key as secondary sort for consistent ordering:**
+```php
+// When multiple entries have same timestamp
+$result = $this->db->getCollection(
+    "SELECT * FROM table ORDER BY dProcessedAt DESC, kPrimaryKey DESC",
+    $params
+);
+```
 
 ## Security Guidelines
 
@@ -209,9 +267,63 @@ $result = $this->db->getSingleObject($sql, ['maxCount' => $maxCount]);
 The admin interface provides comprehensive monitoring and management tools across multiple tabs:
 
 - **API Setup Tab**: Configuration of API key and sandbox/production mode
-- **Tools Tab**: Administrative tools for order management  
-- **Status Tab**: Real-time monitoring and action processing dashboard
+- **Status Tab**: Real-time monitoring and action processing dashboard  
+- **Invoices Tab**: Invoice management and overview (placeholder functionality)
+- **Development Tab**: Development tools (only visible in dev mode)
 - Settings are encrypted using JTL's XTEA encryption service
+
+#### Admin Menu Handler Architecture
+
+Admin tabs are managed through a centralized handler system in Bootstrap.php:
+
+**Bootstrap.php `renderAdminMenuTab()` method:**
+- Centralized Smarty setup for all handlers via `setupSmartyForAdmin()`
+- Handles gettext localization and plugin registration
+- Routes tab requests to appropriate handler classes
+- Registers `__()` and `sprintf` modifiers for template translations
+
+**Handler Pattern:**
+All admin handlers follow a consistent pattern:
+```php
+class ExampleHandler 
+{
+    private PluginInterface $plugin;
+    private AxytosPaymentMethod $method;
+    private DbInterface $db;
+
+    public function __construct(PluginInterface $plugin, AxytosPaymentMethod $method, DbInterface $db) {
+        $this->plugin = $plugin;
+        $this->method = $method;
+        $this->db = $db;
+    }
+
+    public function render(string $tabName, int $menuID, JTLSmarty $smarty): string {
+        // Form handling and business logic
+        // Template variable assignment
+        return $smarty->fetch($this->plugin->getPaths()->getAdminPath() . 'template/example.tpl');
+    }
+}
+```
+
+**Current Handlers:**
+- `SetupHandler` - API configuration and settings
+- `StatusHandler` - Order monitoring and action management
+- `InvoicesHandler` - Invoice management (basic implementation)
+- `DevHandler` - Development tools (dev mode only)
+
+**Template Structure:**
+- Templates located in `adminmenu/template/` directory
+- Bootstrap 4 styling for consistency with JTL Shop admin
+- CSRF token support via `Form::getTokenInput()`
+- Translation support using `__()` modifier
+- Responsive design with card-based layouts
+
+**Adding New Admin Tabs:**
+1. Create handler class in `adminmenu/` directory
+2. Create template file in `adminmenu/template/` directory  
+3. Add handler import to Bootstrap.php
+4. Add tab condition in `renderAdminMenuTab()` method
+5. Add `<Customlink>` entry to info.xml with appropriate sort order
 
 #### Status Handler (`adminmenu/StatusHandler.php`)
 The StatusHandler provides comprehensive order and action monitoring through the admin interface:
@@ -247,6 +359,42 @@ The status system queries several key tables:
 - `tjobqueue`: JTL's cron job queue for monitoring stuck jobs
 - `tcron`: Cron job definitions and scheduling
 - `tbestellung`: Order data integration
+
+#### Database Schema
+
+**axytos_actions table:**
+```sql
+kAxytosAction (int PK auto_increment) - Unique action ID
+kBestellung (int FK) - Order ID reference to tbestellung.kBestellung
+cAction (varchar(50)) - Action type: 'precheck', 'confirm', 'invoice', 'shipped', 'cancel'
+dCreatedAt (datetime) - When action was created
+dFailedAt (datetime nullable) - When action last failed (NULL if never failed)
+nFailedCount (int default 0) - Number of retry attempts
+cFailReason (text nullable) - Last failure reason
+dProcessedAt (datetime nullable) - When action was successfully completed
+cData (longtext nullable) - Serialized action data
+bDone (boolean default 0) - Whether action completed successfully
+```
+
+**axytos_actionslog table:**
+```sql
+kAxytosActionsLog (int PK auto_increment) - Unique log entry ID
+kBestellung (int FK) - Order ID reference
+cAction (varchar(50)) - Action type being logged
+dProcessedAt (datetime) - When log entry was created
+cLevel (enum: debug,info,warning,error) - Log level
+cMessage (text) - Log message content
+```
+
+**tbestellung table (key fields):**
+```sql
+kBestellung (int PK auto_increment) - Order ID
+kKunde (int FK) - Customer ID
+cBestellNr (varchar(20)) - Order number
+fGesamtsumme (double) - Total order amount
+dVersandDatum (date nullable) - Shipping date
+cZahlungsartName (varchar(255)) - Payment method name
+```
 
 **Action Status Logic:**
 - Status is determined by `ActionHandler->getStatus()` method using `bDone` and `nFailedCount` fields
@@ -295,3 +443,4 @@ Use the `reference` MCP server under the path `/reference/axytos-woocommerce`.
 
 - `/reference/jtl-shop`: the source code of the JTL shop. Use it to understand how the shop system works and interacts with plugins
 - `/reference/axytos-woocommerce`: the source code of the sister project, which implements same functionality for WooCommerce
+- `/reference/other-plugins`: some existing plugins for JTL-shop for reference - but caution: some of these are written for the old version 4 (current is version 5)

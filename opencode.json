@@ -11,6 +11,8 @@
         "type=bind,src=/Users/mat/work/axytos-wp/wp-content/plugins/axytos-woocommerce,dst=/reference/axytos-woocommerce,ro",
         "--mount",
         "type=bind,src=/Users/mat/work/jtl/shop,dst=/reference/jtl-shop,ro",
+        "--mount",
+        "type=bind,src=/Users/mat/work/jtl/other-plugins/,dst=/reference/other-plugins,ro",
         "mcp/filesystem",
         "/reference"
       ]

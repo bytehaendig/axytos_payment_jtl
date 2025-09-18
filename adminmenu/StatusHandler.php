@@ -32,23 +32,14 @@ class StatusHandler
 
     public function render(string $tabname, int $menuID, JTLSmarty $smarty): string
     {
-        // Setup gettext for template translations
-        $localePath = $this->plugin->getPaths()->getBasePath() . 'locale';
-        $currentLocale = setlocale(LC_MESSAGES, 0);
-
-        // Set text domain for this plugin
-        bindtextdomain('axytos_payment', $localePath);
-        textdomain('axytos_payment');
-
-        // Make __() function available in Smarty templates
-        $smarty->registerPlugin('modifier', '__', function($string) {
-            return __($string);
-        });
-        $smarty->registerPlugin('modifier', 'sprintf', 'sprintf');
-
         $messages = [];
         
         // Handle form submissions
+        if (Request::postInt('save_status') === 1 && Form::validateToken()) {
+            $smarty->assign('defaultTabbertab', $menuID);
+            $messages[] = ['type' => 'info', 'text' => __('Status data refreshed.')];
+        }
+
         if (Request::postInt('process_pending') === 1 && Form::validateToken()) {
             $smarty->assign('defaultTabbertab', $menuID);
             $results = $this->processPendingActions();
@@ -253,33 +244,24 @@ class StatusHandler
 
         // If not found by ID, try by order number using Utils
         if (!$order) {
-            $order = Utils::loadOrderByOrderNumber($this->db, $orderIdOrNumber);
+            try {
+                $order = Utils::loadOrderByOrderNumber($this->db, $orderIdOrNumber);
+            } catch (\Exception $e) {
+                // Order exists but is not an Axytos order - return null to show warning message
+                return null;
+            }
         }
 
         if (!$order || $order->kBestellung === 0) {
             return null;
         }
 
-        // Get both pending and broken actions via ActionHandler
+        // Get compact timeline with expandable logs
+        $timeline = $this->actionHandler->getCompactTimeline($order->kBestellung);
+        
+        // Also get separate action data for the action buttons (backward compatibility)
         $pendingAndBrokenActions = $this->actionHandler->getPendingAndBrokenActions($order->kBestellung);
-        
-        $allActions = $this->actionHandler->getAllActions($order->kBestellung);
-        
-        // Add pre-computed status fields to pending/broken actions
         $pendingAndBrokenActions = $this->addStatusFieldsToActions($pendingAndBrokenActions);
-        
-        // Sort completed actions by creation time (most recent first) 
-        $completedActions = $allActions['completed'];
-        usort($completedActions, function($a, $b) {
-            $timeA = strtotime($a['dCreatedAt'] ?? '1970-01-01');
-            $timeB = strtotime($b['dCreatedAt'] ?? '1970-01-01');
-            return $timeB - $timeA;
-        });
-        
-        // Add pre-computed status fields to completed actions
-        $completedActions = $this->addStatusFieldsToActions($completedActions);
-        
-        $actionLogs = $this->actionHandler->getActionLogs($order->kBestellung);
 
         // Extract customer info
         $customerInfo = $this->getCustomerInfo($order);
@@ -288,9 +270,8 @@ class StatusHandler
             'order' => $order,
             'customerName' => $customerInfo['name'],
             'customerEmail' => $customerInfo['email'],
-            'pendingActions' => $pendingAndBrokenActions, // Includes both pending and broken actions, already sorted by time
-            'completedActions' => $completedActions, // Sorted by time
-            'actionLogs' => $actionLogs // Already sorted by time in getActionLogs()
+            'timeline' => $timeline, // Unified timeline with actions and logs
+            'pendingActions' => $pendingAndBrokenActions // Keep for action buttons (backward compatibility)
         ];
     }
 
@@ -339,32 +320,9 @@ class StatusHandler
 
 
 
-    private function formatActionTime($timeString): string
-    {
-        if (empty($timeString)) {
-            return 'Unknown';
-        }
 
-        try {
-            $date = new \DateTime($timeString);
-            return $date->format('Y-m-d H:i:s');
-        } catch (\Exception $e) {
-            return htmlspecialchars($timeString);
-        }
-    }
 
-    public function formatActionStatus(array $action): string
-    {
-        if (empty($action['dFailedAt'])) {
-            return 'pending';
-        }
 
-        if ($this->actionHandler->getStatus($action) === 'broken') {
-            return sprintf('failed %dx, broken', $action['nFailedCount']);
-        } else {
-            return sprintf('failed %dx, will retry', $action['nFailedCount']);
-        }
-    }
 
 
 
@@ -432,13 +390,18 @@ class StatusHandler
             $status = $this->actionHandler->getStatus($actionArray);
             
             // Add status fields
+            $statusData = $this->getStatusData($status, $actionArray);
             if (is_object($action)) {
                 $action->status = $status;
-                $action->statusText = $this->getStatusText($status, $actionArray);
+                $action->statusText = $statusData['text'];
+                $action->statusKey = $statusData['key'];
+                $action->statusParams = $statusData['params'];
                 $action->statusColor = $this->getStatusColor($status);
             } else {
                 $action['status'] = $status;
-                $action['statusText'] = $this->getStatusText($status, $actionArray);
+                $action['statusText'] = $statusData['text'];
+                $action['statusKey'] = $statusData['key'];
+                $action['statusParams'] = $statusData['params'];
                 $action['statusColor'] = $this->getStatusColor($status);
             }
             
@@ -446,26 +409,64 @@ class StatusHandler
         }, $actions);
     }
 
+
+
     /**
-     * Get human-readable status text
+     * Get status data including translation key and parameters
      */
-    private function getStatusText(string $status, array $actionArray): string
+    private function getStatusData(string $status, array $actionArray): array
     {
         switch ($status) {
             case 'completed':
-                return 'completed';
+                return [
+                    'text' => 'completed',
+                    'key' => 'completed',
+                    'params' => []
+                ];
             case 'broken':
                 $failedCount = $actionArray['nFailedCount'] ?? 0;
-                return "broken (failed {$failedCount}x)";
+                if ($failedCount > 0) {
+                    return [
+                        'text' => "broken (failed {$failedCount}x)",
+                        'key' => 'broken (failed %dx)',
+                        'params' => [$failedCount]
+                    ];
+                } else {
+                    return [
+                        'text' => 'broken',
+                        'key' => 'broken',
+                        'params' => []
+                    ];
+                }
             case 'pending':
                 if (empty($actionArray['dFailedAt'])) {
-                    return 'pending';
+                    return [
+                        'text' => 'pending',
+                        'key' => 'pending',
+                        'params' => []
+                    ];
                 } else {
                     $failedCount = $actionArray['nFailedCount'] ?? 0;
-                    return "retry (failed {$failedCount}x)";
+                    if ($failedCount > 0) {
+                        return [
+                            'text' => "retry (failed {$failedCount}x)",
+                            'key' => 'retry (failed %dx)',
+                            'params' => [$failedCount]
+                        ];
+                    } else {
+                        return [
+                            'text' => 'retry',
+                            'key' => 'retry',
+                            'params' => []
+                        ];
+                    }
                 }
             default:
-                return $status;
+                return [
+                    'text' => $status,
+                    'key' => $status,
+                    'params' => []
+                ];
         }
     }
 

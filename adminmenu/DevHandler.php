@@ -10,6 +10,7 @@ use JTL\Helpers\Request;
 use JTL\Checkout\Bestellung;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 use Plugin\axytos_payment\helpers\ActionHandler;
+use Plugin\axytos_payment\helpers\DataFormatter;
 use Plugin\axytos_payment\helpers\Utils;
 
 class DevHandler
@@ -160,6 +161,9 @@ class DevHandler
 
     private function createTestAction(int $orderId, string $actionName, int $failedCount): bool
     {
+        // Generate realistic test data based on action type
+        $testData = $this->generateTestDataForAction($orderId, $actionName);
+        
         $insertData = new \stdClass();
         $insertData->kBestellung = $orderId;
         $insertData->cAction = $actionName;
@@ -169,7 +173,7 @@ class DevHandler
         $insertData->nFailedCount = $failedCount;
         $insertData->cFailReason = $failedCount > 0 ? "Test action created with failed_count={$failedCount}" : null;
         $insertData->dProcessedAt = null;
-        $insertData->cData = json_encode([]); // Empty data for test actions
+        $insertData->cData = json_encode($testData);
 
         return $this->db->insert('axytos_actions', $insertData) > 0;
     }
@@ -182,6 +186,56 @@ class DevHandler
             return 'Retry-able failed action';
         } else {
             return 'Broken action (will show retry button)';
+        }
+    }
+
+    private function generateTestDataForAction(int $orderId, string $actionName): array
+    {
+        // Load the order to generate realistic data
+        $order = new Bestellung($orderId);
+        $order->fuelleBestellung(false);
+        
+        $dataFormatter = new DataFormatter($order);
+        
+        switch ($actionName) {
+            case 'confirm':
+                // For confirm, we need both order data and precheck response
+                // Since this is for testing, we'll create a mock precheck response
+                $orderData = $dataFormatter->createOrderData();
+                $mockPrecheckResponse = [
+                    'decision' => 'U',
+                    'token' => 'TEST_TOKEN_' . uniqid(),
+                    'timestamp' => date('c')
+                ];
+                return $dataFormatter->createConfirmData($mockPrecheckResponse, $orderData);
+                
+            case 'shipped':
+                return $dataFormatter->createShippingData();
+                
+            case 'invoice':
+                return $dataFormatter->createInvoiceData();
+                
+            case 'cancel':
+            case 'reverse_cancel':
+                return [
+                    'externalOrderId' => $dataFormatter->getExternalOrderId()
+                ];
+                
+            case 'refund':
+                // Refund method is commented out in DataFormatter, so we'll create basic refund data
+                return [
+                    'externalOrderId' => $dataFormatter->getExternalOrderId(),
+                    'refundDate' => date('c'),
+                    'originalInvoiceNumber' => $order->cBestellNr,
+                    'externalSubOrderId' => ''
+                ];
+                
+            default:
+                return [
+                    'externalOrderId' => $dataFormatter->getExternalOrderId(),
+                    'action' => $actionName,
+                    'testData' => true
+                ];
         }
     }
 

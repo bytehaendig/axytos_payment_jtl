@@ -162,7 +162,7 @@ class AxytosPaymentMethod extends Method
         // $this->addIncomingPayment($order, (object)[
         //     'fBetrag'          => $order->fGesamtsumme,
         //     'fZahlungsgebuehr' => 0,
-        //     'cHinweis'         => `Axytos`, // add transaction ID
+        //     'cHinweis'         => 'Axytos', // add transaction ID
         // ]);
         // $this->setOrderStatusToPaid($order);
         // $this->sendConfirmationMail($order);
@@ -370,6 +370,4 @@ class AxytosPaymentMethod extends Method
         $localization = $this->plugin->getLocalization();
         return $localization->getTranslation($key);
     }
-
-
 }

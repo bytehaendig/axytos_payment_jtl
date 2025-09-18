@@ -134,8 +134,14 @@ msgstr "Pending/Broken Actions"
 msgid "pending"
 msgstr "pending"
 
+msgid "retry"
+msgstr "retry"
+
 msgid "retry (failed %dx)"
 msgstr "retry (failed %dx)"
+
+msgid "broken"
+msgstr "broken"
 
 msgid "broken (failed %dx)"
 msgstr "broken (failed %dx)"
@@ -187,4 +193,25 @@ msgstr "Failed to reset any stuck cron jobs."
 
 msgid "Order not found or not using Axytos payment method."
 msgstr "Order not found or not using Axytos payment method."
+
+msgid "Actions Overview"
+msgstr "Actions Overview"
+
+msgid "log entry"
+msgstr "log entry"
+
+msgid "log entries"
+msgstr "log entries"
+
+msgid "Detailed log entries for"
+msgstr "Detailed log entries for"
+
+msgid "retrying"
+msgstr "retrying"
+
+msgid "queued"
+msgstr "queued"
+
+msgid "No actions found for this order"
+msgstr "No actions found for this order"
 

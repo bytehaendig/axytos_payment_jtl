@@ -22,12 +22,12 @@ class VersionMigrator
         $db = $this->bootstrapper->getDB();
         $moduleID = $this->bootstrapper->getModuleID();
         $cancelIds = [];
-        $cancelQuery = "SELECT * from tzahlungslog where cModulId = '$moduleID' AND nLevel = 1 AND cLog LIKE 'Order cancellation failed for order %'";
+        $cancelQuery = "SELECT * from tzahlungslog where cModulId = :moduleID AND nLevel = 1 AND cLog LIKE 'Order cancellation failed for order %'";
         error_log("migrateVersion_0_9_3:: run $cancelQuery");
-        $cancelEntries = $db->getObjects($cancelQuery);
+        $cancelEntries = $db->getObjects($cancelQuery, ['moduleID' => $moduleID]);
         $reactIds = [];
-        $reactQuery = "SELECT * from tzahlungslog where cModulId = '$moduleID' AND nLevel = 1 AND cLog LIKE 'Order reactivation failed for order %'";
-        $reactEntries = $db->getObjects($reactQuery);
+        $reactQuery = "SELECT * from tzahlungslog where cModulId = :moduleID AND nLevel = 1 AND cLog LIKE 'Order reactivation failed for order %'";
+        $reactEntries = $db->getObjects($reactQuery, ['moduleID' => $moduleID]);
         foreach ($cancelEntries as $entry) {
             preg_match('/order (\d+):/', $entry->cLog, $matches);
             $orderId = $matches[1];

@@ -311,7 +311,7 @@ class ActionHandler
         $updateData = new \stdClass();
         $updateData->bDone = true;
         $updateData->dProcessedAt = date('Y-m-d H:i:s');
-        $this->db->update(
+        $result = $this->db->update(
             'axytos_actions',
             'kAxytosAction',
             $action['kAxytosAction'],
@@ -321,6 +321,7 @@ class ActionHandler
             'action' => $action['cAction'],
             'orderId' => $action['kBestellung']
         ]);
+        return $result > 0;
     }
 
     /**
@@ -330,7 +331,7 @@ class ActionHandler
     private function recordActionFailure(array $action, string $failReason): bool
     {
         // Get current failed_count
-        $failedCount = ($action->nFailedCount ?? 0) + 1;
+        $failedCount = ($action['nFailedCount'] ?? 0) + 1;
 
         $updateData = new \stdClass();
         $updateData->dFailedAt = date('Y-m-d H:i:s');
@@ -345,7 +346,7 @@ class ActionHandler
             'attempt' => $failedCount,
             'error' => $failReason,
         ]);
-        $this->addActionLog($order->kBestellung, $actionData['cAction'], 'warning', "Action failed on attempt $failedCount: " . $e->getMessage());
+        $this->addActionLog($action['kBestellung'], $action['cAction'], 'warning', "Action failed on attempt $failedCount: " . Utils::sanitizeErrorMessage($failReason));
         if ($isPermanentlyFailed) {
             $this->method->doLog("Action {$action['cAction']} for order {$action['kBestellung']} failed {$failedCount} - manual interaction required");
             $this->logger->error('Action {action} for order #{orderId} exceeded max retries ({maxRetries}) - manual interaction requried', [
@@ -453,21 +454,7 @@ class ActionHandler
         ];
     }
 
-    /**
-     * Handle when an action exceeds maximum retry limit
-     */
-    private function handleMaxRetriesExceeded(Bestellung $order, array $actionData): void
-    {
-        $orderId = $order->kBestellung;
-        $action = $actionData['cAction'];
 
-        // Log the error
-        $this->addActionLog($orderId, $action, 'error', "Action failed permanently after " . self::MAX_RETRIES . " attempts - manual intervention required");
-        
-        // Log critical actions to payment method log
-        if (in_array($action, ['confirm', 'invoice', 'cancel', 'reverse_cancel'])) {
-        }
-    }
 
     /**
      * Get the status of an action based on bDone and nFailedCount
@@ -619,7 +606,7 @@ class ActionHandler
             ['kBestellung'],
             [$orderId],
             'kAxytosActionsLog, cAction, dProcessedAt, cLevel, cMessage',
-            'dProcessedAt DESC'
+            'dProcessedAt DESC, kAxytosActionsLog DESC'
         );
 
         return array_map(function($log) {
@@ -646,6 +633,210 @@ class ActionHandler
         )->toArray();
 
         return $this->deserializeActionsArray($actions);
+    }
+
+    /**
+     * Get compact timeline showing actions with expandable logs
+     */
+    public function getCompactTimeline(int $orderId): array
+    {
+        // Get all actions for this order
+        $actions = $this->db->getCollection(
+            "SELECT * FROM axytos_actions WHERE kBestellung = :orderId ORDER BY dCreatedAt DESC",
+            ['orderId' => $orderId]
+        )->toArray();
+
+        // Get all action logs grouped by action
+        $logs = $this->db->getCollection(
+            "SELECT * FROM axytos_actionslog WHERE kBestellung = :orderId ORDER BY dProcessedAt DESC, kAxytosActionsLog DESC",
+            ['orderId' => $orderId]
+        )->toArray();
+
+        // Group logs by action type
+        $logsByAction = [];
+        foreach ($logs as $log) {
+            $logsByAction[$log->cAction][] = [
+                'id' => (int) $log->kAxytosActionsLog,
+                'timestamp' => $log->dProcessedAt,
+                'level' => $log->cLevel,
+                'message' => $log->cMessage
+            ];
+        }
+
+        // Create compact timeline entries
+        $timeline = [];
+        foreach ($actions as $action) {
+            $status = $this->getActionStatus($action);
+            $actionLogs = $logsByAction[$action->cAction] ?? [];
+            
+            // Determine the most recent timestamp for sorting
+            $latestTimestamp = $action->dCreatedAt;
+            if ($action->dProcessedAt) {
+                $latestTimestamp = max($latestTimestamp, $action->dProcessedAt);
+            }
+            if ($action->dFailedAt) {
+                $latestTimestamp = max($latestTimestamp, $action->dFailedAt);
+            }
+            if (!empty($actionLogs)) {
+                $latestLogTime = max(array_column($actionLogs, 'timestamp'));
+                $latestTimestamp = max($latestTimestamp, $latestLogTime);
+            }
+
+            $timeline[] = [
+                'action' => $action->cAction,
+                'status' => $status,
+                'level' => $this->getStatusLevel($status),
+                'summary' => $this->getActionSummary($action, $status),
+                'created_at' => $action->dCreatedAt,
+                'completed_at' => $action->dProcessedAt,
+                'failed_at' => $action->dFailedAt,
+                'failed_count' => (int) $action->nFailedCount,
+                'fail_reason' => $action->cFailReason ?? '',
+                'latest_timestamp' => $latestTimestamp,
+                'logs' => $actionLogs,
+                'log_count' => count($actionLogs),
+                'details' => [
+                    'action_id' => (int) $action->kAxytosAction
+                ]
+            ];
+        }
+
+        // Sort by latest activity timestamp (newest first)
+        usort($timeline, function($a, $b) {
+            return strcmp($b['latest_timestamp'], $a['latest_timestamp']);
+        });
+
+        return $timeline;
+    }
+
+
+
+    /**
+     * Get action status for timeline purposes
+     */
+    private function getActionStatus($action): string
+    {
+        if ($action->bDone) {
+            return 'completed';
+        }
+        
+        if ($action->nFailedCount > self::MAX_RETRIES) {
+            return 'broken';
+        }
+        
+        if ($action->nFailedCount > 0) {
+            return 'retryable';
+        }
+        
+        return 'pending';
+    }
+
+    /**
+     * Get human-readable message for action creation
+     */
+    private function getActionCreatedMessage(string $action): string
+    {
+        $messages = [
+            'precheck' => 'Precheck action queued',
+            'confirm' => 'Order confirmation action queued',
+            'invoice' => 'Invoice creation action queued',
+            'shipped' => 'Shipping notification action queued',
+            'cancel' => 'Order cancellation action queued',
+            'reverse_cancel' => 'Order reactivation action queued',
+            'refund' => 'Refund action queued'
+        ];
+        
+        return $messages[$action] ?? ucfirst($action) . ' action queued';
+    }
+
+    /**
+     * Get human-readable message for action completion
+     */
+    private function getActionCompletedMessage(string $action): string
+    {
+        $messages = [
+            'precheck' => 'Precheck completed successfully',
+            'confirm' => 'Order confirmation completed successfully',
+            'invoice' => 'Invoice creation completed successfully',
+            'shipped' => 'Shipping notification completed successfully',
+            'cancel' => 'Order cancellation completed successfully',
+            'reverse_cancel' => 'Order reactivation completed successfully',
+            'refund' => 'Refund completed successfully'
+        ];
+        
+        return $messages[$action] ?? ucfirst($action) . ' completed successfully';
+    }
+
+    /**
+     * Get human-readable message for action failure
+     */
+    private function getActionFailedMessage(string $action, int $failedCount): string
+    {
+        $actionNames = [
+            'precheck' => 'Precheck',
+            'confirm' => 'Order confirmation',
+            'invoice' => 'Invoice creation',
+            'shipped' => 'Shipping notification',
+            'cancel' => 'Order cancellation',
+            'reverse_cancel' => 'Order reactivation',
+            'refund' => 'Refund'
+        ];
+        
+        $actionName = $actionNames[$action] ?? ucfirst($action);
+        
+        if ($failedCount > self::MAX_RETRIES) {
+            return $actionName . ' failed permanently after ' . $failedCount . ' attempts - manual intervention required';
+        } else {
+            return $actionName . ' failed on attempt ' . $failedCount . ' - will retry automatically';
+        }
+    }
+
+    /**
+     * Get status level for compact timeline
+     */
+    private function getStatusLevel(string $status): string
+    {
+        switch ($status) {
+            case 'completed':
+                return 'success';
+            case 'broken':
+                return 'error';
+            case 'retryable':
+                return 'warning';
+            case 'pending':
+            default:
+                return 'info';
+        }
+    }
+
+    /**
+     * Get action summary message for compact timeline
+     */
+    private function getActionSummary($action, string $status): string
+    {
+        $actionNames = [
+            'precheck' => 'Precheck',
+            'confirm' => 'Order Confirmation',
+            'invoice' => 'Invoice Creation',
+            'shipped' => 'Shipping Notification',
+            'cancel' => 'Order Cancellation',
+            'reverse_cancel' => 'Order Reactivation',
+            'refund' => 'Refund Processing'
+        ];
+        
+        $actionName = $actionNames[$action->cAction] ?? ucfirst($action->cAction);
+        
+        switch ($status) {
+            case 'completed':
+                return $actionName . ' completed successfully';
+            case 'broken':
+                return $actionName . ' failed permanently (' . $action->nFailedCount . ' attempts)';
+            case 'retryable':
+                return $actionName . ' failed, will retry (' . $action->nFailedCount . '/' . self::MAX_RETRIES . ' attempts)';
+            case 'pending':
+            default:
+                return $actionName . ' queued for processing';
+        }
     }
 
     /**
@@ -681,9 +872,10 @@ class ActionHandler
     public function getOrdersWithActions(int $limit = 50): array
     {
         $orderIds = $this->db->getCollection(
-            "SELECT DISTINCT kBestellung FROM axytos_actions 
-             WHERE bDone = FALSE 
-             ORDER BY dCreatedAt DESC LIMIT $limit"
+            "SELECT DISTINCT kBestellung FROM axytos_actions
+             WHERE bDone = FALSE
+             ORDER BY dCreatedAt DESC LIMIT :limit",
+            ['limit' => $limit]
         )->map(static function ($row): int {
             return (int) $row->kBestellung;
         })->toArray();
@@ -740,7 +932,7 @@ class ActionHandler
                     'failed_at' => $action['dFailedAt'],
                     'failed_count' => $action['nFailedCount'],
                     'status' => 'broken',
-                    'status_text' => sprintf('failed %dx, broken', $action['nFailedCount']),
+                    'status_text' => $action['nFailedCount'] > 0 ? sprintf('failed %dx, broken', $action['nFailedCount']) : 'broken',
                     'status_color' => '#dc3545', // red
                     'fail_reason' => $action['cFailReason'] ?? null
                 ];
@@ -757,14 +949,15 @@ class ActionHandler
                     ];
                 } else {
                     // Failed pending actions - check if broken or retryable
-                    if ($this->getStatus($action) === 'broken') {
+                    $failedCount = (int) ($action['nFailedCount'] ?? 0);
+                    if ($failedCount > self::MAX_RETRIES) {
                         $brokenActions[] = [
                             'action' => $action['cAction'],
                             'created_at' => $action['dCreatedAt'],
                             'failed_at' => $action['dFailedAt'],
-                            'failed_count' => $action['nFailedCount'],
+                            'failed_count' => $failedCount,
                             'status' => 'broken',
-                            'status_text' => sprintf('failed %dx, broken', $action['nFailedCount']),
+                            'status_text' => $failedCount > 0 ? sprintf('failed %dx, broken', $failedCount) : 'broken',
                             'status_color' => '#dc3545', // red
                             'fail_reason' => $action['cFailReason'] ?? null
                         ];
@@ -773,9 +966,9 @@ class ActionHandler
                             'action' => $action['cAction'],
                             'created_at' => $action['dCreatedAt'],
                             'failed_at' => $action['dFailedAt'],
-                            'failed_count' => $action['nFailedCount'],
+                            'failed_count' => $failedCount,
                             'status' => 'retryable',
-                            'status_text' => sprintf('failed %dx, will retry', $action['nFailedCount']),
+                            'status_text' => $failedCount > 0 ? sprintf('failed %dx, will retry', $failedCount) : 'will retry',
                             'status_color' => '#ffc107', // yellow/orange
                             'fail_reason' => $action['cFailReason'] ?? null
                         ];
@@ -847,4 +1040,6 @@ class ActionHandler
             'data' => $data
         ];
     }
+
+
 }

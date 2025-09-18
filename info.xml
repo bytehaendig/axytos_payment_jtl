@@ -18,6 +18,9 @@
         <Name>Status</Name>
       </Customlink>
       <Customlink sort="3">
+        <Name>Invoices</Name>
+      </Customlink>
+      <Customlink sort="4">
         <Name>Development</Name>
       </Customlink>
     </Adminmenu>
