@@ -119,38 +119,35 @@ class InvoicesController
 
     private function getInvoicesData(): array
     {
-        $shippedNoInvoice = $this->getShippedOrdersWithoutInvoice();
+        $ordersAwaitingInvoice = $this->getOrdersAwaitingInvoice();
         $totalInvoiceActions = $this->getTotalInvoiceActions();
         $failedInvoiceActions = $this->getFailedInvoiceActions();
-        
+
         return [
             'total_invoices' => $totalInvoiceActions,
-            'pending_invoices' => count($shippedNoInvoice),
+            'pending_invoices' => count($ordersAwaitingInvoice),
             'sent_invoices' => $totalInvoiceActions - $failedInvoiceActions,
             'failed_invoices' => $failedInvoiceActions,
-            'recent_invoices' => $this->formatOrdersForDisplay($shippedNoInvoice)
+            'orders_awaiting_invoice' => $this->formatOrdersForDisplay($ordersAwaitingInvoice)
         ];
     }
 
-    private function getShippedOrdersWithoutInvoice(): array
+    private function getOrdersAwaitingInvoice(): array
     {
         $sql = "
-            SELECT DISTINCT shipped.kBestellung
-            FROM axytos_actions shipped
-            WHERE shipped.cAction = :shippedAction 
-              AND NOT EXISTS (
-                  SELECT 1 FROM axytos_actions invoice 
-                  WHERE invoice.kBestellung = shipped.kBestellung 
-                    AND invoice.cAction = :invoiceAction
+            SELECT DISTINCT a.kBestellung
+            FROM axytos_actions a
+            WHERE a.cAction IN ('confirm', 'shipped', 'reverse_cancel')
+              AND a.dProcessedAt = (
+                  SELECT MAX(a2.dProcessedAt)
+                  FROM axytos_actions a2
+                  WHERE a2.kBestellung = a.kBestellung
               )
-            ORDER BY shipped.kBestellung DESC
+            ORDER BY a.kBestellung DESC
             LIMIT 50
         ";
-        
-        $orderIds = $this->db->getArrays($sql, [
-            'shippedAction' => 'shipped',
-            'invoiceAction' => 'invoice'
-        ]);
+
+        $orderIds = $this->db->getArrays($sql, []);
 
         $orders = [];
         foreach ($orderIds as $row) {
@@ -158,7 +155,7 @@ class InvoicesController
             $order->fuelleBestellung(false);
             $orders[] = $order;
         }
-        
+
         return $orders;
     }
 

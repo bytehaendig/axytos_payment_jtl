@@ -268,23 +268,23 @@
         {if !empty($ordersData)}
             <div class="row mb-4">
                 <div class="col-12">
-                    <div class="card">
-                         <div class="card-header">
-                             <h5>{if $showActions}{__("Orders with Pending and Broken Actions")}{else}{__("Recent Orders")}{/if}</h5>
-                         </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table">
-                                     <thead>
-                                         <tr>
-                                             <th>{__("Order Number")}</th>
-                                             <th>{__("Customer")}</th>
-                                             <th>{__("Date")}</th>
-                                             <th>{__("Total")}</th>
-                                             <th>{__("Status")}</th>
-                                             <th>{__("Pending/Broken Actions")}</th>
-                                         </tr>
-                                     </thead>
+                        <div class="card">
+                             <div class="card-header">
+                                 <h5>{if $showActions}{__("Orders with Pending and Broken Actions")}{else}{__("Recent Orders")}{/if}</h5>
+                             </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                         <thead>
+                                             <tr>
+                                                 <th>{__("Order Number")}</th>
+                                                 <th>{__("Customer")}</th>
+                                                 <th>{__("Date")}</th>
+                                                 <th>{__("Total")}</th>
+                                                 <th>{__("Status")}</th>
+                                                 <th>{__("Pending/Broken Actions")}</th>
+                                             </tr>
+                                         </thead>
                                     <tbody>
                                         {foreach $ordersData as $orderInfo}
                                             <tr class="status-row" style="cursor: pointer;" onclick="searchOrder({$orderInfo.order->kBestellung})">
@@ -364,7 +364,7 @@
             <input type="hidden" name="tab" value="Status">
             
             <div class="form-group">
-                <button type="submit" class="btn btn-primary">{'Refresh Data'|__}</button>
+                <button type="submit" class="btn btn-primary">{__('Refresh Data')}</button>
             </div>
         </form>
 

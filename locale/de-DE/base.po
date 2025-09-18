@@ -264,7 +264,7 @@ msgid "Select a CSV file containing invoice data"
 msgstr "Wählen Sie eine CSV-Datei mit Rechnungsdaten aus"
 
 msgid "Shipped Orders Awaiting Invoice"
-msgstr "Versendete Bestellungen warten auf Rechnung"
+msgstr "Bestellungen ohne Rechnungsnummer"
 
 msgid "No orders awaiting invoice found"
 msgstr "Keine Bestellungen gefunden, die auf Rechnung warten"

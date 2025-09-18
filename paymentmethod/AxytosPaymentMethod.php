@@ -261,7 +261,7 @@ class AxytosPaymentMethod extends Method
         $pluginId = $this->plugin->getID();
         $settings = $this->db->selectAll('tplugineinstellungen', ['kPlugin'], [$pluginId]);
         foreach ($settings as $setting) {
-            if ($setting->cName === $this->getSettingName('api_key')) {
+            if ($setting->cName === $this->getSettingName('api_key') || $setting->cName === $this->getSettingName('webhook_api_key')) {
                 $encryption = Shop::Container()->getCryptoService();
                 $setting->cWert = trim($encryption->decryptXTEA($setting->cWert));
             }
@@ -277,8 +277,8 @@ class AxytosPaymentMethod extends Method
         $pluginId = $this->plugin->getID();
 
         foreach ($settings as $key => $value) {
-            // Encrypt API key before saving if not empty
-            if ($key === 'api_key' && !empty($value)) {
+            // Encrypt API keys before saving if not empty
+            if (($key === 'api_key' || $key === 'webhook_api_key') && !empty($value)) {
                 $cryptoService = Shop::Container()->getCryptoService();
                 $value = $cryptoService->encryptXTEA(trim($value));
             }

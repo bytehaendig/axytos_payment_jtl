@@ -280,7 +280,7 @@ Admin tabs are managed through a centralized handler system in Bootstrap.php:
 - Centralized Smarty setup for all handlers via `setupSmartyForAdmin()`
 - Handles gettext localization and plugin registration
 - Routes tab requests to appropriate handler classes
-- Registers `__()` and `sprintf` modifiers for template translations
+- Registers `sprintf` modifier for template string interpolation
 
 **Handler Pattern:**
 All admin handlers follow a consistent pattern:
@@ -315,8 +315,12 @@ class ExampleHandler
 - Templates located in `adminmenu/template/` directory
 - Bootstrap 4 styling for consistency with JTL Shop admin
 - CSRF token support via `Form::getTokenInput()`
-- Translation support using `__()` modifier
+- Translation support using `{__('message')}` function syntax
 - Responsive design with card-based layouts
+
+**Smarty Modifiers:**
+- `sprintf` - For string interpolation with variables (e.g., `{sprintf(__('Message with %s'), $variable)}`)
+- `germanDate` - For German date formatting (e.g., `{$timestamp|germanDate}`)
 
 **Adding New Admin Tabs:**
 1. Create handler class in `adminmenu/` directory

@@ -230,7 +230,7 @@ class Bootstrap extends Bootstrapper
         // Setup gettext and Smarty plugins for all admin tabs
         $this->setupSmartyForAdmin($smarty);
         if ($tabName == "API Setup") {
-            $handler = new SetupController($this->getPlugin(), $this->getMethod());
+            $handler = new SetupController($this->getPlugin(), $this->getMethod(), $this->getDB());
             return $handler->render($tabName, $menuID, $smarty);
         }
         if ($tabName == "Status") {
@@ -297,14 +297,6 @@ class Bootstrap extends Bootstrapper
         textdomain('axytos_payment');
 
         // Register Smarty plugins (use try-catch to handle already registered plugins)
-        try {
-            $smarty->registerPlugin('modifier', '__', function($string) {
-                return __($string);
-            });
-        } catch (\Exception $e) {
-            // Plugin already registered, ignore
-        }
-        
         try {
             $smarty->registerPlugin('modifier', 'sprintf', 'sprintf');
         } catch (\Exception $e) {
