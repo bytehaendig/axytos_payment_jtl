@@ -10,6 +10,7 @@ use JTL\Helpers\Request;
 use JTL\Checkout\Bestellung;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 use Plugin\axytos_payment\helpers\Utils;
+use Plugin\axytos_payment\helpers\CSVHelper;
 
 class InvoicesHandler
 {
@@ -38,7 +39,7 @@ class InvoicesHandler
         if (Request::postInt('set_invoice_number') === 1 && Form::validateToken()) {
             $orderId = Request::postInt('order_id');
             $invoiceNumber = Request::postVar('invoice_number');
-            
+
             if ($orderId > 0 && !empty($invoiceNumber)) {
                 $result = $this->setInvoiceNumber($orderId, $invoiceNumber);
                 if ($result['success']) {
@@ -49,6 +50,33 @@ class InvoicesHandler
                 }
             } else {
                 $messages[] = ['type' => 'danger', 'text' => __('Invalid order ID or empty invoice number.')];
+            }
+        }
+
+        // Handle CSV upload
+        if (Request::postInt('upload_csv') === 1 && Form::validateToken()) {
+            $smarty->assign('defaultTabbertab', $menuID);
+
+            // Check if file was uploaded
+            if (isset($_FILES['csv_file']) && $_FILES['csv_file']['error'] === UPLOAD_ERR_OK) {
+                $csvHelper = new CSVHelper();
+                $filePath = $_FILES['csv_file']['tmp_name'];
+
+                try {
+                    $parsedData = $csvHelper->parseCsv($filePath);
+
+                    if (empty($parsedData)) {
+                        $messages[] = ['type' => 'warning', 'text' => __('CSV file is empty or could not be parsed.')];
+                    } else {
+                        $lineCount = count($parsedData);
+                        $debugInfo = $this->generateCsvDebugInfo($parsedData);
+                        $messages[] = ['type' => 'success', 'text' => sprintf(__('CSV file parsed successfully. Found %d data rows.%s'), $lineCount, $debugInfo)];
+                    }
+                } catch (\Exception $e) {
+                    $messages[] = ['type' => 'danger', 'text' => sprintf(__('Error parsing CSV file: %s'), $e->getMessage())];
+                }
+            } else {
+                $messages[] = ['type' => 'danger', 'text' => __('No CSV file was uploaded or upload failed.')];
             }
         }
 
@@ -213,5 +241,29 @@ class InvoicesHandler
         } catch (\Exception $e) {
             return ['success' => false, 'message' => sprintf(__('Error setting invoice number: %s'), $e->getMessage())];
         }
+    }
+
+    private function generateCsvDebugInfo(array $parsedData): string
+    {
+        $debugInfo = "\n\n<strong>Debug Info:</strong>\n";
+
+        // Show column headers
+        if (!empty($parsedData)) {
+            $firstRow = reset($parsedData);
+            $columns = array_keys($firstRow);
+            $debugInfo .= "<strong>Columns:</strong> " . implode(', ', $columns) . "\n";
+
+            // Show first 3 rows as preview
+            $debugInfo .= "<strong>Preview (first 3 rows):</strong>\n";
+            $previewRows = array_slice($parsedData, 0, 3);
+            foreach ($previewRows as $index => $row) {
+                $debugInfo .= "Row " . ($index + 1) . ": " . json_encode($row) . "\n";
+            }
+
+            // Show total columns and rows info
+            $debugInfo .= "<strong>Total:</strong> " . count($parsedData) . " rows, " . count($columns) . " columns";
+        }
+
+        return $debugInfo;
     }
 }

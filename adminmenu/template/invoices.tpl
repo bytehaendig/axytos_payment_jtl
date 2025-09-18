@@ -8,53 +8,83 @@
             {/foreach}
         {/if}
 
+        <!-- Upload Invoice CSV Section -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card">
-                     <div class="card-header">
-                         <h5>{'Shipped Orders Awaiting Invoice'|__}</h5>
-                     </div>
+                    <div class="card-header">
+                        <h5>{'Upload Invoice CSV'|__}</h5>
+                    </div>
                     <div class="card-body">
-                        {if empty($invoicesData.recent_invoices)}
-                            <div class="text-center text-muted py-4">
-                                <p>{'No orders awaiting invoice found'|__}</p>
+                        <form method="post" enctype="multipart/form-data">
+                            {$token}
+                            <input type="hidden" name="upload_csv" value="1">
+                            <input type="hidden" name="tab" value="Invoices">
+
+                            <div class="form-group">
+                                <label for="csvFile">{'Select CSV File'|__}</label>
+                                <div class="d-flex align-items-center">
+                                    <div class="custom-file flex-grow-1 mr-3" style="max-width: 400px;">
+                                        <input type="file" class="custom-file-input" id="csvFile" name="csv_file" accept="text/csv,.csv" required>
+                                        <label class="custom-file-label" for="csvFile">{'Choose CSV file...'|__}</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">{'Upload CSV'|__}</button>
+                                </div>
+                                <small class="form-text text-muted">{'Select a CSV file containing invoice data'|__}</small>
                             </div>
-                        {else}
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>{'Order Number'|__}</th>
-                                            <th>{'Customer'|__}</th>
-                                            <th>{'Date'|__}</th>
-                                            <th>{'Total'|__}</th>
-                                            <th>{'Status'|__}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {foreach $invoicesData.recent_invoices as $orderInfo}
-                                            <tr class="invoice-row" style="cursor: pointer;" onclick="openInvoiceModal({$orderInfo.order->kBestellung}, '{$orderInfo.order->cBestellNr}')">
-                                                <td>{$orderInfo.order->cBestellNr}</td>
-                                                <td>{$orderInfo.customerName}</td>
-                                                <td>{$orderInfo.order->dErstellt|germanDate:false}</td>
-                                                <td>{$orderInfo.order->fGesamtsumme|number_format:2:',':"."} {if $orderInfo.order->Waehrung}{$orderInfo.order->Waehrung->cName}{else}EUR{/if}</td>
-                                                <td>{$orderInfo.order->Status}</td>
-                                            </tr>
-                                        {/foreach}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {/if}
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
 
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                      <div class="card-header">
+                          <h5>{'Shipped Orders Awaiting Invoice'|__}</h5>
+                      </div>
+                     <div class="card-body">
+                         {if empty($invoicesData.recent_invoices)}
+                             <div class="text-center text-muted py-4">
+                                 <p>{'No orders awaiting invoice found'|__}</p>
+                             </div>
+                         {else}
+                             <div class="table-responsive">
+                                 <table class="table">
+                                     <thead>
+                                         <tr>
+                                             <th>{'Order Number'|__}</th>
+                                             <th>{'Customer'|__}</th>
+                                             <th>{'Date'|__}</th>
+                                             <th>{'Total'|__}</th>
+                                             <th>{'Status'|__}</th>
+                                         </tr>
+                                     </thead>
+                                     <tbody>
+                                         {foreach $invoicesData.recent_invoices as $orderInfo}
+                                             <tr class="invoice-row" style="cursor: pointer;" onclick="openInvoiceModal({$orderInfo.order->kBestellung}, '{$orderInfo.order->cBestellNr}')">
+                                                 <td>{$orderInfo.order->cBestellNr}</td>
+                                                 <td>{$orderInfo.customerName}</td>
+                                                 <td>{$orderInfo.order->dErstellt|germanDate:false}</td>
+                                                 <td>{$orderInfo.order->fGesamtsumme|number_format:2:',':"."} {if $orderInfo.order->Waehrung}{$orderInfo.order->Waehrung->cName}{else}EUR{/if}</td>
+                                                 <td>{$orderInfo.order->Status}</td>
+                                             </tr>
+                                         {/foreach}
+                                     </tbody>
+                                 </table>
+                             </div>
+                         {/if}
+                     </div>
+                 </div>
+             </div>
+         </div>
+
         <form method="post" class="mt-4">
             {$token}
             <input type="hidden" name="save_invoices" value="1">
             <input type="hidden" name="tab" value="Invoices">
-            
+
             <div class="form-group">
                 <button type="submit" class="btn btn-primary">{'Refresh Data'|__}</button>
             </div>
@@ -104,10 +134,17 @@ function openInvoiceModal(orderId, orderNumber) {
     document.getElementById('modalOrderId').value = orderId;
     document.getElementById('modalOrderNumber').textContent = orderNumber;
     document.getElementById('invoiceNumber').value = '';
-    
+
     // Show modal
     $('#invoiceModal').modal('show');
 }
+
+// Handle CSV file selection display
+document.getElementById('csvFile').addEventListener('change', function(e) {
+    var fileName = e.target.files[0] ? e.target.files[0].name : 'Choose CSV file...';
+    var label = e.target.nextElementSibling;
+    label.textContent = fileName;
+});
 </script>
 
 <style>
