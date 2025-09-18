@@ -215,3 +215,111 @@ msgstr "queued"
 msgid "No actions found for this order"
 msgstr "No actions found for this order"
 
+msgid "Invoice data refreshed."
+msgstr "Invoice data refreshed."
+
+msgid "Invoice number %s has been set for order %s"
+msgstr "Invoice number %s has been set for order %s"
+
+msgid "Invalid order ID or empty invoice number."
+msgstr "Invalid order ID or empty invoice number."
+
+msgid "CSV file structure is invalid. Please check the file format."
+msgstr "CSV file structure is invalid. Please check the file format."
+
+msgid "CSV file is empty or could not be parsed."
+msgstr "CSV file is empty or could not be parsed."
+
+msgid "Successfully processed %d invoice updates out of %d total rows."
+msgstr "Successfully processed %d invoice updates out of %d total rows."
+
+msgid "%d rows failed to process. Check the details below."
+msgstr "%d rows failed to process. Check the details below."
+
+msgid "Error processing CSV file: %s"
+msgstr "Error processing CSV file: %s"
+
+msgid "No CSV file was uploaded or upload failed."
+msgstr "No CSV file was uploaded or upload failed."
+
+msgid "Order not found."
+msgstr "Order not found."
+
+msgid "Error setting invoice number: %s"
+msgstr "Error setting invoice number: %s"
+
+msgid "Upload Invoice CSV"
+msgstr "Upload Invoice CSV"
+
+msgid "Select CSV File"
+msgstr "Select CSV File"
+
+msgid "Choose CSV file..."
+msgstr "Choose CSV file..."
+
+msgid "Upload CSV"
+msgstr "Upload CSV"
+
+msgid "Select a CSV file containing invoice data"
+msgstr "Select a CSV file containing invoice data"
+
+msgid "Shipped Orders Awaiting Invoice"
+msgstr "Shipped Orders Awaiting Invoice"
+
+msgid "No orders awaiting invoice found"
+msgstr "No orders awaiting invoice found"
+
+msgid "Refresh Data"
+msgstr "Refresh Data"
+
+msgid "Set Invoice Number"
+msgstr "Set Invoice Number"
+
+msgid "Order"
+msgstr "Order"
+
+msgid "Invoice Number"
+msgstr "Invoice Number"
+
+msgid "Enter invoice number"
+msgstr "Enter invoice number"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Processing Details"
+msgstr "Processing Details"
+
+msgid "Successfully Processed"
+msgstr "Successfully Processed"
+
+msgid "Invoice"
+msgstr "Invoice"
+
+msgid "processed"
+msgstr "processed"
+
+msgid "Skipped"
+msgstr "Skipped"
+
+msgid "skipped"
+msgstr "skipped"
+
+msgid "Failed to Process"
+msgstr "Failed to Process"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "failed"
+msgstr "failed"
+
+msgid "No rows were processed."
+msgstr "No rows were processed."
+
+msgid "Order already has invoice number: "
+msgstr "Order already has invoice number: "
+
+msgid "Invoice number added successfully"
+msgstr "Invoice number added successfully"
+

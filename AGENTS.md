@@ -432,6 +432,30 @@ The plugin implements a critical workaround for a JTL Shop bug where order data 
 
 This ensures Axytos receives identical data in both API calls, which is a strict requirement of their system.
 
+## Template Partials
+
+The plugin uses a structured approach to organize reusable template components:
+
+### Directory Structure
+- **Main templates**: `adminmenu/template/` - Page-level templates
+- **Partials**: `adminmenu/template/partials/` - Reusable template components
+
+### Naming Conventions
+- **Partials**: Use descriptive names without underscore prefix (e.g., `processing_details.tpl`)
+- **Main templates**: Follow existing naming patterns (e.g., `invoices.tpl`, `status.tpl`)
+
+### Include Syntax
+```smarty
+{include file="./partials/partial_name.tpl" variable=$value}
+```
+
+### Best Practices
+- Place reusable template components in `partials/` subdirectory
+- Use descriptive names that reflect the component's purpose
+- Pass data via template variables rather than global scope
+- Maintain consistent styling with Bootstrap 4 framework
+- Include error handling for missing or empty data
+
 ## Sister Project
 
 A sister project axytos-woocommerce exists - it is an Axytos payment plugin for WooCommerce with the same functionality. In the long run, there should be feature parity between both plugins.

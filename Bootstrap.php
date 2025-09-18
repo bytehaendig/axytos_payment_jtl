@@ -69,7 +69,7 @@ class Bootstrap extends Bootstrapper
 
     private function createApiInvoiceIdsController()
     {
-        $controller = new ApiInvoiceIdsController($this->getPlugin(), $this->getMethod());
+        $controller = new ApiInvoiceIdsController($this->getPlugin(), $this->getMethod(), $this->getDB());
         return $controller;
     }
 

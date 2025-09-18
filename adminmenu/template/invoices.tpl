@@ -8,6 +8,8 @@
             {/foreach}
         {/if}
 
+        {include file="./partials/processing_details.tpl" processingResults=$processingResults}
+
         <!-- Upload Invoice CSV Section -->
         <div class="row mb-4">
             <div class="col-12">
@@ -67,7 +69,7 @@
                                                  <td>{$orderInfo.order->cBestellNr}</td>
                                                  <td>{$orderInfo.customerName}</td>
                                                  <td>{$orderInfo.order->dErstellt|germanDate:false}</td>
-                                                 <td>{$orderInfo.order->fGesamtsumme|number_format:2:',':"."} {if $orderInfo.order->Waehrung}{$orderInfo.order->Waehrung->cName}{else}EUR{/if}</td>
+                                                  <td>{$orderInfo.order->fGesamtsumme|number_format:2:',':"."} {if $orderInfo.order->Waehrung && $orderInfo.order->Waehrung->cName}{$orderInfo.order->Waehrung->cName}{else}€{/if}</td>
                                                  <td>{$orderInfo.order->Status}</td>
                                              </tr>
                                          {/foreach}
@@ -174,4 +176,70 @@ document.getElementById('csvFile').addEventListener('change', function(e) {
 .invoice-row:hover {
     background-color: #f8f9fa !important;
 }
+
+/* Processing Details Card */
+.processing-details-card {
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    margin-top: 1rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.processing-details-card .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.375rem 0.375rem 0 0;
+}
+
+.processing-details-card .card-body {
+    padding: 1.25rem;
+}
+
+/* Processing Items */
+.processing-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.processing-item {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    transition: all 0.15s ease-in-out;
+}
+
+.processing-item:hover {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.processing-item-success {
+    border-left: 4px solid #28a745;
+    background-color: #f8fff9;
+}
+
+.processing-item-info {
+    border-left: 4px solid #17a2b8;
+    background-color: #f7feff;
+}
+
+.processing-item-error {
+    border-left: 4px solid #dc3545;
+    background-color: #fff8f8;
+}
+
+.processing-message {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+
+/* Bootstrap 4 compatibility for spacing classes */
+.me-2 { margin-right: 0.5rem !important; }
+.ms-2 { margin-left: 0.5rem !important; }
+.mx-2 { margin-left: 0.5rem !important; margin-right: 0.5rem !important; }
 </style>

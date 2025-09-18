@@ -258,7 +258,8 @@ class StatusController
 
         // Get compact timeline with expandable logs
         $timeline = $this->actionHandler->getCompactTimeline($order->kBestellung);
-        
+        $timeline = $this->addStatusFieldsToTimeline($timeline);
+
         // Also get separate action data for the action buttons (backward compatibility)
         $pendingAndBrokenActions = $this->actionHandler->getPendingAndBrokenActions($order->kBestellung);
         $pendingAndBrokenActions = $this->addStatusFieldsToActions($pendingAndBrokenActions);
@@ -385,10 +386,10 @@ class StatusController
         return array_map(function($action) {
             // Convert to array if it's an object for getStatus() method
             $actionArray = is_object($action) ? (array) $action : $action;
-            
+
             // Get the computed status using ActionHandler's logic
             $status = $this->actionHandler->getStatus($actionArray);
-            
+
             // Add status fields
             $statusData = $this->getStatusData($status, $actionArray);
             if (is_object($action)) {
@@ -404,9 +405,36 @@ class StatusController
                 $action['statusParams'] = $statusData['params'];
                 $action['statusColor'] = $this->getStatusColor($status);
             }
-            
+
             return $action;
         }, $actions);
+    }
+
+    /**
+     * Add pre-computed status fields to timeline entries using ActionHandler's getStatus() method
+     */
+    private function addStatusFieldsToTimeline(array $timeline): array
+    {
+        return array_map(function($entry) {
+            // Create action array for getStatus() method
+            $actionArray = [
+                'bDone' => $entry['status'] === 'completed',
+                'nFailedCount' => $entry['failed_count'] ?? 0,
+                'dFailedAt' => $entry['failed_at']
+            ];
+
+            // Get the computed status using ActionHandler's logic
+            $status = $this->actionHandler->getStatus($actionArray);
+
+            // Add status fields to timeline entry
+            $statusData = $this->getStatusData($status, $actionArray);
+            $entry['statusText'] = $statusData['text'];
+            $entry['statusKey'] = $statusData['key'];
+            $entry['statusParams'] = $statusData['params'];
+            $entry['statusColor'] = $this->getStatusColor($status);
+
+            return $entry;
+        }, $timeline);
     }
 
 

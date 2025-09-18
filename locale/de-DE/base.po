@@ -214,3 +214,111 @@ msgstr "eingereiht"
 
 msgid "No actions found for this order"
 msgstr "Keine Aktionen für diese Bestellung gefunden"
+
+msgid "Invoice data refreshed."
+msgstr "Rechnungsdaten aktualisiert."
+
+msgid "Invoice number %s has been set for order %s"
+msgstr "Rechnungsnummer %s wurde für Bestellung %s gesetzt"
+
+msgid "Invalid order ID or empty invoice number."
+msgstr "Ungültige Bestell-ID oder leere Rechnungsnummer."
+
+msgid "CSV file structure is invalid. Please check the file format."
+msgstr "CSV-Dateistruktur ist ungültig. Bitte überprüfen Sie das Dateiformat."
+
+msgid "CSV file is empty or could not be parsed."
+msgstr "CSV-Datei ist leer oder konnte nicht geparst werden."
+
+msgid "Successfully processed %d invoice updates out of %d total rows."
+msgstr "%d Rechnungsupdates von insgesamt %d Zeilen erfolgreich verarbeitet."
+
+msgid "%d rows failed to process. Check the details below."
+msgstr "%d Zeilen konnten nicht verarbeitet werden. Überprüfen Sie die Details unten."
+
+msgid "Error processing CSV file: %s"
+msgstr "Fehler beim Verarbeiten der CSV-Datei: %s"
+
+msgid "No CSV file was uploaded or upload failed."
+msgstr "Keine CSV-Datei wurde hochgeladen oder Upload fehlgeschlagen."
+
+msgid "Order not found."
+msgstr "Bestellung nicht gefunden."
+
+msgid "Error setting invoice number: %s"
+msgstr "Fehler beim Setzen der Rechnungsnummer: %s"
+
+msgid "Upload Invoice CSV"
+msgstr "Rechnungs-CSV hochladen"
+
+msgid "Select CSV File"
+msgstr "CSV-Datei auswählen"
+
+msgid "Choose CSV file..."
+msgstr "CSV-Datei auswählen..."
+
+msgid "Upload CSV"
+msgstr "CSV hochladen"
+
+msgid "Select a CSV file containing invoice data"
+msgstr "Wählen Sie eine CSV-Datei mit Rechnungsdaten aus"
+
+msgid "Shipped Orders Awaiting Invoice"
+msgstr "Versendete Bestellungen warten auf Rechnung"
+
+msgid "No orders awaiting invoice found"
+msgstr "Keine Bestellungen gefunden, die auf Rechnung warten"
+
+msgid "Refresh Data"
+msgstr "Daten aktualisieren"
+
+msgid "Set Invoice Number"
+msgstr "Rechnungsnummer setzen"
+
+msgid "Order"
+msgstr "Bestellung"
+
+msgid "Invoice Number"
+msgstr "Rechnungsnummer"
+
+msgid "Enter invoice number"
+msgstr "Rechnungsnummer eingeben"
+
+msgid "Cancel"
+msgstr "Abbrechen"
+
+msgid "Processing Details"
+msgstr "Verarbeitungsdetails"
+
+msgid "Successfully Processed"
+msgstr "Erfolgreich verarbeitet"
+
+msgid "Invoice"
+msgstr "Rechnung"
+
+msgid "processed"
+msgstr "verarbeitet"
+
+msgid "Skipped"
+msgstr "Übersprungen"
+
+msgid "skipped"
+msgstr "übersprungen"
+
+msgid "Failed to Process"
+msgstr "Verarbeitung fehlgeschlagen"
+
+msgid "Error"
+msgstr "Fehler"
+
+msgid "failed"
+msgstr "fehlgeschlagen"
+
+msgid "No rows were processed."
+msgstr "Keine Zeilen wurden verarbeitet."
+
+msgid "Order already has invoice number: "
+msgstr "Bestellung hat bereits Rechnungsnummer: "
+
+msgid "Invoice number added successfully"
+msgstr "Rechnungsnummer erfolgreich hinzugefügt"

@@ -64,7 +64,7 @@ class InvoicesController
                 $originalFilename = $_FILES['csv_file']['name'];
 
                 try {
-                    $invoiceHandler = new InvoiceUpdatesHandler($this->method);
+                    $invoiceHandler = new InvoiceUpdatesHandler($this->method, $this->db);
 
                     // Validate CSV structure
                     $isValid = $invoiceHandler->validateCSVStructure($filePath, $originalFilename);
@@ -75,8 +75,6 @@ class InvoicesController
                         $csvHelper = new CSVHelper();
                         $parsedData = $csvHelper->parseCsv($filePath, originalFilename: $originalFilename);
                         $normalizedData = $invoiceHandler->normalizeCSV($parsedData);
-                        error_log(">>>>>> PARSED" . print_r($parsedData, true));
-                        error_log(">>>>>> DATA" . print_r($normalizedData, true));
 
                         if (empty($normalizedData)) {
                             $messages[] = ['type' => 'warning', 'text' => __('CSV file is empty or could not be parsed.')];
@@ -96,9 +94,8 @@ class InvoicesController
                                 $messages[] = ['type' => 'warning', 'text' => sprintf(__('%d rows failed to process. Check the details below.'), $errorCount)];
                             }
 
-                            // Always show detailed processing information
-                            $processingDetails = $this->generateProcessingDetails($processResult['results']);
-                            $messages[] = ['type' => 'info', 'text' => $processingDetails];
+            // Always show detailed processing information
+            $smarty->assign('processingResults', $processResult['results']);
                         }
                     }
                 } catch (\Exception $e) {
@@ -225,24 +222,7 @@ class InvoicesController
         ];
     }
 
-    private function formatDate($dateString): string
-    {
-        if (empty($dateString)) {
-            return 'Unknown';
-        }
 
-        try {
-            $date = new \DateTime($dateString);
-            return $date->format('Y-m-d H:i:s');
-        } catch (\Exception $e) {
-            return htmlspecialchars($dateString);
-        }
-    }
-
-    private function formatCurrency($amount, $currency): string
-    {
-        return number_format((float)$amount, 2, ',', '.') . ' ' . $currency;
-    }
     
     private function setInvoiceNumber(int $orderId, string $invoiceNumber): array
     {
@@ -254,10 +234,6 @@ class InvoicesController
             if (!$order->kBestellung) {
                 return ['success' => false, 'message' => __('Order not found.')];
             }
-            
-
-            
-
             
             // Use the payment method's invoiceWasCreated method
             $this->method->invoiceWasCreated($order->cBestellNr, $invoiceNumber);
@@ -272,65 +248,5 @@ class InvoicesController
         }
     }
 
-    private function generateCsvDebugInfo(array $parsedData): string
-    {
-        $debugInfo = "\n\n<strong>Debug Info:</strong>\n";
 
-        // Show column headers
-        if (!empty($parsedData)) {
-            $firstRow = reset($parsedData);
-            $columns = array_keys($firstRow);
-            $debugInfo .= "<strong>Columns:</strong> " . implode(', ', $columns) . "\n";
-
-            // Show first 3 rows as preview
-            $debugInfo .= "<strong>Preview (first 3 rows):</strong>\n";
-            $previewRows = array_slice($parsedData, 0, 3);
-            foreach ($previewRows as $index => $row) {
-                $debugInfo .= "Row " . ($index + 1) . ": " . json_encode($row) . "\n";
-            }
-
-            // Show total columns and rows info
-            $debugInfo .= "<strong>Total:</strong> " . count($parsedData) . " rows, " . count($columns) . " columns";
-        }
-
-        return $debugInfo;
-    }
-
-    private function generateProcessingDetails(array $results): string
-    {
-        $details = "<strong>Processing Details:</strong>\n";
-
-        $successfulRows = array_filter($results, fn($r) => $r['success']);
-        $errorRows = array_filter($results, fn($r) => !$r['success']);
-
-        // Show successful rows
-        if (!empty($successfulRows)) {
-            $details .= "<strong>Successfully Processed (" . count($successfulRows) . "):</strong>\n<ul>";
-            foreach ($successfulRows as $row) {
-                $invoiceNumber = htmlspecialchars($row['invoiceNumber'] ?? 'N/A');
-                $orderNumber = htmlspecialchars($row['orderNumber'] ?? 'N/A');
-                $details .= "<li style='color: green;'>Order: {$orderNumber} → Invoice: {$invoiceNumber} ✓</li>";
-            }
-            $details .= "</ul>\n";
-        }
-
-        // Show failed rows
-        if (!empty($errorRows)) {
-            $details .= "<strong>Failed to Process (" . count($errorRows) . "):</strong>\n<ul>";
-            foreach ($errorRows as $row) {
-                $invoiceNumber = htmlspecialchars($row['invoiceNumber'] ?? 'N/A');
-                $orderNumber = htmlspecialchars($row['orderNumber'] ?? 'N/A');
-                $error = htmlspecialchars($row['error'] ?? 'Unknown error');
-                $details .= "<li style='color: red;'>Order: {$orderNumber} → Invoice: {$invoiceNumber} - Error: {$error}</li>";
-            }
-            $details .= "</ul>";
-        }
-
-        // If no rows were processed at all
-        if (empty($successfulRows) && empty($errorRows)) {
-            $details .= "No rows were processed.";
-        }
-
-        return $details;
-    }
 }

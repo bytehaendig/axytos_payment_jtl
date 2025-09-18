@@ -3,14 +3,18 @@
 namespace Plugin\axytos_payment\helpers;
 
 use Plugin\axytos_payment\helpers\CSVHelper;
+use Plugin\axytos_payment\helpers\Utils;
+use JTL\DB\DbInterface;
 
 class InvoiceUpdatesHandler
 {
     private $paymentMethod;
+    private DbInterface $db;
 
-    public function __construct($paymentMethod)
+    public function __construct($paymentMethod, DbInterface $db)
     {
         $this->paymentMethod = $paymentMethod;
+        $this->db = $db;
     }
 
     /**
@@ -87,6 +91,22 @@ class InvoiceUpdatesHandler
             }
 
             try {
+                // Check if order already has an invoice number
+                $existingInvoiceNumber = $this->getExistingInvoiceNumber($orderNumber);
+
+                if ($existingInvoiceNumber !== null) {
+                    // Order already has an invoice number - skip processing
+                    $results[] = [
+                        'invoiceNumber' => $invoiceNumber,
+                        'orderNumber' => $orderNumber,
+                        'success' => true,
+                        'error' => null,
+                        'type' => 'skipped',
+                        'message' => sprintf(__('Order already has invoice number: %s'), $existingInvoiceNumber)
+                    ];
+                    continue;
+                }
+
                 // Order lookup and invoice creation is now handled inside the method
                 $this->paymentMethod->invoiceWasCreated($orderNumber, $invoiceNumber);
 
@@ -94,7 +114,9 @@ class InvoiceUpdatesHandler
                     'invoiceNumber' => $invoiceNumber,
                     'orderNumber' => $orderNumber,
                     'success' => true,
-                    'error' => null
+                    'error' => null,
+                    'type' => 'success',
+                    'message' => __('Invoice number added successfully')
                 ];
 
             } catch (\Exception $e) {
@@ -102,6 +124,7 @@ class InvoiceUpdatesHandler
                     'invoiceNumber' => $invoiceNumber,
                     'orderNumber' => $orderNumber,
                     'success' => false,
+                    'type' => 'error',
                     'error' => $e->getMessage()
                 ];
             }
@@ -113,5 +136,30 @@ class InvoiceUpdatesHandler
             'successful_count' => count(array_filter($results, fn($r) => $r['success'])),
             'error_count' => count(array_filter($results, fn($r) => !$r['success']))
         ];
+    }
+
+    /**
+     * Check if an order already has an invoice number set
+     */
+    private function getExistingInvoiceNumber(string $orderNumber): ?string
+    {
+        try {
+            // Load the order to get its ID
+            $order = Utils::loadOrderByOrderNumber($this->db, $orderNumber);
+            if ($order === null) {
+                return null; // Order doesn't exist, so no invoice number
+            }
+
+            // Check for existing invoice number in order attributes
+            $result = $this->db->select('tbestellattribut', 'kBestellung', (int)$order->kBestellung, 'cName', 'invoice_number');
+            if ($result !== null) {
+                return $result->cValue;
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            // If there's any error checking, assume no invoice exists to be safe
+            return null;
+        }
     }
 }

@@ -14,11 +14,11 @@ class ApiInvoiceIdsController
     private InvoiceUpdatesHandler $invoiceUpdatesHandler;
     private string $path = '/axytos/v1/invoice-ids';
 
-    public function __construct($plugin, $paymentMethod)
+    public function __construct($plugin, $paymentMethod, $db)
     {
         $this->plugin = $plugin;
         $this->paymentMethod = $paymentMethod;
-        $this->invoiceUpdatesHandler = new InvoiceUpdatesHandler($paymentMethod);
+        $this->invoiceUpdatesHandler = new InvoiceUpdatesHandler($paymentMethod, $db);
     }
 
     public function getPath(): string

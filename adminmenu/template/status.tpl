@@ -137,7 +137,7 @@
                                          ({$searchResult.customerEmail})
                                      {/if}
                                  </p>
-                                 <p class="mb-1"><strong>{__("Total:")}</strong> {$searchResult.order->fGesamtsumme|number_format:2:',':"."} EUR</p>
+                                  <p class="mb-1"><strong>{__("Total:")}</strong> {$searchResult.order->fGesamtsumme|number_format:2:',':"."} {if $searchResult.order->Waehrung && $searchResult.order->Waehrung->cName}{$searchResult.order->Waehrung->cName}{else}€{/if}</p>
                                  <p class="mb-1"><strong>{__("Status:")}</strong> {$searchResult.order->Status}</p>
                                    <p class="mb-0"><strong>{__("Date:")}</strong> {$searchResult.order->dErstellt|germanDate}</p>
                              </div>
@@ -153,12 +153,12 @@
                                                     <div class="action-summary">
                                                         <div class="action-info">
                                                             <span class="action-icon">
-                                                                <i class="{if $action.status == 'completed'}fas fa-check-circle text-success{elseif $action.status == 'broken'}fas fa-exclamation-circle text-danger{elseif $action.status == 'retryable'}fas fa-exclamation-triangle text-warning{else}fas fa-clock text-info{/if}"></i>
+                                                                 <i class="fas fa-circle action-status-icon action-status-{$action.status}"></i>
                                                             </span>
                                                             <span class="action-name">{$action.action}</span>
-                                                            <span class="action-status badge badge-{$action.level} badge-small">
-                                                                {if $action.status == 'completed'}{__("completed")}{elseif $action.status == 'broken'}{__("broken")}{elseif $action.status == 'retryable'}{__("retrying")}{else}{__("pending")}{/if}
-                                                            </span>
+                                                              <span class="action-status badge badge-small log-level-{$action.level}">
+                                                                  {$action.statusText}
+                                                             </span>
                                                         </div>
                                                         <div class="action-meta">
                                                             <div class="action-timestamp-line">
@@ -186,7 +186,7 @@
                                                             {foreach $action.logs as $log}
                                                                 <div class="log-entry level-{$log.level}">
                                                                     <div class="log-header">
-                                                                        <span class="log-level badge badge-{if $log.level == 'error'}danger{elseif $log.level == 'warning'}warning{elseif $log.level == 'info'}info{else}secondary{/if} badge-small">
+                                                                         <span class="log-level badge badge-small log-level-{$log.level}">
                                                                             {$log.level}
                                                                         </span>
                                                                           <span class="log-timestamp">{$log.timestamp|germanDate:true:true}</span>
@@ -291,7 +291,7 @@
                                                 <td>{$orderInfo.order->cBestellNr}</td>
                                                 <td>{$orderInfo.customerName}</td>
                                                  <td data-order="{$orderInfo.order->dErstellt|strtotime}">{$orderInfo.order->dErstellt|germanDate:false}</td>
-                                                <td>{$orderInfo.order->fGesamtsumme|number_format:2:',':"."} {if $orderInfo.order->Waehrung}{$orderInfo.order->Waehrung->cName}{else}EUR{/if}</td>
+                                                 <td>{$orderInfo.order->fGesamtsumme|number_format:2:',':"."} {if $orderInfo.order->Waehrung && $orderInfo.order->Waehrung->cName}{$orderInfo.order->Waehrung->cName}{else}€{/if}</td>
                                                 <td>{$orderInfo.order->Status}</td>
                                                 <td>
                                                     {assign var="hasAnyActions" value=false}
@@ -313,7 +313,7 @@
                                                                 {assign var="hasAnyActions" value=true}
                                                                   <div class="action-item status-retryable">
                                                                       <strong>{$action.action}</strong>
-                                                                       <span class="badge badge-warning badge-small">{if $action.failed_count > 0}{sprintf(__("retry (failed %dx)"), $action.failed_count)}{else}{__("retry")}{/if}</span>
+                                                                        <span class="badge badge-warning badge-small">{$action.status_text}</span>
                                                                   </div>
                                                             {/foreach}
                                                         {/if}
@@ -324,7 +324,7 @@
                                                                 {assign var="hasAnyActions" value=true}
                                                                   <div class="action-item status-broken">
                                                                       <strong>{$action.action}</strong>
-                                                                       <span class="badge badge-danger badge-small">{if $action.failed_count > 0}{sprintf(__("broken (failed %dx)"), $action.failed_count)}{else}{__("broken")}{/if}</span>
+                                                                        <span class="badge badge-danger badge-small">{$action.status_text}</span>
                                                                   </div>
                                                             {/foreach}
                                                         {/if}
@@ -727,5 +727,17 @@ $(document).ready(function() {
     font-size: 24px;
     line-height: 1;
 }
+
+/* Log level badge colors */
+.log-level-error { background-color: #dc3545; color: white; }
+.log-level-warning { background-color: #ffc107; color: black; }
+.log-level-info { background-color: #17a2b8; color: white; }
+.log-level-debug { background-color: #6c757d; color: white; }
+
+/* Action status icon colors */
+.action-status-completed::before { content: "\f058"; color: #28a745; } /* check-circle */
+.action-status-broken::before { content: "\f06a"; color: #dc3545; } /* exclamation-circle */
+.action-status-retryable::before { content: "\f071"; color: #ffc107; } /* exclamation-triangle */
+.action-status-pending::before { content: "\f017"; color: #17a2b8; } /* clock */
 
 </style>
