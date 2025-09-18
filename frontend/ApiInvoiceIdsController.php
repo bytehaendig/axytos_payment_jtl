@@ -169,8 +169,31 @@ class ApiInvoiceIdsController
                     ], 400);
                 }
 
-                // For JSON input, assume it's already in the expected format
-                // If normalization is needed for JSON, it can be added here
+                // Validate and transform the new JSON structure
+                if (!isset($data['data']) || !is_array($data['data'])) {
+                    return new JsonResponse([
+                        'success' => false,
+                        'error' => 'Invalid JSON structure. Expected format: {"data": [{"orderNumber": "...", "invoiceNumber": "..."}]}'
+                    ], 400);
+                }
+
+                // Transform the data to the expected format for InvoiceUpdatesHandler
+                $transformedData = [];
+                foreach ($data['data'] as $item) {
+                    if (!isset($item['orderNumber']) || !isset($item['invoiceNumber'])) {
+                        return new JsonResponse([
+                            'success' => false,
+                            'error' => 'Invalid item structure. Each item must have "orderNumber" and "invoiceNumber" fields'
+                        ], 400);
+                    }
+
+                    $transformedData[] = [
+                        'orderNumber' => $item['orderNumber'],
+                        'invoiceNumber' => $item['invoiceNumber']
+                    ];
+                }
+
+                $data = $transformedData;
             }
 
             // Process the invoice IDs update

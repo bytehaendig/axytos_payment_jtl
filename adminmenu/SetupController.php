@@ -149,10 +149,16 @@ class SetupController
   -H 'Content-Type: application/json' \\
   -H 'X-Axytos-Webhook-Key: {$webhookKey}' \\
   -d '{
-    \"invoice_ids\": {
-      \"INV001\": \"NEW001\",
-      \"INV002\": \"NEW002\"
-    }
+    \"data\": [
+      {
+        \"orderNumber\": \"ORD-123\",
+        \"invoiceNumber\": \"INV-33939\"
+      },
+      {
+        \"orderNumber\": \"ORD-124\",
+        \"invoiceNumber\": \"INV-33940\"
+      }
+    ]
   }'";
 
         $phpExample = "<?php
@@ -160,9 +166,15 @@ class SetupController
 \$webhookKey = '{$webhookKey}';
 
 \$data = [
-    'invoice_ids' => [
-        'INV001' => 'NEW001',
-        'INV002' => 'NEW002'
+    'data' => [
+        [
+            'orderNumber' => 'ORD-123',
+            'invoiceNumber' => 'INV-33939'
+        ],
+        [
+            'orderNumber' => 'ORD-124',
+            'invoiceNumber' => 'INV-33940'
+        ]
     ]
 ];
 
@@ -194,10 +206,16 @@ webhook_url = '{$webhookUrl}'
 webhook_key = '{$webhookKey}'
 
 data = {
-    'invoice_ids': {
-        'INV001': 'NEW001',
-        'INV002': 'NEW002'
-    }
+    'data': [
+        {
+            'orderNumber': 'ORD-123',
+            'invoiceNumber': 'INV-33939'
+        },
+        {
+            'orderNumber': 'ORD-124',
+            'invoiceNumber': 'INV-33940'
+        }
+    ]
 }
 
 headers = {

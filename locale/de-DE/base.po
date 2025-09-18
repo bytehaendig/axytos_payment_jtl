@@ -322,3 +322,103 @@ msgstr "Bestellung hat bereits Rechnungsnummer: "
 
 msgid "Invoice number added successfully"
 msgstr "Rechnungsnummer erfolgreich hinzugefügt"
+
+msgid "API Configuration"
+msgstr "API Konfiguration"
+
+msgid "API Key:"
+msgstr "API-Schlüssel:"
+
+msgid "Your API key will be encrypted before storing in the database."
+msgstr "Ihr API-Schlüssel wird vor dem Speichern in der Datenbank verschlüsselt."
+
+msgid "Use Sandbox Mode"
+msgstr "Sandbox-Modus verwenden"
+
+msgid "Enable this for testing."
+msgstr "Aktivieren Sie dies zum Testen."
+
+msgid "Webhook Configuration"
+msgstr "Webhook Konfiguration"
+
+msgid "Webhook Status:"
+msgstr "Webhook Status:"
+
+msgid "Configured"
+msgstr "Konfiguriert"
+
+msgid "Not Configured"
+msgstr "Nicht konfiguriert"
+
+msgid "Webhook Documentation"
+msgstr "Webhook Dokumentation"
+
+msgid "Webhook API Key:"
+msgstr "Webhook API-Schlüssel:"
+
+msgid "Generate"
+msgstr "Generieren"
+
+msgid "Your webhook API key will be encrypted before storing in the database."
+msgstr "Ihr Webhook-API-Schlüssel wird vor dem Speichern in der Datenbank verschlüsselt."
+
+msgid "Save Settings"
+msgstr "Einstellungen speichern"
+
+msgid "Webhook Integration Guide"
+msgstr "Webhook Integrationsanleitung"
+
+msgid "Close"
+msgstr "Schließen"
+
+msgid "Authentication"
+msgstr "Authentifizierung"
+
+msgid "Webhook requests must include the"
+msgstr "Webhook-Anfragen müssen den"
+
+msgid "header with your configured webhook API key."
+msgstr "Header mit Ihrem konfigurierten Webhook-API-Schlüssel enthalten."
+
+msgid "Security Note:"
+msgstr "Sicherheitshinweis:"
+
+msgid "Keep your webhook API key secure and never expose it in client-side code or public repositories."
+msgstr "Halten Sie Ihren Webhook-API-Schlüssel sicher und geben Sie ihn niemals in clientseitigem Code oder öffentlichen Repositories preis."
+
+msgid "Endpoint Information"
+msgstr "Endpunkt-Informationen"
+
+msgid "Request Format"
+msgstr "Anfrageformat"
+
+msgid "The webhook expects a JSON payload with invoice updates in the following structure:"
+msgstr "Der Webhook erwartet eine JSON-Payload mit Rechnungsupdates in folgender Struktur:"
+
+msgid "Example Requests"
+msgstr "Beispielanfragen"
+
+msgid "Response Format"
+msgstr "Antwortformat"
+
+msgid "The webhook will respond with a JSON object indicating the result:"
+msgstr "Der Webhook antwortet mit einem JSON-Objekt, das das Ergebnis anzeigt:"
+
+msgid "Integration Notes"
+msgstr "Integrationshinweise"
+
+msgid "Copied to clipboard!"
+msgstr "In Zwischenablage kopiert!"
+
+msgid "Generating..."
+msgstr "Generiere..."
+
+msgid "Generated!"
+msgstr "Generiert!"
+
+msgid "Used for automated data transfer between JTL WaWi and the Axytos Payment plugin."
+msgstr "Wird für automatische Datenübertragung zwischen JTL WaWi und dem Axytos Payment Plugin verwendet."
+
+msgid "Used for communication between Axytos Payment plugin and the Axytos API."
+msgstr "Wird für die Kommunikation zwischen Axytos Payment Plugin und der Axytos API verwendet."
+

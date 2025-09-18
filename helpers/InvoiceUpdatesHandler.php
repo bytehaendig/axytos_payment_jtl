@@ -70,7 +70,7 @@ class InvoiceUpdatesHandler
                 $results[] = [
                     'invoiceNumber' => $row['invoiceNumber'] ?? null,
                     'orderNumber' => $row['orderNumber'] ?? null,
-                    'success' => false,
+                    'status' => 'error',
                     'error' => 'Missing required fields: invoiceNumber or orderNumber'
                 ];
                 continue;
@@ -84,7 +84,7 @@ class InvoiceUpdatesHandler
                 $results[] = [
                     'invoiceNumber' => $invoiceNumber,
                     'orderNumber' => $orderNumber,
-                    'success' => false,
+                    'status' => 'error',
                     'error' => 'Empty invoice number or order number'
                 ];
                 continue;
@@ -99,10 +99,7 @@ class InvoiceUpdatesHandler
                     $results[] = [
                         'invoiceNumber' => $invoiceNumber,
                         'orderNumber' => $orderNumber,
-                        'success' => true,
-                        'error' => null,
-                        'type' => 'skipped',
-                        'message' => sprintf(__('Order already has invoice number: %s'), $existingInvoiceNumber)
+                        'status' => 'skipped'
                     ];
                     continue;
                 }
@@ -113,18 +110,14 @@ class InvoiceUpdatesHandler
                 $results[] = [
                     'invoiceNumber' => $invoiceNumber,
                     'orderNumber' => $orderNumber,
-                    'success' => true,
-                    'error' => null,
-                    'type' => 'success',
-                    'message' => __('Invoice number added successfully')
+                    'status' => 'success'
                 ];
 
             } catch (\Exception $e) {
                 $results[] = [
                     'invoiceNumber' => $invoiceNumber,
                     'orderNumber' => $orderNumber,
-                    'success' => false,
-                    'type' => 'error',
+                    'status' => 'error',
                     'error' => $e->getMessage()
                 ];
             }
@@ -133,8 +126,8 @@ class InvoiceUpdatesHandler
         return [
             'results' => $results,
             'total_processed' => $totalProcessed,
-            'successful_count' => count(array_filter($results, fn($r) => $r['success'])),
-            'error_count' => count(array_filter($results, fn($r) => !$r['success']))
+            'successful_count' => count(array_filter($results, fn($r) => ($r['status'] ?? '') === 'success')),
+            'error_count' => count(array_filter($results, fn($r) => ($r['status'] ?? '') === 'error'))
         ];
     }
 

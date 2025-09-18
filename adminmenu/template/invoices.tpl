@@ -242,4 +242,24 @@ document.getElementById('csvFile').addEventListener('change', function(e) {
 .me-2 { margin-right: 0.5rem !important; }
 .ms-2 { margin-left: 0.5rem !important; }
 .mx-2 { margin-left: 0.5rem !important; margin-right: 0.5rem !important; }
+
+/* Improve label readability by making them darker */
+label {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+
+.form-text.text-muted {
+    color: #6c757d !important;
+}
+
+.card-header h5 {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+
+.modal-title {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
 </style>

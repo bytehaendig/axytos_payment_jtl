@@ -46,9 +46,10 @@ class InvoicesController
                 if ($result['success']) {
                     $smarty->assign('defaultTabbertab', $menuID);
                     $messages[] = ['type' => 'success', 'text' => sprintf(__('Invoice number %s has been set for order %s'), $invoiceNumber, $result['orderNumber'])];
-                } else {
-                    $messages[] = ['type' => 'danger', 'text' => $result['message']];
-                }
+                 } else {
+                     $errorMessage = $result['message'];
+                     $messages[] = ['type' => 'danger', 'text' => $errorMessage];
+                 }
             } else {
                 $messages[] = ['type' => 'danger', 'text' => __('Invalid order ID or empty invoice number.')];
             }
@@ -94,8 +95,29 @@ class InvoicesController
                                 $messages[] = ['type' => 'warning', 'text' => sprintf(__('%d rows failed to process. Check the details below.'), $errorCount)];
                             }
 
+            // Add user-friendly messages to results for template display
+            $resultsWithMessages = array_map(function($result) {
+                $message = '';
+                switch ($result['status']) {
+                    case 'success':
+                        $message = __('Invoice number added successfully');
+                        break;
+                    case 'skipped':
+                        $existingInvoice = $result['invoiceNumber'] ?? 'N/A';
+                        $message = sprintf(__('Order already has invoice number: %s'), $existingInvoice);
+                        break;
+                    case 'error':
+                        $message = $result['error'] ?? __('Unknown error occurred');
+                        break;
+                    default:
+                        $message = __('Processing completed');
+                }
+                $result['message'] = $message;
+                return $result;
+            }, $processResult['results']);
+
             // Always show detailed processing information
-            $smarty->assign('processingResults', $processResult['results']);
+            $smarty->assign('processingResults', $resultsWithMessages);
                         }
                     }
                 } catch (\Exception $e) {

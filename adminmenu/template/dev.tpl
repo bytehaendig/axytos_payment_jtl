@@ -137,13 +137,35 @@
                         <div class="mt-4">
                             <small class="text-muted">
                                 <i class="fas fa-exclamation-triangle"></i> 
-                                <strong>Note:</strong> This is a testing tool for development/staging environments only. 
-                                Use only with orders that use the Axytos payment method.
-                            </small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                                 <strong>Note:</strong> This is a testing tool for development/staging environments only.
+                                 Use only with orders that use the Axytos payment method.
+                             </small>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
+
+<style>
+/* Improve label readability by making them darker */
+label {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+
+.form-text.text-muted {
+    color: #6c757d !important;
+}
+
+.card-header h5 {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+
+strong {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+</style>

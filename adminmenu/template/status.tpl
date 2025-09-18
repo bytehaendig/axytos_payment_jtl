@@ -740,4 +740,20 @@ $(document).ready(function() {
 .action-status-retryable::before { content: "\f071"; color: #ffc107; } /* exclamation-triangle */
 .action-status-pending::before { content: "\f017"; color: #17a2b8; } /* clock */
 
+/* Improve label readability by making them darker */
+strong {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+
+.card-header h5 {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+
+.modal-title {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+
 </style>

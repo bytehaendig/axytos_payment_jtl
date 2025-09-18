@@ -38,6 +38,12 @@ This is the Axytos Payment Plugin for JTL Shop - a payment integration that prov
 - Main database name: `db`
 - Example: `ddev mysql -e "SELECT COUNT(*) FROM axytos_actions;"`
 
+### Internationalization (i18n)
+- **Compile .po to .mo files**: `msgfmt locale/{locale}/base.po -o locale/{locale}/base.mo`
+- **Example**: `msgfmt locale/en-EN/base.po -o locale/en-EN/base.mo`
+- **Supported locales**: `en-EN`, `de-DE`
+- Run after adding new translation strings to .po files to update the binary .mo files
+
 Note: No automated testing framework is currently configured in this codebase.
 
 ## Plugin Routes (JTL Shop 5.2.0+)
@@ -321,6 +327,54 @@ class ExampleHandler
 **Smarty Modifiers:**
 - `sprintf` - For string interpolation with variables (e.g., `{sprintf(__('Message with %s'), $variable)}`)
 - `germanDate` - For German date formatting (e.g., `{$timestamp|germanDate}`)
+
+**UI Logic Guidelines:**
+- **Keep Business Logic in Controllers**: All data processing, message generation, and conditional logic should be handled in controller classes before passing data to templates
+- **Minimize Template Complexity**: Templates should focus on presentation only - avoid complex conditional logic, loops with business rules, or data transformation
+- **Pre-process Data for Templates**: Transform API responses, generate user-friendly messages, and prepare display-ready data in controllers before template assignment
+- **Template Best Practices**:
+  - Use simple `{if}` conditions for display/hide logic only
+  - Avoid complex `|default` fallbacks - ensure controllers provide complete data
+  - Keep variable assignments simple: `{assign var="display" value=$data.field}`
+  - Use includes for reusable components but pass processed data as parameters
+- **Message Generation**: Generate all user-facing messages in controllers based on status/state rather than hardcoding in templates
+- **Data Formatting**: Handle date formatting, number formatting, and text transformations in controllers using PHP functions rather than complex Smarty modifiers
+
+**Example - Good Practice:**
+```php
+// Controller: Process data and generate messages
+$resultsWithMessages = array_map(function($result) {
+    $result['message'] = $this->generateStatusMessage($result['status']);
+    $result['displayDate'] = $this->formatDisplayDate($result['date']);
+    return $result;
+}, $apiResults);
+$smarty->assign('results', $resultsWithMessages);
+```
+
+```smarty
+{* Template: Simple presentation *}
+{foreach $results as $result}
+    <div class="result-item">
+        <span>{$result.message}</span>
+        <small>{$result.displayDate}</small>
+    </div>
+{/foreach}
+```
+
+**Example - Avoid:**
+```smarty
+{* Template: Complex logic (avoid this) *}
+{foreach $results as $result}
+    <div class="result-item">
+        {if $result.status == 'success'}
+            <span>{__('Success message')}</span>
+        {elseif $result.status == 'error'}
+            <span>{$result.error|default:__('Default error')}</span>
+        {/if}
+        <small>{$result.timestamp|strtotime|date_format:'Y-m-d H:i'}</small>
+    </div>
+{/foreach}
+```
 
 **Adding New Admin Tabs:**
 1. Create handler class in `adminmenu/` directory

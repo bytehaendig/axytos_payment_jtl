@@ -323,3 +323,103 @@ msgstr "Order already has invoice number: "
 msgid "Invoice number added successfully"
 msgstr "Invoice number added successfully"
 
+msgid "API Configuration"
+msgstr "API Configuration"
+
+msgid "API Key:"
+msgstr "API Key:"
+
+msgid "Your API key will be encrypted before storing in the database."
+msgstr "Your API key will be encrypted before storing in the database."
+
+msgid "Use Sandbox Mode"
+msgstr "Use Sandbox Mode"
+
+msgid "Enable this for testing."
+msgstr "Enable this for testing."
+
+msgid "Webhook Configuration"
+msgstr "Webhook Configuration"
+
+msgid "Webhook Status:"
+msgstr "Webhook Status:"
+
+msgid "Configured"
+msgstr "Configured"
+
+msgid "Not Configured"
+msgstr "Not Configured"
+
+msgid "Webhook Documentation"
+msgstr "Webhook Documentation"
+
+msgid "Webhook API Key:"
+msgstr "Webhook API Key:"
+
+msgid "Generate"
+msgstr "Generate"
+
+msgid "Your webhook API key will be encrypted before storing in the database."
+msgstr "Your webhook API key will be encrypted before storing in the database."
+
+msgid "Save Settings"
+msgstr "Save Settings"
+
+msgid "Webhook Integration Guide"
+msgstr "Webhook Integration Guide"
+
+msgid "Close"
+msgstr "Close"
+
+msgid "Authentication"
+msgstr "Authentication"
+
+msgid "Webhook requests must include the"
+msgstr "Webhook requests must include the"
+
+msgid "header with your configured webhook API key."
+msgstr "header with your configured webhook API key."
+
+msgid "Security Note:"
+msgstr "Security Note:"
+
+msgid "Keep your webhook API key secure and never expose it in client-side code or public repositories."
+msgstr "Keep your webhook API key secure and never expose it in client-side code or public repositories."
+
+msgid "Endpoint Information"
+msgstr "Endpoint Information"
+
+msgid "Request Format"
+msgstr "Request Format"
+
+msgid "The webhook expects a JSON payload with invoice updates in the following structure:"
+msgstr "The webhook expects a JSON payload with invoice updates in the following structure:"
+
+msgid "Example Requests"
+msgstr "Example Requests"
+
+msgid "Response Format"
+msgstr "Response Format"
+
+msgid "The webhook will respond with a JSON object indicating the result:"
+msgstr "The webhook will respond with a JSON object indicating the result:"
+
+msgid "Integration Notes"
+msgstr "Integration Notes"
+
+msgid "Copied to clipboard!"
+msgstr "Copied to clipboard!"
+
+msgid "Generating..."
+msgstr "Generating..."
+
+msgid "Generated!"
+msgstr "Generated!"
+
+msgid "Used for automated data transfer between JTL WaWi and the Axytos Payment plugin."
+msgstr "Used for automated data transfer between JTL WaWi and the Axytos Payment plugin."
+
+msgid "Used for communication between Axytos Payment plugin and the Axytos API."
+msgstr "Used for communication between Axytos Payment plugin and the Axytos API."
+
+
