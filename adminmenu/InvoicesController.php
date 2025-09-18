@@ -11,6 +11,7 @@ use JTL\Checkout\Bestellung;
 use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 use Plugin\axytos_payment\helpers\Utils;
 use Plugin\axytos_payment\helpers\CSVHelper;
+use Plugin\axytos_payment\helpers\InvoiceUpdatesHandler;
 
 class InvoicesController
 {
@@ -59,21 +60,49 @@ class InvoicesController
 
             // Check if file was uploaded
             if (isset($_FILES['csv_file']) && $_FILES['csv_file']['error'] === UPLOAD_ERR_OK) {
-                $csvHelper = new CSVHelper();
                 $filePath = $_FILES['csv_file']['tmp_name'];
+                $originalFilename = $_FILES['csv_file']['name'];
 
                 try {
-                    $parsedData = $csvHelper->parseCsv($filePath);
+                    $invoiceHandler = new InvoiceUpdatesHandler($this->method);
 
-                    if (empty($parsedData)) {
-                        $messages[] = ['type' => 'warning', 'text' => __('CSV file is empty or could not be parsed.')];
+                    // Validate CSV structure
+                    $isValid = $invoiceHandler->validateCSVStructure($filePath, $originalFilename);
+                    if (!$isValid) {
+                        $messages[] = ['type' => 'danger', 'text' => __('CSV file structure is invalid. Please check the file format.')];
                     } else {
-                        $lineCount = count($parsedData);
-                        $debugInfo = $this->generateCsvDebugInfo($parsedData);
-                        $messages[] = ['type' => 'success', 'text' => sprintf(__('CSV file parsed successfully. Found %d data rows.%s'), $lineCount, $debugInfo)];
+                        // Parse and normalize CSV data
+                        $csvHelper = new CSVHelper();
+                        $parsedData = $csvHelper->parseCsv($filePath, originalFilename: $originalFilename);
+                        $normalizedData = $invoiceHandler->normalizeCSV($parsedData);
+                        error_log(">>>>>> PARSED" . print_r($parsedData, true));
+                        error_log(">>>>>> DATA" . print_r($normalizedData, true));
+
+                        if (empty($normalizedData)) {
+                            $messages[] = ['type' => 'warning', 'text' => __('CSV file is empty or could not be parsed.')];
+                        } else {
+                            // Process invoice updates
+                            $processResult = $invoiceHandler->processInvoiceIdsUpdate($normalizedData);
+
+                            $successfulCount = $processResult['successful_count'];
+                            $errorCount = $processResult['error_count'];
+                            $totalProcessed = $processResult['total_processed'];
+
+                            if ($successfulCount > 0) {
+                                $messages[] = ['type' => 'success', 'text' => sprintf(__('Successfully processed %d invoice updates out of %d total rows.'), $successfulCount, $totalProcessed)];
+                            }
+
+                            if ($errorCount > 0) {
+                                $messages[] = ['type' => 'warning', 'text' => sprintf(__('%d rows failed to process. Check the details below.'), $errorCount)];
+                            }
+
+                            // Always show detailed processing information
+                            $processingDetails = $this->generateProcessingDetails($processResult['results']);
+                            $messages[] = ['type' => 'info', 'text' => $processingDetails];
+                        }
                     }
                 } catch (\Exception $e) {
-                    $messages[] = ['type' => 'danger', 'text' => sprintf(__('Error parsing CSV file: %s'), $e->getMessage())];
+                    $messages[] = ['type' => 'danger', 'text' => sprintf(__('Error processing CSV file: %s'), $e->getMessage())];
                 }
             } else {
                 $messages[] = ['type' => 'danger', 'text' => __('No CSV file was uploaded or upload failed.')];
@@ -265,5 +294,43 @@ class InvoicesController
         }
 
         return $debugInfo;
+    }
+
+    private function generateProcessingDetails(array $results): string
+    {
+        $details = "<strong>Processing Details:</strong>\n";
+
+        $successfulRows = array_filter($results, fn($r) => $r['success']);
+        $errorRows = array_filter($results, fn($r) => !$r['success']);
+
+        // Show successful rows
+        if (!empty($successfulRows)) {
+            $details .= "<strong>Successfully Processed (" . count($successfulRows) . "):</strong>\n<ul>";
+            foreach ($successfulRows as $row) {
+                $invoiceNumber = htmlspecialchars($row['invoiceNumber'] ?? 'N/A');
+                $orderNumber = htmlspecialchars($row['orderNumber'] ?? 'N/A');
+                $details .= "<li style='color: green;'>Order: {$orderNumber} → Invoice: {$invoiceNumber} ✓</li>";
+            }
+            $details .= "</ul>\n";
+        }
+
+        // Show failed rows
+        if (!empty($errorRows)) {
+            $details .= "<strong>Failed to Process (" . count($errorRows) . "):</strong>\n<ul>";
+            foreach ($errorRows as $row) {
+                $invoiceNumber = htmlspecialchars($row['invoiceNumber'] ?? 'N/A');
+                $orderNumber = htmlspecialchars($row['orderNumber'] ?? 'N/A');
+                $error = htmlspecialchars($row['error'] ?? 'Unknown error');
+                $details .= "<li style='color: red;'>Order: {$orderNumber} → Invoice: {$invoiceNumber} - Error: {$error}</li>";
+            }
+            $details .= "</ul>";
+        }
+
+        // If no rows were processed at all
+        if (empty($successfulRows) && empty($errorRows)) {
+            $details .= "No rows were processed.";
+        }
+
+        return $details;
     }
 }

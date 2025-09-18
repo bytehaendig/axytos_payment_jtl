@@ -20,7 +20,7 @@ class InvoiceUpdatesHandler
     {
         $csvHelper = new CSVHelper();
         try {
-            return $csvHelper->validateCsvStructure($filePath, $originalFilename);
+            return $csvHelper->validateCsvStructure($filePath, originalFilename: $originalFilename);
         } catch (\Exception $e) {
             throw new \InvalidArgumentException('CSV validation failed: ' . $e->getMessage());
         }
@@ -28,7 +28,7 @@ class InvoiceUpdatesHandler
 
     /**
      * Normalizes CSV data with German field names to the internal format.
-     * Expected input: [['Rechnungsnummer' => 'value', 'Externe Bestellnummer' => 'value'], ...]
+     * Expected input: [['rechnungsnummer' => 'value', 'externe bestellnummer' => 'value'], ...]
      * Expected output: [['invoiceNumber' => 'value', 'orderNumber' => 'value'], ...]
      */
     public function normalizeCSV(array $data): array
@@ -44,8 +44,8 @@ class InvoiceUpdatesHandler
             }
 
             $normalizedRows[] = [
-                'invoiceNumber' => $row['Rechnungsnummer'] ?? '',
-                'orderNumber' => $row['Externe Bestellnummer'] ?? ''
+                'invoiceNumber' => $row['rechnungsnummer'] ?? '',
+                'orderNumber' => $row['externe bestellnummer'] ?? ''
             ];
         }
 
