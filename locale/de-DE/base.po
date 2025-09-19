@@ -422,3 +422,42 @@ msgstr "Wird für automatische Datenübertragung zwischen JTL WaWi und dem Axyto
 msgid "Used for communication between Axytos Payment plugin and the Axytos API."
 msgstr "Wird für die Kommunikation zwischen Axytos Payment Plugin und der Axytos API verwendet."
 
+msgid "Windows Automation"
+msgstr "Windows Automatisierung"
+
+msgid "Configure webhook key and generate Windows batch scripts for automated invoice data synchronization."
+msgstr "Webhook-Schlüssel konfigurieren und Windows-Batch-Skripte für automatisierte Rechnungsdatensynchronisation generieren."
+
+msgid "Schedule Time:"
+msgstr "Zeitplan:"
+
+msgid "Time when the automation should run daily."
+msgstr "Zeitpunkt, zu dem die Automatisierung täglich ausgeführt werden soll."
+
+msgid "Generate Windows Script"
+msgstr "Windows-Skript generieren"
+
+msgid "How to Use:"
+msgstr "Verwendung:"
+
+msgid "Download the generated batch script"
+msgstr "Das generierte Batch-Skript herunterladen"
+
+msgid "Run the script as Administrator on your Windows system"
+msgstr "Das Skript als Administrator auf Ihrem Windows-System ausführen"
+
+msgid "The script will install itself and create a scheduled task"
+msgstr "Das Skript installiert sich selbst und erstellt eine geplante Aufgabe"
+
+msgid "Automation will run daily at the specified time"
+msgstr "Die Automatisierung wird täglich zur angegebenen Zeit ausgeführt"
+
+msgid "Check the log file for execution status"
+msgstr "Überprüfen Sie die Protokolldatei auf den Ausführungsstatus"
+
+msgid "Generate Secure Key"
+msgstr "Sicheren Schlüssel generieren"
+
+msgid "Error generating automation script. Please check your configuration and try again."
+msgstr "Fehler beim Generieren des Automatisierungsskripts. Bitte überprüfen Sie Ihre Konfiguration und versuchen Sie es erneut."
+

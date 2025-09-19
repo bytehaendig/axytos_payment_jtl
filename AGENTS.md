@@ -181,6 +181,41 @@ $result = $this->db->getCollection(
 
 ## Security Guidelines
 
+### API Key Security - CRITICAL
+
+**🚨 API KEYS MUST NEVER LEAVE THE SERVER SYSTEM**
+
+**❌ NEVER include API keys in:**
+- Generated scripts or batch files
+- Client-side JavaScript code
+- HTML templates or responses
+- Log files (even debug logs)
+- Configuration files that might be downloaded
+- Any external communication
+
+**✅ API keys should only be used:**
+- Server-side in PHP code
+- Encrypted storage in database
+- Secure API calls to external services
+- Never transmitted to client browsers
+
+**Security Best Practices:**
+- Use webhook keys for client-side authentication when needed
+- Use encrypted communication (HTTPS) for all API calls
+
+**Example - WRONG (Security Vulnerability):**
+```php
+// NEVER DO THIS - API key exposed in generated script
+$script = "curl -H 'X-API-Key: $apiKey' https://api.example.com";
+```
+
+**Example - CORRECT:**
+```php
+// API key stays server-side, use webhooks or tokens for client communication
+$webhookUrl = $this->generateWebhookUrl($webhookKey);
+$script = "curl $webhookUrl"; // No sensitive data exposed
+```
+
 ### SQL Query Security - CRITICAL
 
 **🚨 NEVER use string concatenation for SQL queries - this creates SQL injection vulnerabilities!**
@@ -513,6 +548,128 @@ The plugin uses a structured approach to organize reusable template components:
 - Pass data via template variables rather than global scope
 - Maintain consistent styling with Bootstrap 4 framework
 - Include error handling for missing or empty data
+
+## Windows Automation System
+
+The plugin includes a Windows automation system that allows JTL-WaWi users to automatically export invoice data and upload it to the shop system via scheduled tasks.
+
+### Architecture Overview
+
+The automation system consists of three main components:
+
+1. **Server-Side Generation** - PHP code that generates Windows scripts
+2. **Windows Batch Installer** - Self-installing batch script with embedded PowerShell
+3. **PowerShell Automation Script** - Handles CSV generation and HTTP upload
+
+### Implementation Components
+
+#### AutomationHandler (`helpers/AutomationHandler.php`)
+- Generates Windows batch scripts with embedded configuration
+- Handles template processing and variable substitution
+- Validates configuration prerequisites (webhook key, shop URL)
+- Follows existing helper pattern with constructor accepting `AxytosPaymentMethod` and `DbInterface`
+
+#### Windows Script Templates
+- **Batch Installer**: `adminmenu/template/automation/installer.bat.tpl`
+- **PowerShell Script**: `adminmenu/template/automation/export-script.ps1.tpl`
+
+#### SetupController Integration (`adminmenu/SetupController.php`)
+- Handles `generate_script` POST requests
+- Validates automation prerequisites before script generation
+- Serves generated scripts as downloadable files
+- Integrated into existing API Setup tab
+
+#### Admin Interface (`adminmenu/template/api_setup.tpl`)
+- Windows Automation section in API Setup tab
+- Prerequisites validation display
+- Script generation button
+- System requirements and usage instructions
+
+### Script Generation Process
+
+1. **Configuration Validation**: Check webhook key, shop URL accessibility
+2. **Template Processing**: Substitute configuration variables using Smarty
+3. **Script Assembly**: Embed PowerShell script content into batch installer
+4. **File Serving**: Provide script as downloadable .bat file
+
+### Windows Script Architecture
+
+#### Batch Installer Features
+- **Self-contained installation** - Creates PowerShell script during setup
+- **Windows Task Scheduler integration** - Sets up daily automated runs
+- **Execution policy handling** - Uses `-ExecutionPolicy Bypass`
+- **Directory management** - Creates `%APPDATA%\AxytosPaymentJTL\` for data files
+- **Error handling** - Comprehensive validation and fallback mechanisms
+- **Uninstallation support** - Commented uninstall commands for future use
+
+#### PowerShell Script Features
+- **CSV Generation** - Creates dummy invoice data (placeholder for JTL-WaWi integration)
+- **HTTP Upload** - POST multipart/form-data to `/axytos/v1/invoice-ids` endpoint
+- **Retry Logic** - Exponential backoff with configurable retry attempts
+- **Logging** - Detailed logging to `%APPDATA%\AxytosPaymentJTL\axytos_automation.log`
+- **Cleanup** - Automatic temporary file removal
+- **Exit Codes** - Proper success/failure reporting for Task Scheduler
+
+### CSV Data Format
+
+The automation system uses German CSV format with semicolon delimiters:
+```csv
+"Rechnungsnummer";"Externe Bestellnummer";"Name"
+"INV-1234";"RE-10018";"Bla"
+"INV-1235";"RE-10019";"Foo"
+```
+
+### Security Considerations
+
+- **Webhook Key Usage**: Uses webhook key (not API key) for client-side authentication
+- **No Sensitive Data Exposure**: API keys never included in generated scripts
+- **AppData Storage**: Uses standard Windows application data directories
+- **HTTPS Communication**: All HTTP requests use encrypted connections
+
+### System Requirements
+
+#### Windows Compatibility
+- **Minimum**: Windows 7 SP1 with PowerShell 3.0
+- **Recommended**: Windows 10/11 with PowerShell 5.1+
+- **Dependencies**: Built-in Windows components only (no external dependencies)
+
+#### Permissions
+- **Installation**: Standard user permissions (administrator recommended for Task Scheduler)
+- **Runtime**: User write access to `%APPDATA%` and `%TEMP%` directories
+- **Network**: Outbound HTTPS access to configured shop URL
+
+### Integration with JTL-WaWi
+
+The current implementation provides dummy CSV data as a placeholder. Future integration will:
+- Export actual invoice data from JTL-WaWi
+- Support configurable data mapping
+- Handle JTL-WaWi database connections
+- Provide real-time synchronization
+
+### Troubleshooting
+
+Common issues and solutions:
+- **PowerShell Execution Policy**: Script uses `-ExecutionPolicy Bypass`
+- **Task Scheduler Permissions**: Run installer as administrator if needed
+- **Network Connectivity**: Verify HTTPS access to shop URL
+- **Directory Permissions**: Automatic fallback to script directory if AppData creation fails
+
+### File Locations
+
+Generated scripts create the following directory structure:
+```
+%APPDATA%\AxytosPaymentJTL\
+├── axytos_automation.log    # Main log file
+├── version.txt              # Installation version tracking
+└── powershell.log          # PowerShell-specific logs
+
+Script Installation Directory:
+├── installer.bat           # Downloaded installer
+├── axytos_export.ps1      # Generated PowerShell script
+└── automation_runner.bat  # Task Scheduler runner
+```
+
+This automation system provides a bridge between JTL-WaWi and the shop system, enabling automatic invoice data synchronization without manual intervention.
 
 ## Sister Project
 
