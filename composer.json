@@ -6,15 +6,18 @@
         "psr-4": {
             "JTL\\": "../../includes/src/",
             "Plugin\\axytos_payment\\": "./"
-        },
-        "exclude-from-classmap": [
-            "vendor/"
-        ]
+        }
     },
     "require": {
         "php": ">=7.4"
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "require-dev": {
+        "phpunit/phpunit": "^9.5",
         "jetbrains/phpstorm-stubs": "^2024.3"
     }
 }

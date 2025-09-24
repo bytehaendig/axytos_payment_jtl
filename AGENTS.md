@@ -44,7 +44,36 @@ This is the Axytos Payment Plugin for JTL Shop - a payment integration that prov
 - **Supported locales**: `en-EN`, `de-DE`
 - Run after adding new translation strings to .po files to update the binary .mo files
 
-Note: No automated testing framework is currently configured in this codebase.
+## Testing
+
+### Current Testing Setup
+- **Framework**: PHPUnit 9.6 (installed via Composer)
+- **Test Directory**: `tests/`
+- **Base Test Class**: `tests/BaseTestCase.php` (extends `PHPUnit\\Framework\\TestCase`)
+
+### Running Tests
+- **Inside container**: `ddev exec -d /var/www/html/shop/plugins/axytos_payment vendor/bin/phpunit -c phpunit.xml`
+- **Locally**: `vendor/bin/phpunit -c phpunit.xml`
+
+### Test Structure
+```
+tests/
+├── bootstrap.php              # Test environment setup (loads Composer autoloader)
+├── BaseTestCase.php           # Shared base class for tests
+├── Unit/                      # Unit tests (no external dependencies)
+│   └── ExampleTest.php        # PHPUnit-based example tests
+└── Integration/               # Integration tests (database, APIs)
+    └── (future integration tests)
+```
+
+### Test Guidelines
+- Use PHPUnit assertions and mocks
+- Database testing: Use transactions that rollback; never modify production data
+- Mock external APIs: Use PHPUnit mocks for Axytos API calls
+- Test naming: Follow `testMethodName` convention
+
+### PHPUnit Setup Notes
+- If autoloading breaks, run `composer dump-autoload -o`
 
 ## Plugin Routes (JTL Shop 5.2.0+)
 
