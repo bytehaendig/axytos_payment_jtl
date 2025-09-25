@@ -1,0 +1,8 @@
+[tasks.start]
+run = "ddev start && ddev share"
+
+[tasks.stop]
+run = "ddev stop"
+
+[tasks.test]
+run = "ddev exec -d /var/www/html/shop/plugins/axytos_payment vendor/bin/phpunit -c phpunit.xml --testdox"
