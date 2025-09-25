@@ -77,17 +77,17 @@ function html_decode_recursive($data) {
  */
 class DataFormatter
 {
-    private Bestellung $order;
+    private object $order;
     private Order $orderHelper;
 
-    public function __construct(Bestellung $order)
+    public function __construct(object $order, ?Order $orderHelper = null)
     {
         // decode HTML entities in order data
         // this is needed because JTL sometimes gives the order data with HTML entities encoded
         $decodedOrder = html_decode_recursive($order);
         $this->order = $decodedOrder;
         // helper
-        $this->orderHelper = new Order($decodedOrder);
+        $this->orderHelper = $orderHelper ?? new Order($decodedOrder);
     }
 
     public function getExternalOrderId(): string
@@ -198,7 +198,7 @@ class DataFormatter
         return [
             "personalData" => [
                 "externalCustomerId" => (string)$customerId,
-                "language" => Frontend::getInstance()->getLanguage()->cISOSprache,
+                "language" => $this->orderHelper->getLanguage(),
                 "email" => $customer->cMail,
                 "mobilePhoneNumber" => $customer->cMobil ? $customer->cMobil : $customer->cTel ?? '',
             ],

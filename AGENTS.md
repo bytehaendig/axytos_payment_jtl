@@ -72,6 +72,86 @@ tests/
 - Mock external APIs: Use PHPUnit mocks for Axytos API calls
 - Test naming: Follow `testMethodName` convention
 
+### PHPUnit Best Practices
+
+#### Test Structure & Organization
+- **Arrange-Act-Assert Pattern**: Always structure tests with clear arrange-act-assert comments
+- **One Test Per Behavior**: Each test should verify one specific behavior or edge case
+- **Descriptive Test Names**: Use descriptive names that explain what the test verifies
+- **Test File Organization**: Place tests in `tests/Unit/` for unit tests, `tests/Integration/` for integration tests
+
+#### Test Setup Strategy for Unit Tests
+- **Avoid Heavy Shared Setup**: Don't use complex `setUp()` methods that create shared fixtures (does not apply to integration tests)
+- **Self-Contained Tests**: Each test should arrange its own data for clarity and independence
+- **Helper Methods**: Create private helper methods for common mock/data creation patterns
+- **Balance Duplication**: Some duplication in tests is acceptable for readability
+
+**Example - Good Practice:**
+```php
+public function testGetExternalOrderId(): void
+{
+    // Arrange
+    $order = $this->createBasicOrder();
+    $dataFormatter = $this->createDataFormatter($order);
+
+    // Act
+    $result = $dataFormatter->getExternalOrderId();
+
+    // Assert
+    $this->assertEquals('ORDER123', $result);
+}
+
+private function createBasicOrder(): object
+{
+    return (object) ['cBestellNr' => 'ORDER123'];
+}
+```
+
+**Example - Avoid:**
+```php
+protected function setUp(): void
+{
+    $this->dataFormatter = new DataFormatter($this->createComplexOrder());
+}
+
+public function testGetExternalOrderId(): void
+{
+    $result = $this->dataFormatter->getExternalOrderId();
+    $this->assertEquals('ORDER123', $result);
+}
+```
+
+#### Mock Creation Patterns
+- **Consistent Mock Helpers**: Create helper methods for commonly mocked objects
+- **Descriptive Mock Methods**: Name helpers clearly (e.g., `createMockCustomer()`, `createMockCurrency()`)
+- **Default Values**: Provide sensible defaults in mock helpers
+- **Override When Needed**: Allow parameters to customize mocks for specific test cases
+
+**Example Mock Helper:**
+```php
+private function createMockCustomer(): \JTL\Customer\Customer
+{
+    $mockCustomer = $this->createMock(\JTL\Customer\Customer::class);
+    $mockCustomer->cMail = 'test@example.com';
+    $mockCustomer->cMobil = '123456789';
+    return $mockCustomer;
+}
+```
+
+#### Security Testing Guidelines
+- **Never Test Real API Keys**: Use mock API clients and test data
+- **Mock External Services**: Always mock Axytos API calls in unit tests
+
+#### Integration Testing
+- **Separate from Unit Tests**: Place integration tests in `tests/Integration/`
+- **Test Real Dependencies**: Use real database connections and external services (in test environment)
+- **Environment Isolation**: Run integration tests in isolated test environments
+- **Data Cleanup**: Thoroughly clean up test data after integration tests
+
+#### Test Maintenance
+- **Keep Tests Updated**: Update tests when changing production code
+- **Remove Obsolete Tests**: Delete tests that no longer provide value
+
 ### PHPUnit Setup Notes
 - If autoloading breaks, run `composer dump-autoload -o`
 
