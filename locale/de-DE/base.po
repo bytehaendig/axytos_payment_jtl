@@ -461,3 +461,25 @@ msgstr "Sicheren Schlüssel generieren"
 msgid "Error generating automation script. Please check your configuration and try again."
 msgstr "Fehler beim Generieren des Automatisierungsskripts. Bitte überprüfen Sie Ihre Konfiguration und versuchen Sie es erneut."
 
+msgid "Settings saved successfully."
+msgstr "Einstellungen erfolgreich gespeichert."
+
+msgid "Secure webhook key generated successfully. Click \"Save Settings\" to store it."
+msgstr "Sicherer Webhook-Schlüssel erfolgreich generiert. Klicken Sie auf \"Einstellungen speichern\", um ihn zu speichern."
+
+msgid "Prerequisites validated successfully."
+msgstr "Voraussetzungen erfolgreich validiert."
+
+msgid "Webhook sent successfully"
+msgstr "Webhook erfolgreich gesendet"
+
+msgid "Webhook failed with status: %s"
+msgstr "Webhook fehlgeschlagen mit Status: %s"
+
+msgid "Response:"
+msgstr "Antwort:"
+
+msgid "Webhook key must be configured before generating automation script."
+msgstr "Webhook-Schlüssel muss konfiguriert werden, bevor das Automatisierungsskript generiert wird."
+
+

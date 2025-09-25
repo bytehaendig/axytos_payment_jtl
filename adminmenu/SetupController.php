@@ -43,7 +43,7 @@ class SetupController
                 // Add success message
                 $messages[] = [
                     'type' => 'success',
-                    'text' => 'Settings saved successfully.'
+                    'text' => __('Settings saved successfully.')
                 ];
             }
         }
@@ -57,7 +57,7 @@ class SetupController
             $generatedKey = $this->generateSecureWebhookKey();
             $messages[] = [
                 'type' => 'success',
-                'text' => 'Secure webhook key generated successfully. Click "Save Settings" to store it.'
+                'text' => __('Secure webhook key generated successfully. Click "Save Settings" to store it.')
             ];
             // Pre-populate the webhook key field with generated key
             $webhookApiKey = $generatedKey;
@@ -65,22 +65,37 @@ class SetupController
 
         // Handle automation script generation request
         if (Request::postInt('generate_script') === 1 && Form::validateToken()) {
-            $automationResult = $this->handleAutomationScriptGeneration();
-            if ($automationResult['success']) {
-                $messages[] = [
-                    'type' => 'success',
-                    'text' => $automationResult['message']
-                ];
-                // If download was requested, exit here to send file
-                if ($automationResult['download']) {
-                    $this->downloadAutomationScript($automationResult['script_content'], $automationResult['filename']);
-                    exit;
-                }
-            } else {
+            // Validate prerequisites
+            $validationResult = $this->validateAutomationPrerequisites();
+            if (!$validationResult['valid']) {
                 $messages[] = [
                     'type' => 'error',
-                    'text' => $automationResult['message']
+                    'text' => $validationResult['message']
                 ];
+            } else {
+                $automationHandler = new AutomationHandler($this->plugin->getPaths()->getAdminPath());
+                $scheduleTime = Request::postVar('schedule_time', '09:00');
+                $pluginVersion = $this->plugin->getMeta()->getVersion();
+                $webhookKey = $this->method->getSetting('webhook_api_key');
+                $shopUrl = Shop::getURL();
+                $automationResult = $automationHandler->generateAutomationScript($smarty, $webhookKey, $shopUrl, $scheduleTime, $pluginVersion);
+            
+                if ($automationResult['success']) {
+                    $messages[] = [
+                        'type' => 'success',
+                        'text' => $automationResult['message']
+                    ];
+                    // If download was requested, exit here to send file
+                    if ($automationResult['download']) {
+                        $this->downloadAutomationScript($automationResult['script_content'], $automationResult['filename']);
+                        exit;
+                    }
+                } else {
+                    $messages[] = [
+                        'type' => 'error',
+                        'text' => $automationResult['message']
+                    ];
+                }
             }
         }
 
@@ -125,13 +140,8 @@ class SetupController
 
     private function getWebhookConfiguration(): array
     {
-        // Get base URL for webhook endpoint
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $baseUrl = $protocol . '://' . $host;
-
         // Webhook endpoint
-        $webhookUrl = $baseUrl . '/axytos/v1/invoice-ids';
+        $webhookUrl = Shop::getURL() . '/axytos/v1/invoice-ids';
 
         // Get webhook key status
         $webhookKey = $this->method->getSetting('webhook_api_key');
@@ -219,9 +229,9 @@ curl_setopt(\$ch, CURLOPT_RETURNTRANSFER, true);
 curl_close(\$ch);
 
 if (\$httpCode === 200) {
-    echo 'Webhook sent successfully';
+    echo '" . __('Webhook sent successfully') . "';
 } else {
-    echo 'Webhook failed with status: ' . \$httpCode;
+    echo '" . sprintf(__('Webhook failed with status: %s'), '\$httpCode') . "';
 }
 ?>";
 
@@ -252,11 +262,11 @@ headers = {
 response = requests.post(webhook_url, json=data, headers=headers)
 
 if response.status_code == 200:
-    print('Webhook sent successfully')
-    print('Response:', response.json())
+    print('" . __('Webhook sent successfully') . "')
+    print('" . __('Response:') . "', response.json())
 else:
-    print(f'Webhook failed with status: {response.status_code}')
-    print('Response:', response.text)";
+    print(f'" . sprintf(__('Webhook failed with status: %s'), '{response.status_code}') . "')
+    print('" . __('Response:') . "', response.text)";
 
         return [
             'curl' => $curlExample,
@@ -266,64 +276,7 @@ else:
     }
 
     /**
-     * Handle automation script generation request
-     */
-    private function handleAutomationScriptGeneration(): array
-    {
-        try {
-            // Validate prerequisites
-            $validationResult = $this->validateAutomationPrerequisites();
-            if (!$validationResult['valid']) {
-                return [
-                    'success' => false,
-                    'message' => $validationResult['message'],
-                    'download' => false
-                ];
-            }
-
-            // Create automation handler
-            $automationHandler = new AutomationHandler($this->method, $this->db);
-
-            // Generate the script
-            $scriptContent = $automationHandler->generateBatchScript();
-
-            // Get schedule time from request (default to 09:00)
-            $scheduleTime = Request::postVar('schedule_time', '09:00');
-
-            // Process template variables
-            $templateVars = [
-                'SHOP_URL' => $this->getShopUrl(),
-                'WEBHOOK_KEY' => $this->method->getSetting('webhook_api_key'),
-                'SCHEDULE_TIME' => $scheduleTime,
-                'TIMESTAMP' => date('Y-m-d H:i:s'),
-                'PLUGIN_VERSION' => $this->plugin->getMeta()->getVersion()
-            ];
-
-            // Replace template variables
-            $processedScript = $this->processTemplate($scriptContent, $templateVars);
-
-            // Generate filename
-            $filename = 'axytos_automation_' . date('Y-m-d_H-i-s') . '.bat';
-
-            return [
-                'success' => true,
-                'message' => 'Automation script generated successfully. After installation, please check and edit the JTL-WaWi configuration parameters in the generated PowerShell script.',
-                'script_content' => $processedScript,
-                'filename' => $filename,
-                'download' => true
-            ];
-
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'message' => 'Failed to generate automation script: ' . $e->getMessage(),
-                'download' => false
-            ];
-        }
-    }
-
-    /**
-     * Validate automation prerequisites
+     * Validate automation prerequisites with detailed messages
      */
     private function validateAutomationPrerequisites(): array
     {
@@ -332,74 +285,14 @@ else:
         if (empty($webhookKey)) {
             return [
                 'valid' => false,
-                'message' => 'Webhook key must be configured before generating automation script.'
-            ];
-        }
-
-        // Check if API key is configured (for validation purposes)
-        $apiKey = $this->method->getSetting('api_key');
-        if (empty($apiKey)) {
-            return [
-                'valid' => false,
-                'message' => 'API key must be configured before generating automation script.'
+                'message' => __('Webhook key must be configured before generating automation script.')
             ];
         }
 
         return [
             'valid' => true,
-            'message' => 'Prerequisites validated successfully.'
+            'message' => __('Prerequisites validated successfully.')
         ];
-    }
-
-    /**
-     * Get the shop URL for the automation script
-     */
-    private function getShopUrl(): string
-    {
-        // Get base URL for shop
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $baseUrl = $protocol . '://' . $host;
-
-        return rtrim($baseUrl, '/');
-    }
-
-    /**
-     * Process template variables in script content
-     */
-    private function processTemplate(string $template, array $variables): string
-    {
-        $processed = $template;
-
-        foreach ($variables as $placeholder => $value) {
-            $processed = str_replace('{{' . $placeholder . '}}', $value, $processed);
-        }
-
-        return $processed;
-    }
-
-    /**
-     * Download automation script as file
-     */
-    private function downloadAutomationScript(string $content, string $filename): void
-    {
-        // Set headers for file download
-        header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Content-Length: ' . strlen($content));
-        header('Cache-Control: private, max-age=0, must-revalidate');
-        header('Pragma: public');
-
-        // Clear any output buffers
-        if (ob_get_level()) {
-            ob_clean();
-        }
-
-        // Output the content
-        echo $content;
-
-        // Exit to prevent any further output
-        exit;
     }
 
     /**
@@ -443,5 +336,31 @@ else:
             'scheduleOptions' => $scheduleOptions,
             'validationMessage' => $automationReady ? '' : $validationResult['message']
         ];
+    }
+
+
+
+    /**
+     * Download automation script as file
+     */
+    private function downloadAutomationScript(string $content, string $filename): void
+    {
+        // Set headers for file download
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . strlen($content));
+        header('Cache-Control: private, max-age=0, must-revalidate');
+        header('Pragma: public');
+
+        // Clear any output buffers
+        if (ob_get_level()) {
+            ob_clean();
+        }
+
+        // Output the content
+        echo $content;
+
+        // Exit to prevent any further output
+        exit;
     }
 }

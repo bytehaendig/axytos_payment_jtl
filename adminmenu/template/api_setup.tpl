@@ -91,9 +91,10 @@
                     <ol class="text-muted">
                         <li>{__('Download the generated batch script')}</li>
                         <li>{__('Run the script as Administrator on your Windows system')}</li>
-                        <li>{__('The script will install itself and create a scheduled task')}</li>
+                        <li>{__('The script will install itself, create a scheduled task, and generate an uninstall script')}</li>
                         <li>{__('Automation will run daily at the specified time')}</li>
                         <li>{__('Check the log file for execution status')}</li>
+                        <li>{__('To remove the automation system, run the generated uninstall.bat script')}</li>
                     </ol>
                 </div>
             {/if}
