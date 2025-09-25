@@ -1,486 +1,712 @@
 msgid ""
 msgstr ""
+"Report-Msgid-Bugs-To: dev@axytos.com\n"
+"POT-Creation-Date: 2025-09-25 16:46+0200\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
-msgid "Axytos Payment"
-msgstr "Axytos - Pay Later"
+#: adminmenu/StatusController.php:40
+msgid "Status data refreshed."
+msgstr "Status data refreshed."
 
-msgid "Axytos payment integration for JTL Shop"
-msgstr "Axytos payment integration for JTL Shop"
-
-msgid "API Setup"
-msgstr "API Setup"
-
-msgid "Pay Later"
-msgstr "Pay Later"
-
-msgid "This payment method can only be used with payment before order completion"
-msgstr "This payment method can only be used with payment before order completion"
-
-msgid "Cron Status"
-msgstr "Cron Status"
-
-msgid "Last Run:"
-msgstr "Last Run:"
-
-msgid "Never"
-msgstr "Never"
-
-msgid "Next Run:"
-msgstr "Next Run:"
-
-msgid "Unknown"
-msgstr "Unknown"
-
-msgid "Are you sure you want to reset stuck cron jobs? This will set their isRunning status to 0."
-msgstr "Are you sure you want to reset stuck cron jobs? This will set their isRunning status to 0."
-
-msgid "Reset"
-msgstr "Reset"
-
-msgid "Total Orders"
-msgstr "Total Orders"
-
-msgid "Orders with actions"
-msgstr "Orders with actions"
-
-msgid "Order ID/Number"
-msgstr "Order ID/Number"
-
-msgid "Pending"
-msgstr "Pending"
-
-msgid "Actions waiting"
-msgstr "Actions waiting"
-
-msgid "Process All"
-msgstr "Process All"
-
-msgid "Broken"
-msgstr "Broken"
-
-msgid "Need attention"
-msgstr "Need attention"
-
-msgid "Order Details:"
-msgstr "Order Details:"
-
-msgid "Customer:"
-msgstr "Customer:"
-
-msgid "Total:"
-msgstr "Total:"
-
-msgid "Status:"
-msgstr "Status:"
-
-msgid "Date:"
-msgstr "Date:"
-
-msgid "Actions"
-msgstr "Actions"
-
-msgid "Created:"
-msgstr "Created:"
-
-msgid "Order Actions"
-msgstr "Order Actions"
-
-msgid "Are you sure you want to retry all broken actions for this order? This will attempt to process them immediately."
-msgstr "Are you sure you want to retry all broken actions for this order? This will attempt to process them immediately."
-
-msgid "Retry Broken Actions"
-msgstr "Retry Broken Actions"
-
-msgid "Are you sure you want to remove the failed '%s' action? You are responsible for communicating the necessary changes to Axytos to ensure that further processing of the order is guaranteed. This action cannot be undone."
-msgstr "Are you sure you want to remove the failed '%s' action? You are responsible for communicating the necessary changes to Axytos to ensure that further processing of the order is guaranteed. This action cannot be undone."
-
-msgid "Remove Broken Action"
-msgstr "Remove Broken Action"
-
-msgid "Action Log"
-msgstr "Action Log"
-
-msgid "Time"
-msgstr "Time"
-
-msgid "Level"
-msgstr "Level"
-
-msgid "Action"
-msgstr "Action"
-
-msgid "Message"
-msgstr "Message"
-
-msgid "Orders with Pending and Broken Actions"
-msgstr "Orders with Pending and Broken Actions"
-
-msgid "Recent Orders"
-msgstr "Recent Orders"
-
-msgid "Order Number"
-msgstr "Order Number"
-
-msgid "Customer"
-msgstr "Customer"
-
-msgid "Status"
-msgstr "Status"
-
-msgid "Pending/Broken Actions"
-msgstr "Pending/Broken Actions"
-
-msgid "pending"
-msgstr "pending"
-
-msgid "retry"
-msgstr "retry"
-
-msgid "retry (failed %dx)"
-msgstr "retry (failed %dx)"
-
-msgid "broken"
-msgstr "broken"
-
-msgid "broken (failed %dx)"
-msgstr "broken (failed %dx)"
-
-msgid "completed"
-msgstr "completed"
-
-msgid "Orders"
-msgstr "Orders"
-
-msgid "No orders found."
-msgstr "No orders found."
-
-msgid "Successfully processed %d pending action(s)."
-msgstr "Successfully processed %d pending action(s)."
-
-msgid "%d action(s) failed processing."
-msgstr "%d action(s) failed processing."
-
-msgid "No pending actions found to process."
-msgstr "No pending actions found to process."
-
-msgid "Are you sure you want to process all pending actions?"
-msgstr "Are you sure you want to process all pending actions?"
-
-msgid "Successfully retried %d broken action(s) for order #%d."
-msgstr "Successfully retried %d broken action(s) for order #%d."
-
-msgid "%d action(s) still failed for order #%d."
-msgstr "%d action(s) still failed for order #%d."
-
-msgid "No broken actions found for order #%d."
-msgstr "No broken actions found for order #%d."
-
-msgid "Successfully removed broken action \"%s\" for order #%d."
-msgstr "Successfully removed broken action \"%s\" for order #%d."
-
-msgid "Action \"%s\" for order #%d could not be removed (may not be broken or not exist)."
-msgstr "Action \"%s\" for order #%d could not be removed (may not be broken or not exist)."
-
-msgid "No stuck Axytos cron jobs found."
-msgstr "No stuck Axytos cron jobs found."
-
-msgid "Successfully reset %d stuck Axytos cron job(s)."
-msgstr "Successfully reset %d stuck Axytos cron job(s)."
-
-msgid "Failed to reset any stuck cron jobs."
-msgstr "Failed to reset any stuck cron jobs."
-
+#: adminmenu/StatusController.php:80
 msgid "Order not found or not using Axytos payment method."
 msgstr "Order not found or not using Axytos payment method."
 
-msgid "Actions Overview"
-msgstr "Actions Overview"
-
-msgid "log entry"
-msgstr "log entry"
-
-msgid "log entries"
-msgstr "log entries"
-
-msgid "Detailed log entries for"
-msgstr "Detailed log entries for"
-
-msgid "retrying"
-msgstr "retrying"
-
-msgid "queued"
-msgstr "queued"
-
-msgid "No actions found for this order"
-msgstr "No actions found for this order"
-
-msgid "Invoice data refreshed."
-msgstr "Invoice data refreshed."
-
-msgid "Invoice number %s has been set for order %s"
-msgstr "Invoice number %s has been set for order %s"
-
-msgid "Invalid order ID or empty invoice number."
-msgstr "Invalid order ID or empty invoice number."
-
-msgid "CSV file structure is invalid. Please check the file format."
-msgstr "CSV file structure is invalid. Please check the file format."
-
-msgid "CSV file is empty or could not be parsed."
-msgstr "CSV file is empty or could not be parsed."
-
-msgid "Successfully processed %d invoice updates out of %d total rows."
-msgstr "Successfully processed %d invoice updates out of %d total rows."
-
-msgid "%d rows failed to process. Check the details below."
-msgstr "%d rows failed to process. Check the details below."
-
-msgid "Error processing CSV file: %s"
-msgstr "Error processing CSV file: %s"
-
-msgid "No CSV file was uploaded or upload failed."
-msgstr "No CSV file was uploaded or upload failed."
-
-msgid "Order not found."
-msgstr "Order not found."
-
-msgid "Error setting invoice number: %s"
-msgstr "Error setting invoice number: %s"
-
-msgid "Upload Invoice CSV"
-msgstr "Upload Invoice CSV"
-
-msgid "Select CSV File"
-msgstr "Select CSV File"
-
-msgid "Choose CSV file..."
-msgstr "Choose CSV file..."
-
-msgid "Upload CSV"
-msgstr "Upload CSV"
-
-msgid "Select a CSV file containing invoice data"
-msgstr "Select a CSV file containing invoice data"
-
-msgid "Shipped Orders Awaiting Invoice"
-msgstr "Shipped Orders Awaiting Invoice"
-
-msgid "No orders awaiting invoice found"
-msgstr "No orders awaiting invoice found"
-
-msgid "Refresh Data"
-msgstr "Refresh Data"
-
-msgid "Set Invoice Number"
-msgstr "Set Invoice Number"
-
-msgid "Order"
-msgstr "Order"
-
-msgid "Invoice Number"
-msgstr "Invoice Number"
-
-msgid "Enter invoice number"
-msgstr "Enter invoice number"
-
-msgid "Cancel"
-msgstr "Cancel"
-
-msgid "Processing Details"
-msgstr "Processing Details"
-
-msgid "Successfully Processed"
-msgstr "Successfully Processed"
-
-msgid "Invoice"
-msgstr "Invoice"
-
-msgid "processed"
-msgstr "processed"
-
-msgid "Skipped"
-msgstr "Skipped"
-
-msgid "skipped"
-msgstr "skipped"
-
-msgid "Failed to Process"
-msgstr "Failed to Process"
-
-msgid "Error"
-msgstr "Error"
-
-msgid "failed"
-msgstr "failed"
-
-msgid "No rows were processed."
-msgstr "No rows were processed."
-
-msgid "Order already has invoice number: "
-msgstr "Order already has invoice number: "
-
-msgid "Invoice number added successfully"
-msgstr "Invoice number added successfully"
-
-msgid "API Configuration"
-msgstr "API Configuration"
-
-msgid "API Key:"
-msgstr "API Key:"
-
-msgid "Your API key will be encrypted before storing in the database."
-msgstr "Your API key will be encrypted before storing in the database."
-
-msgid "Use Sandbox Mode"
-msgstr "Use Sandbox Mode"
-
-msgid "Enable this for testing."
-msgstr "Enable this for testing."
-
-msgid "Webhook Configuration"
-msgstr "Webhook Configuration"
-
-msgid "Webhook Status:"
-msgstr "Webhook Status:"
-
-msgid "Configured"
-msgstr "Configured"
-
-msgid "Not Configured"
-msgstr "Not Configured"
-
-msgid "Webhook Documentation"
-msgstr "Webhook Documentation"
-
-msgid "Webhook API Key:"
-msgstr "Webhook API Key:"
-
-msgid "Generate"
-msgstr "Generate"
-
-msgid "Your webhook API key will be encrypted before storing in the database."
-msgstr "Your webhook API key will be encrypted before storing in the database."
-
-msgid "Save Settings"
-msgstr "Save Settings"
-
-msgid "Webhook Integration Guide"
-msgstr "Webhook Integration Guide"
-
-msgid "Close"
-msgstr "Close"
-
-msgid "Authentication"
-msgstr "Authentication"
-
-msgid "Webhook requests must include the"
-msgstr "Webhook requests must include the"
-
-msgid "header with your configured webhook API key."
-msgstr "header with your configured webhook API key."
-
-msgid "Security Note:"
-msgstr "Security Note:"
-
-msgid "Keep your webhook API key secure and never expose it in client-side code or public repositories."
-msgstr "Keep your webhook API key secure and never expose it in client-side code or public repositories."
-
-msgid "Endpoint Information"
-msgstr "Endpoint Information"
-
-msgid "Request Format"
-msgstr "Request Format"
-
-msgid "The webhook expects a JSON payload with invoice updates in the following structure:"
-msgstr "The webhook expects a JSON payload with invoice updates in the following structure:"
-
-msgid "Example Requests"
-msgstr "Example Requests"
-
-msgid "Response Format"
-msgstr "Response Format"
-
-msgid "The webhook will respond with a JSON object indicating the result:"
-msgstr "The webhook will respond with a JSON object indicating the result:"
-
-msgid "Integration Notes"
-msgstr "Integration Notes"
-
-msgid "Copied to clipboard!"
-msgstr "Copied to clipboard!"
-
-msgid "Generating..."
-msgstr "Generating..."
-
-msgid "Generated!"
-msgstr "Generated!"
-
-msgid "Used for automated data transfer between JTL WaWi and the Axytos Payment plugin."
-msgstr "Used for automated data transfer between JTL WaWi and the Axytos Payment plugin."
-
-msgid "Used for communication between Axytos Payment plugin and the Axytos API."
-msgstr "Used for communication between Axytos Payment plugin and the Axytos API."
-
-msgid "Windows Automation"
-msgstr "Windows Automation"
-
-msgid "Configure webhook key and generate Windows batch scripts for automated invoice data synchronization."
-msgstr "Configure webhook key and generate Windows batch scripts for automated invoice data synchronization."
-
-msgid "Schedule Time:"
-msgstr "Schedule Time:"
-
-msgid "Time when the automation should run daily."
-msgstr "Time when the automation should run daily."
-
-msgid "Generate Windows Script"
-msgstr "Generate Windows Script"
-
-msgid "How to Use:"
-msgstr "How to Use:"
-
-msgid "Download the generated batch script"
-msgstr "Download the generated batch script"
-
-msgid "Run the script as Administrator on your Windows system"
-msgstr "Run the script as Administrator on your Windows system"
-
-msgid "The script will install itself and create a scheduled task"
-msgstr "The script will install itself and create a scheduled task"
-
-msgid "Automation will run daily at the specified time"
-msgstr "Automation will run daily at the specified time"
-
-msgid "Check the log file for execution status"
-msgstr "Check the log file for execution status"
-
-msgid "Generate Secure Key"
-msgstr "Generate Secure Key"
-
-msgid "Error generating automation script. Please check your configuration and try again."
-msgstr "Error generating automation script. Please check your configuration and try again."
-
+#: adminmenu/StatusController.php:109
+#, php-format
+msgid "Successfully processed %d pending action(s)."
+msgstr "Successfully processed %d pending action(s)."
+
+#: adminmenu/StatusController.php:116
+#, php-format
+msgid "%d action(s) failed processing."
+msgstr "%d action(s) failed processing."
+
+#: adminmenu/StatusController.php:123
+msgid "No pending actions found to process."
+msgstr "No pending actions found to process."
+
+#: adminmenu/StatusController.php:147
+#, php-format
+msgid "Successfully retried %d broken action(s) for order #%d."
+msgstr "Successfully retried %d broken action(s) for order #%d."
+
+#: adminmenu/StatusController.php:153
+#, php-format
+msgid "%d action(s) still failed for order #%d."
+msgstr "%d action(s) still failed for order #%d."
+
+#: adminmenu/StatusController.php:176
+#, php-format
+msgid "Successfully removed broken action \"%s\" for order #%d."
+msgstr "Successfully removed broken action \"%s\" for order #%d."
+
+#: adminmenu/StatusController.php:181
+#, php-format
+msgid ""
+"Action \"%s\" for order #%d could not be removed (may not be broken or not "
+"exist)."
+msgstr ""
+"Action \"%s\" for order #%d could not be removed (may not be broken or not "
+"exist)."
+
+#: adminmenu/StatusController.php:205
+msgid "No stuck Axytos cron jobs found."
+msgstr "No stuck Axytos cron jobs found."
+
+#: adminmenu/StatusController.php:210
+#, php-format
+msgid "Successfully reset %d stuck Axytos cron job(s)."
+msgstr "Successfully reset %d stuck Axytos cron job(s)."
+
+#: adminmenu/StatusController.php:215
+msgid "Failed to reset any stuck cron jobs."
+msgstr "Failed to reset any stuck cron jobs."
+
+#: adminmenu/SetupController.php:46
 msgid "Settings saved successfully."
 msgstr "Settings saved successfully."
 
-msgid "Secure webhook key generated successfully. Click \"Save Settings\" to store it."
-msgstr "Secure webhook key generated successfully. Click \"Save Settings\" to store it."
+#: adminmenu/SetupController.php:60
+msgid ""
+"Secure webhook key generated successfully. Click \"Save Settings\" to store "
+"it."
+msgstr ""
+"Secure webhook key generated successfully. Click \"Save Settings\" to store "
+"it."
 
-msgid "Prerequisites validated successfully."
-msgstr "Prerequisites validated successfully."
-
+#: adminmenu/SetupController.php:232 adminmenu/SetupController.php:265
 msgid "Webhook sent successfully"
 msgstr "Webhook sent successfully"
 
+#: adminmenu/SetupController.php:234 adminmenu/SetupController.php:268
+#, php-format
 msgid "Webhook failed with status: %s"
 msgstr "Webhook failed with status: %s"
 
+#: adminmenu/SetupController.php:266 adminmenu/SetupController.php:269
 msgid "Response:"
 msgstr "Response:"
 
+#: adminmenu/SetupController.php:288
 msgid "Webhook key must be configured before generating automation script."
 msgstr "Webhook key must be configured before generating automation script."
 
+#: adminmenu/SetupController.php:294
+msgid "Prerequisites validated successfully."
+msgstr "Prerequisites validated successfully."
 
+#: adminmenu/InvoicesController.php:36
+msgid "Invoice data refreshed."
+msgstr "Invoice data refreshed."
 
+#: adminmenu/InvoicesController.php:48
+#, php-format
+msgid "Invoice number %s has been set for order %s"
+msgstr "Invoice number %s has been set for order %s"
+
+#: adminmenu/InvoicesController.php:54
+msgid "Invalid order ID or empty invoice number."
+msgstr "Invalid order ID or empty invoice number."
+
+#: adminmenu/InvoicesController.php:73
+msgid "CSV file structure is invalid. Please check the file format."
+msgstr "CSV file structure is invalid. Please check the file format."
+
+#: adminmenu/InvoicesController.php:81
+msgid "CSV file is empty or could not be parsed."
+msgstr "CSV file is empty or could not be parsed."
+
+#: adminmenu/InvoicesController.php:91
+#, php-format
+msgid "Successfully processed %d invoice updates out of %d total rows."
+msgstr "Successfully processed %d invoice updates out of %d total rows."
+
+#: adminmenu/InvoicesController.php:95
+#, php-format
+msgid "%d rows failed to process. Check the details below."
+msgstr "%d rows failed to process. Check the details below."
+
+#: adminmenu/InvoicesController.php:103
+msgid "Invoice number added successfully"
+msgstr "Invoice number added successfully"
+
+#: adminmenu/InvoicesController.php:107
+#, php-format
+msgid "Order already has invoice number: %s"
+msgstr "Order already has invoice number: %s"
+
+#: adminmenu/InvoicesController.php:110
+msgid "Unknown error occurred"
+msgstr "Unknown error occurred"
+
+#: adminmenu/InvoicesController.php:113
+msgid "Processing completed"
+msgstr "Processing completed"
+
+#: adminmenu/InvoicesController.php:124
+#, php-format
+msgid "Error processing CSV file: %s"
+msgstr "Error processing CSV file: %s"
+
+#: adminmenu/InvoicesController.php:127
+msgid "No CSV file was uploaded or upload failed."
+msgstr "No CSV file was uploaded or upload failed."
+
+#: adminmenu/InvoicesController.php:254
+msgid "Order not found."
+msgstr "Order not found."
+
+#: adminmenu/InvoicesController.php:266
+#, php-format
+msgid "Error setting invoice number: %s"
+msgstr "Error setting invoice number: %s"
+
+#: Bootstrap.php:108
+msgid ""
+"This payment method can only be used with payment before order completion"
+msgstr ""
+"This payment method can only be used with payment before order completion"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:18
+msgid "API Configuration"
+msgstr "API Configuration"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:21
+msgid ""
+"Used for communication between Axytos Payment plugin and the Axytos API."
+msgstr ""
+"Used for communication between Axytos Payment plugin and the Axytos API."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:24
+msgid "API Key:"
+msgstr "API Key:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:26
+msgid "Your API key will be encrypted before storing in the database."
+msgstr "Your API key will be encrypted before storing in the database."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:32
+msgid "Use Sandbox Mode"
+msgstr "Use Sandbox Mode"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:34
+msgid "Enable this for testing."
+msgstr "Enable this for testing."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:43
+msgid "Windows Automation"
+msgstr "Windows Automation"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:46
+msgid ""
+"Configure webhook key and generate Windows batch scripts for automated "
+"invoice data synchronization."
+msgstr ""
+"Configure webhook key and generate Windows batch scripts for automated "
+"invoice data synchronization."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:49
+msgid "Webhook API Key:"
+msgstr "Webhook API Key:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:53
+msgid "Generate Secure Key"
+msgstr "Generate Secure Key"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:54
+msgid "Generate"
+msgstr "Generate"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:58
+msgid "Your webhook API key will be encrypted before storing in the database."
+msgstr "Your webhook API key will be encrypted before storing in the database."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:68
+msgid "Schedule Time:"
+msgstr "Schedule Time:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:81
+msgid "Generate Windows Script"
+msgstr "Generate Windows Script"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:85
+msgid "Time when the automation should run daily."
+msgstr "Time when the automation should run daily."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:90
+msgid "How to Use:"
+msgstr "How to Use:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:92
+msgid "Download the generated batch script"
+msgstr "Download the generated batch script"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:93
+msgid "Run the script as Administrator on your Windows system"
+msgstr "Run the script as Administrator on your Windows system"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:94
+msgid ""
+"The script will install itself, create a scheduled task, and generate an "
+"uninstall script"
+msgstr ""
+"The script will install itself, create a scheduled task, and generate an "
+"uninstall script"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:95
+msgid "Automation will run daily at the specified time"
+msgstr "Automation will run daily at the specified time"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:96
+msgid "Check the log file for execution status"
+msgstr "Check the log file for execution status"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:97
+msgid "To remove the automation system, run the generated uninstall.bat script"
+msgstr ""
+"To remove the automation system, run the generated uninstall.bat script"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:106
+msgid "Save Settings"
+msgstr "Save Settings"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:132
+#: adminmenu/template/api_setup.tpl.tmp.php:186
+msgid "Generating..."
+msgstr "Generating..."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:156
+msgid "Generated!"
+msgstr "Generated!"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:228
+msgid "Downloaded!"
+msgstr "Downloaded!"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:244
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:103
+msgid "Error"
+msgstr "Error"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:269
+msgid ""
+"Error generating automation script. Please check your configuration and try "
+"again."
+msgstr ""
+"Error generating automation script. Please check your configuration and try "
+"again."
+
+#: adminmenu/template/status.tpl.tmp.php:16
+msgid "Cron Status"
+msgstr "Cron Status"
+
+#: adminmenu/template/status.tpl.tmp.php:24
+msgid "Last Run:"
+msgstr "Last Run:"
+
+#: adminmenu/template/status.tpl.tmp.php:28
+msgid "Never"
+msgstr "Never"
+
+#: adminmenu/template/status.tpl.tmp.php:33
+msgid "Next Run:"
+msgstr "Next Run:"
+
+#: adminmenu/template/status.tpl.tmp.php:37
+msgid "Unknown"
+msgstr "Unknown"
+
+#: adminmenu/template/status.tpl.tmp.php:45
+msgid ""
+"Are you sure you want to reset stuck cron jobs? This will set their "
+"isRunning status to 0."
+msgstr ""
+"Are you sure you want to reset stuck cron jobs? This will set their "
+"isRunning status to 0."
+
+#: adminmenu/template/status.tpl.tmp.php:47
+msgid "Reset"
+msgstr "Reset"
+
+#: adminmenu/template/status.tpl.tmp.php:57
+msgid "Total Orders"
+msgstr "Total Orders"
+
+#: adminmenu/template/status.tpl.tmp.php:61
+msgid "Orders with actions"
+msgstr "Orders with actions"
+
+#: adminmenu/template/status.tpl.tmp.php:65
+msgid "Order ID/Number"
+msgstr "Order ID/Number"
+
+#: adminmenu/template/status.tpl.tmp.php:80
+msgid "Pending"
+msgstr "Pending"
+
+#: adminmenu/template/status.tpl.tmp.php:84
+msgid "Actions waiting"
+msgstr "Actions waiting"
+
+#: adminmenu/template/status.tpl.tmp.php:90
+msgid "Are you sure you want to process all pending actions?"
+msgstr "Are you sure you want to process all pending actions?"
+
+#: adminmenu/template/status.tpl.tmp.php:92
+msgid "Process All"
+msgstr "Process All"
+
+#: adminmenu/template/status.tpl.tmp.php:101
+msgid "Broken"
+msgstr "Broken"
+
+#: adminmenu/template/status.tpl.tmp.php:105
+msgid "Need attention"
+msgstr "Need attention"
+
+#: adminmenu/template/status.tpl.tmp.php:127
+msgid "Order Details:"
+msgstr "Order Details:"
+
+#: adminmenu/template/status.tpl.tmp.php:134
+msgid "Customer:"
+msgstr "Customer:"
+
+#: adminmenu/template/status.tpl.tmp.php:140
+msgid "Total:"
+msgstr "Total:"
+
+#: adminmenu/template/status.tpl.tmp.php:141
+msgid "Status:"
+msgstr "Status:"
+
+#: adminmenu/template/status.tpl.tmp.php:142
+msgid "Date:"
+msgstr "Date:"
+
+#: adminmenu/template/status.tpl.tmp.php:147
+msgid "Actions Overview"
+msgstr "Actions Overview"
+
+#: adminmenu/template/status.tpl.tmp.php:170
+msgid "log entry"
+msgstr "log entry"
+
+#: adminmenu/template/status.tpl.tmp.php:170
+msgid "log entries"
+msgstr "log entries"
+
+#: adminmenu/template/status.tpl.tmp.php:184
+msgid "Detailed log entries for"
+msgstr "Detailed log entries for"
+
+#: adminmenu/template/status.tpl.tmp.php:207
+msgid "No actions found for this order"
+msgstr "No actions found for this order"
+
+#: adminmenu/template/status.tpl.tmp.php:227
+msgid "Order Actions"
+msgstr "Order Actions"
+
+#: adminmenu/template/status.tpl.tmp.php:234
+msgid ""
+"Are you sure you want to retry all broken actions for this order? This will "
+"attempt to process them immediately."
+msgstr ""
+"Are you sure you want to retry all broken actions for this order? This will "
+"attempt to process them immediately."
+
+#: adminmenu/template/status.tpl.tmp.php:236
+msgid "Retry Broken Actions"
+msgstr "Retry Broken Actions"
+
+#: adminmenu/template/status.tpl.tmp.php:249
+msgid "Remove Broken Action"
+msgstr "Remove Broken Action"
+
+#: adminmenu/template/status.tpl.tmp.php:273
+msgid "Orders with Pending and Broken Actions"
+msgstr "Orders with Pending and Broken Actions"
+
+#: adminmenu/template/status.tpl.tmp.php:273
+msgid "Recent Orders"
+msgstr "Recent Orders"
+
+#: adminmenu/template/status.tpl.tmp.php:280
+#: adminmenu/template/invoices.tpl.tmp.php:59
+msgid "Order Number"
+msgstr "Order Number"
+
+#: adminmenu/template/status.tpl.tmp.php:281
+#: adminmenu/template/invoices.tpl.tmp.php:60
+msgid "Customer"
+msgstr "Customer"
+
+#: adminmenu/template/status.tpl.tmp.php:282
+#: adminmenu/template/invoices.tpl.tmp.php:61
+msgid "Date"
+msgstr "Date"
+
+#: adminmenu/template/status.tpl.tmp.php:283
+#: adminmenu/template/invoices.tpl.tmp.php:62
+msgid "Total"
+msgstr "Total"
+
+#: adminmenu/template/status.tpl.tmp.php:284
+#: adminmenu/template/invoices.tpl.tmp.php:63
+msgid "Status"
+msgstr "Status"
+
+#: adminmenu/template/status.tpl.tmp.php:285
+msgid "Pending/Broken Actions"
+msgstr "Pending/Broken Actions"
+
+#: adminmenu/template/status.tpl.tmp.php:305
+msgid "pending"
+msgstr "pending"
+
+#: adminmenu/template/status.tpl.tmp.php:351
+msgid "Orders"
+msgstr "Orders"
+
+#: adminmenu/template/status.tpl.tmp.php:354
+msgid "No orders found."
+msgstr "No orders found."
+
+#: adminmenu/template/status.tpl.tmp.php:367
+#: adminmenu/template/invoices.tpl.tmp.php:91
+msgid "Refresh Data"
+msgstr "Refresh Data"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:20
+msgid "Processing Details"
+msgstr "Processing Details"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:28
+msgid "Successfully Processed"
+msgstr "Successfully Processed"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:40
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:70
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:98
+#: adminmenu/template/invoices.tpl.tmp.php:115
+msgid "Order"
+msgstr "Order"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:42
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:100
+msgid "Invoice"
+msgstr "Invoice"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:43
+msgid "processed"
+msgstr "processed"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:58
+msgid "Skipped"
+msgstr "Skipped"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:71
+msgid "skipped"
+msgstr "skipped"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:86
+msgid "Failed to Process"
+msgstr "Failed to Process"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:101
+msgid "failed"
+msgstr "failed"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:114
+msgid "No rows were processed."
+msgstr "No rows were processed."
+
+#: adminmenu/template/invoices.tpl.tmp.php:18
+msgid "Upload Invoice CSV"
+msgstr "Upload Invoice CSV"
+
+#: adminmenu/template/invoices.tpl.tmp.php:27
+msgid "Select CSV File"
+msgstr "Select CSV File"
+
+#: adminmenu/template/invoices.tpl.tmp.php:31
+msgid "Choose CSV file..."
+msgstr "Choose CSV file..."
+
+#: adminmenu/template/invoices.tpl.tmp.php:33
+msgid "Upload CSV"
+msgstr "Upload CSV"
+
+#: adminmenu/template/invoices.tpl.tmp.php:35
+msgid "Select a CSV file containing invoice data"
+msgstr "Select a CSV file containing invoice data"
+
+#: adminmenu/template/invoices.tpl.tmp.php:47
+msgid "Shipped Orders Awaiting Invoice"
+msgstr "Shipped Orders Awaiting Invoice"
+
+#: adminmenu/template/invoices.tpl.tmp.php:52
+msgid "No orders awaiting invoice found"
+msgstr "No orders awaiting invoice found"
+
+#: adminmenu/template/invoices.tpl.tmp.php:102
+#: adminmenu/template/invoices.tpl.tmp.php:126
+msgid "Set Invoice Number"
+msgstr "Set Invoice Number"
+
+#: adminmenu/template/invoices.tpl.tmp.php:119
+msgid "Invoice Number"
+msgstr "Invoice Number"
+
+#: adminmenu/template/invoices.tpl.tmp.php:121
+msgid "Enter invoice number"
+msgstr "Enter invoice number"
+
+#: adminmenu/template/invoices.tpl.tmp.php:125
+msgid "Cancel"
+msgstr "Cancel"
+
+#~ msgid "Axytos Payment"
+#~ msgstr "Axytos - Pay Later"
+
+#~ msgid "Axytos payment integration for JTL Shop"
+#~ msgstr "Axytos payment integration for JTL Shop"
+
+#~ msgid "API Setup"
+#~ msgstr "API Setup"
+
+#~ msgid "Pay Later"
+#~ msgstr "Pay Later"
+
+#~ msgid "Actions"
+#~ msgstr "Actions"
+
+#~ msgid "Created:"
+#~ msgstr "Created:"
+
+#~ msgid ""
+#~ "Are you sure you want to remove the failed '%s' action? You are "
+#~ "responsible for communicating the necessary changes to Axytos to ensure "
+#~ "that further processing of the order is guaranteed. This action cannot be "
+#~ "undone."
+#~ msgstr ""
+#~ "Are you sure you want to remove the failed '%s' action? You are "
+#~ "responsible for communicating the necessary changes to Axytos to ensure "
+#~ "that further processing of the order is guaranteed. This action cannot be "
+#~ "undone."
+
+#~ msgid "Action Log"
+#~ msgstr "Action Log"
+
+#~ msgid "Time"
+#~ msgstr "Time"
+
+#~ msgid "Level"
+#~ msgstr "Level"
+
+#~ msgid "Action"
+#~ msgstr "Action"
+
+#~ msgid "Message"
+#~ msgstr "Message"
+
+#~ msgid "retry"
+#~ msgstr "retry"
+
+#~ msgid "retry (failed %dx)"
+#~ msgstr "retry (failed %dx)"
+
+#~ msgid "broken"
+#~ msgstr "broken"
+
+#~ msgid "broken (failed %dx)"
+#~ msgstr "broken (failed %dx)"
+
+#~ msgid "completed"
+#~ msgstr "completed"
+
+#~ msgid "No broken actions found for order #%d."
+#~ msgstr "No broken actions found for order #%d."
+
+#~ msgid "retrying"
+#~ msgstr "retrying"
+
+#~ msgid "queued"
+#~ msgstr "queued"
+
+#~ msgid "Webhook Configuration"
+#~ msgstr "Webhook Configuration"
+
+#~ msgid "Webhook Status:"
+#~ msgstr "Webhook Status:"
+
+#~ msgid "Configured"
+#~ msgstr "Configured"
+
+#~ msgid "Not Configured"
+#~ msgstr "Not Configured"
+
+#~ msgid "Webhook Documentation"
+#~ msgstr "Webhook Documentation"
+
+#~ msgid "Webhook Integration Guide"
+#~ msgstr "Webhook Integration Guide"
+
+#~ msgid "Close"
+#~ msgstr "Close"
+
+#~ msgid "Authentication"
+#~ msgstr "Authentication"
+
+#~ msgid "Webhook requests must include the"
+#~ msgstr "Webhook requests must include the"
+
+#~ msgid "header with your configured webhook API key."
+#~ msgstr "header with your configured webhook API key."
+
+#~ msgid "Security Note:"
+#~ msgstr "Security Note:"
+
+#~ msgid ""
+#~ "Keep your webhook API key secure and never expose it in client-side code "
+#~ "or public repositories."
+#~ msgstr ""
+#~ "Keep your webhook API key secure and never expose it in client-side code "
+#~ "or public repositories."
+
+#~ msgid "Endpoint Information"
+#~ msgstr "Endpoint Information"
+
+#~ msgid "Request Format"
+#~ msgstr "Request Format"
+
+#~ msgid ""
+#~ "The webhook expects a JSON payload with invoice updates in the following "
+#~ "structure:"
+#~ msgstr ""
+#~ "The webhook expects a JSON payload with invoice updates in the following "
+#~ "structure:"
+
+#~ msgid "Example Requests"
+#~ msgstr "Example Requests"
+
+#~ msgid "Response Format"
+#~ msgstr "Response Format"
+
+#~ msgid "The webhook will respond with a JSON object indicating the result:"
+#~ msgstr "The webhook will respond with a JSON object indicating the result:"
+
+#~ msgid "Integration Notes"
+#~ msgstr "Integration Notes"
+
+#~ msgid "Copied to clipboard!"
+#~ msgstr "Copied to clipboard!"
+
+#~ msgid ""
+#~ "Used for automated data transfer between JTL WaWi and the Axytos Payment "
+#~ "plugin."
+#~ msgstr ""
+#~ "Used for automated data transfer between JTL WaWi and the Axytos Payment "
+#~ "plugin."

@@ -1,485 +1,723 @@
 msgid ""
 msgstr ""
+"Report-Msgid-Bugs-To: dev@axytos.com\n"
+"POT-Creation-Date: 2025-09-25 16:46+0200\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
-msgid "Axytos Payment"
-msgstr "Axytos - Bezahlen auf Rechnung"
+#: adminmenu/StatusController.php:40
+msgid "Status data refreshed."
+msgstr "Statusdaten aktualisiert."
 
-msgid "Axytos payment integration for JTL Shop"
-msgstr "Axytos Bezahlungsintegration für JTL Shop"
-
-msgid "API Setup"
-msgstr "API Konfiguration"
-
-msgid "Pay Later"
-msgstr "Zahlen auf Rechnung"
-
-msgid "This payment method can only be used with payment before order completion"
-msgstr "Die Zahlungsart kann nur mit Zahlung vor Bestellabschluss verwendet werden"
-
-msgid "Cron Status"
-msgstr "Cron Status"
-
-msgid "Last Run:"
-msgstr "Letzte Ausführung:"
-
-msgid "Never"
-msgstr "Nie"
-
-msgid "Next Run:"
-msgstr "Nächste Ausführung:"
-
-msgid "Unknown"
-msgstr "Unbekannt"
-
-msgid "Are you sure you want to reset stuck cron jobs? This will set their isRunning status to 0."
-msgstr "Sind Sie sicher, dass Sie hängende Cron-Jobs zurücksetzen möchten? Dies setzt ihren isRunning-Status auf 0."
-
-msgid "Reset"
-msgstr "Zurücksetzen"
-
-msgid "Total Orders"
-msgstr "Gesamt Bestellungen"
-
-msgid "Orders with actions"
-msgstr "Bestellungen mit Aktionen"
-
-msgid "Order ID/Number"
-msgstr "Bestell-ID/-Nummer"
-
-msgid "Pending"
-msgstr "Ausstehend"
-
-msgid "Actions waiting"
-msgstr "Aktionen warten"
-
-msgid "Process All"
-msgstr "Alle verarbeiten"
-
-msgid "Broken"
-msgstr "Defekt"
-
-msgid "Need attention"
-msgstr "Benötigt Aufmerksamkeit"
-
-msgid "Order Details:"
-msgstr "Bestelldetails:"
-
-msgid "Customer:"
-msgstr "Kunde:"
-
-msgid "Total:"
-msgstr "Gesamt:"
-
-msgid "Status:"
-msgstr "Status:"
-
-msgid "Date:"
-msgstr "Datum:"
-
-msgid "Actions"
-msgstr "Aktionen"
-
-msgid "Created:"
-msgstr "Erstellt:"
-
-msgid "Order Actions"
-msgstr "Bestellaktionen"
-
-msgid "Are you sure you want to retry all broken actions for this order? This will attempt to process them immediately."
-msgstr "Sind Sie sicher, dass Sie alle defekten Aktionen für diese Bestellung erneut versuchen möchten? Dies wird versuchen, sie sofort zu verarbeiten."
-
-msgid "Retry Broken Actions"
-msgstr "Defekte Aktionen wiederholen"
-
-msgid "Are you sure you want to remove the failed '%s' action? You are responsible for communicating the necessary changes to Axytos to ensure that further processing of the order is guaranteed. This action cannot be undone."
-msgstr "Sind Sie sicher, dass Sie die fehlgeschlagene '%s' Aktion entfernen möchten? Sie sind verantwortlich für die Kommunikation der notwendigen Änderungen an Axytos, um sicherzustellen, dass die weitere Verarbeitung der Bestellung gewährleistet ist. Diese Aktion kann nicht rückgängig gemacht werden."
-
-msgid "Remove Broken Action"
-msgstr "Defekte Aktion entfernen"
-
-msgid "Action Log"
-msgstr "Aktionsprotokoll"
-
-msgid "Time"
-msgstr "Zeit"
-
-msgid "Level"
-msgstr "Level"
-
-msgid "Action"
-msgstr "Aktion"
-
-msgid "Message"
-msgstr "Nachricht"
-
-msgid "Orders with Pending and Broken Actions"
-msgstr "Bestellungen mit ausstehenden und defekten Aktionen"
-
-msgid "Recent Orders"
-msgstr "Aktuelle Bestellungen"
-
-msgid "Order Number"
-msgstr "Bestellnummer"
-
-msgid "Customer"
-msgstr "Kunde"
-
-msgid "Status"
-msgstr "Status"
-
-msgid "Pending/Broken Actions"
-msgstr "Ausstehende/defekte Aktionen"
-
-msgid "pending"
-msgstr "ausstehend"
-
-msgid "retry"
-msgstr "wiederholen"
-
-msgid "retry (failed %dx)"
-msgstr "wiederholen (fehlgeschlagen %dx)"
-
-msgid "broken"
-msgstr "defekt"
-
-msgid "broken (failed %dx)"
-msgstr "defekt (fehlgeschlagen %dx)"
-
-msgid "completed"
-msgstr "abgeschlossen"
-
-msgid "Orders"
-msgstr "Bestellungen"
-
-msgid "No orders found."
-msgstr "Keine Bestellungen gefunden."
-
-msgid "Successfully processed %d pending action(s)."
-msgstr "%d ausstehende Aktion(en) erfolgreich verarbeitet."
-
-msgid "%d action(s) failed processing."
-msgstr "%d Aktion(en) konnten nicht verarbeitet werden."
-
-msgid "No pending actions found to process."
-msgstr "Keine ausstehenden Aktionen zum Verarbeiten gefunden."
-
-msgid "Are you sure you want to process all pending actions?"
-msgstr "Sind Sie sicher, dass Sie alle ausstehenden Aktionen verarbeiten möchten?"
-
-msgid "Successfully retried %d broken action(s) for order #%d."
-msgstr "%d defekte Aktion(en) für Bestellung #%d erfolgreich wiederholt."
-
-msgid "%d action(s) still failed for order #%d."
-msgstr "%d Aktion(en) für Bestellung #%d sind immer noch fehlgeschlagen."
-
-msgid "No broken actions found for order #%d."
-msgstr "Keine defekten Aktionen für Bestellung #%d gefunden."
-
-msgid "Successfully removed broken action \"%s\" for order #%d."
-msgstr "Defekte Aktion \"%s\" für Bestellung #%d erfolgreich entfernt."
-
-msgid "Action \"%s\" for order #%d could not be removed (may not be broken or not exist)."
-msgstr "Aktion \"%s\" für Bestellung #%d konnte nicht entfernt werden (ist möglicherweise nicht defekt oder existiert nicht)."
-
-msgid "No stuck Axytos cron jobs found."
-msgstr "Keine hängenden Axytos Cron-Jobs gefunden."
-
-msgid "Successfully reset %d stuck Axytos cron job(s)."
-msgstr "%d hängende Axytos Cron-Job(s) erfolgreich zurückgesetzt."
-
-msgid "Failed to reset any stuck cron jobs."
-msgstr "Fehler beim Zurücksetzen hängender Cron-Jobs."
-
+#: adminmenu/StatusController.php:80
 msgid "Order not found or not using Axytos payment method."
 msgstr "Bestellung nicht gefunden oder verwendet keine Axytos-Zahlungsmethode."
 
-msgid "Actions Overview"
-msgstr "Aktionsübersicht"
-
-msgid "log entry"
-msgstr "Log-Eintrag"
-
-msgid "log entries"
-msgstr "Log-Einträge"
-
-msgid "Detailed log entries for"
-msgstr "Detaillierte Log-Einträge für"
-
-msgid "retrying"
-msgstr "wiederholt"
-
-msgid "queued"
-msgstr "eingereiht"
-
-msgid "No actions found for this order"
-msgstr "Keine Aktionen für diese Bestellung gefunden"
-
-msgid "Invoice data refreshed."
-msgstr "Rechnungsdaten aktualisiert."
-
-msgid "Invoice number %s has been set for order %s"
-msgstr "Rechnungsnummer %s wurde für Bestellung %s gesetzt"
-
-msgid "Invalid order ID or empty invoice number."
-msgstr "Ungültige Bestell-ID oder leere Rechnungsnummer."
-
-msgid "CSV file structure is invalid. Please check the file format."
-msgstr "CSV-Dateistruktur ist ungültig. Bitte überprüfen Sie das Dateiformat."
-
-msgid "CSV file is empty or could not be parsed."
-msgstr "CSV-Datei ist leer oder konnte nicht geparst werden."
-
-msgid "Successfully processed %d invoice updates out of %d total rows."
-msgstr "%d Rechnungsupdates von insgesamt %d Zeilen erfolgreich verarbeitet."
-
-msgid "%d rows failed to process. Check the details below."
-msgstr "%d Zeilen konnten nicht verarbeitet werden. Überprüfen Sie die Details unten."
-
-msgid "Error processing CSV file: %s"
-msgstr "Fehler beim Verarbeiten der CSV-Datei: %s"
-
-msgid "No CSV file was uploaded or upload failed."
-msgstr "Keine CSV-Datei wurde hochgeladen oder Upload fehlgeschlagen."
-
-msgid "Order not found."
-msgstr "Bestellung nicht gefunden."
-
-msgid "Error setting invoice number: %s"
-msgstr "Fehler beim Setzen der Rechnungsnummer: %s"
-
-msgid "Upload Invoice CSV"
-msgstr "Rechnungs-CSV hochladen"
-
-msgid "Select CSV File"
-msgstr "CSV-Datei auswählen"
-
-msgid "Choose CSV file..."
-msgstr "CSV-Datei auswählen..."
-
-msgid "Upload CSV"
-msgstr "CSV hochladen"
-
-msgid "Select a CSV file containing invoice data"
-msgstr "Wählen Sie eine CSV-Datei mit Rechnungsdaten aus"
-
-msgid "Shipped Orders Awaiting Invoice"
-msgstr "Bestellungen ohne Rechnungsnummer"
-
-msgid "No orders awaiting invoice found"
-msgstr "Keine Bestellungen gefunden, die auf Rechnung warten"
-
-msgid "Refresh Data"
-msgstr "Daten aktualisieren"
-
-msgid "Set Invoice Number"
-msgstr "Rechnungsnummer setzen"
-
-msgid "Order"
-msgstr "Bestellung"
-
-msgid "Invoice Number"
-msgstr "Rechnungsnummer"
-
-msgid "Enter invoice number"
-msgstr "Rechnungsnummer eingeben"
-
-msgid "Cancel"
-msgstr "Abbrechen"
-
-msgid "Processing Details"
-msgstr "Verarbeitungsdetails"
-
-msgid "Successfully Processed"
-msgstr "Erfolgreich verarbeitet"
-
-msgid "Invoice"
-msgstr "Rechnung"
-
-msgid "processed"
-msgstr "verarbeitet"
-
-msgid "Skipped"
-msgstr "Übersprungen"
-
-msgid "skipped"
-msgstr "übersprungen"
-
-msgid "Failed to Process"
-msgstr "Verarbeitung fehlgeschlagen"
-
-msgid "Error"
-msgstr "Fehler"
-
-msgid "failed"
-msgstr "fehlgeschlagen"
-
-msgid "No rows were processed."
-msgstr "Keine Zeilen wurden verarbeitet."
-
-msgid "Order already has invoice number: "
-msgstr "Bestellung hat bereits Rechnungsnummer: "
-
-msgid "Invoice number added successfully"
-msgstr "Rechnungsnummer erfolgreich hinzugefügt"
-
-msgid "API Configuration"
-msgstr "API Konfiguration"
-
-msgid "API Key:"
-msgstr "API-Schlüssel:"
-
-msgid "Your API key will be encrypted before storing in the database."
-msgstr "Ihr API-Schlüssel wird vor dem Speichern in der Datenbank verschlüsselt."
-
-msgid "Use Sandbox Mode"
-msgstr "Sandbox-Modus verwenden"
-
-msgid "Enable this for testing."
-msgstr "Aktivieren Sie dies zum Testen."
-
-msgid "Webhook Configuration"
-msgstr "Webhook Konfiguration"
-
-msgid "Webhook Status:"
-msgstr "Webhook Status:"
-
-msgid "Configured"
-msgstr "Konfiguriert"
-
-msgid "Not Configured"
-msgstr "Nicht konfiguriert"
-
-msgid "Webhook Documentation"
-msgstr "Webhook Dokumentation"
-
-msgid "Webhook API Key:"
-msgstr "Webhook API-Schlüssel:"
-
-msgid "Generate"
-msgstr "Generieren"
-
-msgid "Your webhook API key will be encrypted before storing in the database."
-msgstr "Ihr Webhook-API-Schlüssel wird vor dem Speichern in der Datenbank verschlüsselt."
-
-msgid "Save Settings"
-msgstr "Einstellungen speichern"
-
-msgid "Webhook Integration Guide"
-msgstr "Webhook Integrationsanleitung"
-
-msgid "Close"
-msgstr "Schließen"
-
-msgid "Authentication"
-msgstr "Authentifizierung"
-
-msgid "Webhook requests must include the"
-msgstr "Webhook-Anfragen müssen den"
-
-msgid "header with your configured webhook API key."
-msgstr "Header mit Ihrem konfigurierten Webhook-API-Schlüssel enthalten."
-
-msgid "Security Note:"
-msgstr "Sicherheitshinweis:"
-
-msgid "Keep your webhook API key secure and never expose it in client-side code or public repositories."
-msgstr "Halten Sie Ihren Webhook-API-Schlüssel sicher und geben Sie ihn niemals in clientseitigem Code oder öffentlichen Repositories preis."
-
-msgid "Endpoint Information"
-msgstr "Endpunkt-Informationen"
-
-msgid "Request Format"
-msgstr "Anfrageformat"
-
-msgid "The webhook expects a JSON payload with invoice updates in the following structure:"
-msgstr "Der Webhook erwartet eine JSON-Payload mit Rechnungsupdates in folgender Struktur:"
-
-msgid "Example Requests"
-msgstr "Beispielanfragen"
-
-msgid "Response Format"
-msgstr "Antwortformat"
-
-msgid "The webhook will respond with a JSON object indicating the result:"
-msgstr "Der Webhook antwortet mit einem JSON-Objekt, das das Ergebnis anzeigt:"
-
-msgid "Integration Notes"
-msgstr "Integrationshinweise"
-
-msgid "Copied to clipboard!"
-msgstr "In Zwischenablage kopiert!"
-
-msgid "Generating..."
-msgstr "Generiere..."
-
-msgid "Generated!"
-msgstr "Generiert!"
-
-msgid "Used for automated data transfer between JTL WaWi and the Axytos Payment plugin."
-msgstr "Wird für automatische Datenübertragung zwischen JTL WaWi und dem Axytos Payment Plugin verwendet."
-
-msgid "Used for communication between Axytos Payment plugin and the Axytos API."
-msgstr "Wird für die Kommunikation zwischen Axytos Payment Plugin und der Axytos API verwendet."
-
-msgid "Windows Automation"
-msgstr "Windows Automatisierung"
-
-msgid "Configure webhook key and generate Windows batch scripts for automated invoice data synchronization."
-msgstr "Webhook-Schlüssel konfigurieren und Windows-Batch-Skripte für automatisierte Rechnungsdatensynchronisation generieren."
-
-msgid "Schedule Time:"
-msgstr "Zeitplan:"
-
-msgid "Time when the automation should run daily."
-msgstr "Zeitpunkt, zu dem die Automatisierung täglich ausgeführt werden soll."
-
-msgid "Generate Windows Script"
-msgstr "Windows-Skript generieren"
-
-msgid "How to Use:"
-msgstr "Verwendung:"
-
-msgid "Download the generated batch script"
-msgstr "Das generierte Batch-Skript herunterladen"
-
-msgid "Run the script as Administrator on your Windows system"
-msgstr "Das Skript als Administrator auf Ihrem Windows-System ausführen"
-
-msgid "The script will install itself and create a scheduled task"
-msgstr "Das Skript installiert sich selbst und erstellt eine geplante Aufgabe"
-
-msgid "Automation will run daily at the specified time"
-msgstr "Die Automatisierung wird täglich zur angegebenen Zeit ausgeführt"
-
-msgid "Check the log file for execution status"
-msgstr "Überprüfen Sie die Protokolldatei auf den Ausführungsstatus"
-
-msgid "Generate Secure Key"
-msgstr "Sicheren Schlüssel generieren"
-
-msgid "Error generating automation script. Please check your configuration and try again."
-msgstr "Fehler beim Generieren des Automatisierungsskripts. Bitte überprüfen Sie Ihre Konfiguration und versuchen Sie es erneut."
-
+#: adminmenu/StatusController.php:109
+#, php-format
+msgid "Successfully processed %d pending action(s)."
+msgstr "%d ausstehende Aktion(en) erfolgreich verarbeitet."
+
+#: adminmenu/StatusController.php:116
+#, php-format
+msgid "%d action(s) failed processing."
+msgstr "%d Aktion(en) konnten nicht verarbeitet werden."
+
+#: adminmenu/StatusController.php:123
+msgid "No pending actions found to process."
+msgstr "Keine ausstehenden Aktionen zum Verarbeiten gefunden."
+
+#: adminmenu/StatusController.php:147
+#, php-format
+msgid "Successfully retried %d broken action(s) for order #%d."
+msgstr "%d defekte Aktion(en) für Bestellung #%d erfolgreich wiederholt."
+
+#: adminmenu/StatusController.php:153
+#, php-format
+msgid "%d action(s) still failed for order #%d."
+msgstr "%d Aktion(en) für Bestellung #%d sind immer noch fehlgeschlagen."
+
+#: adminmenu/StatusController.php:176
+#, php-format
+msgid "Successfully removed broken action \"%s\" for order #%d."
+msgstr "Defekte Aktion \"%s\" für Bestellung #%d erfolgreich entfernt."
+
+#: adminmenu/StatusController.php:181
+#, php-format
+msgid ""
+"Action \"%s\" for order #%d could not be removed (may not be broken or not "
+"exist)."
+msgstr ""
+"Aktion \"%s\" für Bestellung #%d konnte nicht entfernt werden (ist "
+"möglicherweise nicht defekt oder existiert nicht)."
+
+#: adminmenu/StatusController.php:205
+msgid "No stuck Axytos cron jobs found."
+msgstr "Keine hängenden Axytos Cron-Jobs gefunden."
+
+#: adminmenu/StatusController.php:210
+#, php-format
+msgid "Successfully reset %d stuck Axytos cron job(s)."
+msgstr "%d hängende Axytos Cron-Job(s) erfolgreich zurückgesetzt."
+
+#: adminmenu/StatusController.php:215
+msgid "Failed to reset any stuck cron jobs."
+msgstr "Fehler beim Zurücksetzen hängender Cron-Jobs."
+
+#: adminmenu/SetupController.php:46
 msgid "Settings saved successfully."
 msgstr "Einstellungen erfolgreich gespeichert."
 
-msgid "Secure webhook key generated successfully. Click \"Save Settings\" to store it."
-msgstr "Sicherer Webhook-Schlüssel erfolgreich generiert. Klicken Sie auf \"Einstellungen speichern\", um ihn zu speichern."
+#: adminmenu/SetupController.php:60
+msgid ""
+"Secure webhook key generated successfully. Click \"Save Settings\" to store "
+"it."
+msgstr ""
+"Sicherer Webhook-Schlüssel erfolgreich generiert. Klicken Sie auf "
+"\"Einstellungen speichern\", um ihn zu speichern."
 
-msgid "Prerequisites validated successfully."
-msgstr "Voraussetzungen erfolgreich validiert."
-
+#: adminmenu/SetupController.php:232 adminmenu/SetupController.php:265
 msgid "Webhook sent successfully"
 msgstr "Webhook erfolgreich gesendet"
 
+#: adminmenu/SetupController.php:234 adminmenu/SetupController.php:268
+#, php-format
 msgid "Webhook failed with status: %s"
 msgstr "Webhook fehlgeschlagen mit Status: %s"
 
+#: adminmenu/SetupController.php:266 adminmenu/SetupController.php:269
 msgid "Response:"
 msgstr "Antwort:"
 
+#: adminmenu/SetupController.php:288
 msgid "Webhook key must be configured before generating automation script."
-msgstr "Webhook-Schlüssel muss konfiguriert werden, bevor das Automatisierungsskript generiert wird."
+msgstr ""
+"Webhook-Schlüssel muss konfiguriert werden, bevor das Automatisierungsskript "
+"generiert wird."
 
+#: adminmenu/SetupController.php:294
+msgid "Prerequisites validated successfully."
+msgstr "Voraussetzungen erfolgreich validiert."
 
+#: adminmenu/InvoicesController.php:36
+msgid "Invoice data refreshed."
+msgstr "Rechnungsdaten aktualisiert."
+
+#: adminmenu/InvoicesController.php:48
+#, php-format
+msgid "Invoice number %s has been set for order %s"
+msgstr "Rechnungsnummer %s wurde für Bestellung %s gesetzt"
+
+#: adminmenu/InvoicesController.php:54
+msgid "Invalid order ID or empty invoice number."
+msgstr "Ungültige Bestell-ID oder leere Rechnungsnummer."
+
+#: adminmenu/InvoicesController.php:73
+msgid "CSV file structure is invalid. Please check the file format."
+msgstr "CSV-Dateistruktur ist ungültig. Bitte überprüfen Sie das Dateiformat."
+
+#: adminmenu/InvoicesController.php:81
+msgid "CSV file is empty or could not be parsed."
+msgstr "CSV-Datei ist leer oder konnte nicht geparst werden."
+
+#: adminmenu/InvoicesController.php:91
+#, php-format
+msgid "Successfully processed %d invoice updates out of %d total rows."
+msgstr "%d Rechnungsupdates von insgesamt %d Zeilen erfolgreich verarbeitet."
+
+#: adminmenu/InvoicesController.php:95
+#, php-format
+msgid "%d rows failed to process. Check the details below."
+msgstr ""
+"%d Zeilen konnten nicht verarbeitet werden. Überprüfen Sie die Details unten."
+
+#: adminmenu/InvoicesController.php:103
+msgid "Invoice number added successfully"
+msgstr "Rechnungsnummer erfolgreich hinzugefügt"
+
+#: adminmenu/InvoicesController.php:107
+#, php-format
+msgid "Order already has invoice number: %s"
+msgstr "Bestellung hat bereits Rechnungsnummer: %s"
+
+#: adminmenu/InvoicesController.php:110
+msgid "Unknown error occurred"
+msgstr "Unbekannter Fehler aufgetreten"
+
+#: adminmenu/InvoicesController.php:113
+msgid "Processing completed"
+msgstr "Verarbeitung abgeschlossen"
+
+#: adminmenu/InvoicesController.php:124
+#, php-format
+msgid "Error processing CSV file: %s"
+msgstr "Fehler beim Verarbeiten der CSV-Datei: %s"
+
+#: adminmenu/InvoicesController.php:127
+msgid "No CSV file was uploaded or upload failed."
+msgstr "Keine CSV-Datei wurde hochgeladen oder Upload fehlgeschlagen."
+
+#: adminmenu/InvoicesController.php:254
+msgid "Order not found."
+msgstr "Bestellung nicht gefunden."
+
+#: adminmenu/InvoicesController.php:266
+#, php-format
+msgid "Error setting invoice number: %s"
+msgstr "Fehler beim Setzen der Rechnungsnummer: %s"
+
+#: Bootstrap.php:108
+msgid ""
+"This payment method can only be used with payment before order completion"
+msgstr ""
+"Die Zahlungsart kann nur mit Zahlung vor Bestellabschluss verwendet werden"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:18
+msgid "API Configuration"
+msgstr "API Konfiguration"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:21
+msgid ""
+"Used for communication between Axytos Payment plugin and the Axytos API."
+msgstr ""
+"Wird für die Kommunikation zwischen Axytos Payment Plugin und der Axytos API "
+"verwendet."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:24
+msgid "API Key:"
+msgstr "API-Schlüssel:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:26
+msgid "Your API key will be encrypted before storing in the database."
+msgstr ""
+"Ihr API-Schlüssel wird vor dem Speichern in der Datenbank verschlüsselt."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:32
+msgid "Use Sandbox Mode"
+msgstr "Sandbox-Modus verwenden"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:34
+msgid "Enable this for testing."
+msgstr "Aktivieren Sie dies zum Testen."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:43
+msgid "Windows Automation"
+msgstr "Windows Automatisierung"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:46
+msgid ""
+"Configure webhook key and generate Windows batch scripts for automated "
+"invoice data synchronization."
+msgstr ""
+"Webhook-Schlüssel konfigurieren und Windows-Batch-Skripte für automatisierte "
+"Rechnungsdatensynchronisation generieren."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:49
+msgid "Webhook API Key:"
+msgstr "Webhook API-Schlüssel:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:53
+msgid "Generate Secure Key"
+msgstr "Sicheren Schlüssel generieren"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:54
+msgid "Generate"
+msgstr "Generieren"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:58
+msgid "Your webhook API key will be encrypted before storing in the database."
+msgstr ""
+"Ihr Webhook-API-Schlüssel wird vor dem Speichern in der Datenbank "
+"verschlüsselt."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:68
+msgid "Schedule Time:"
+msgstr "Zeitplan:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:81
+msgid "Generate Windows Script"
+msgstr "Windows-Skript generieren"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:85
+msgid "Time when the automation should run daily."
+msgstr "Zeitpunkt, zu dem die Automatisierung täglich ausgeführt werden soll."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:90
+msgid "How to Use:"
+msgstr "Verwendung:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:92
+msgid "Download the generated batch script"
+msgstr "Das generierte Batch-Skript herunterladen"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:93
+msgid "Run the script as Administrator on your Windows system"
+msgstr "Das Skript als Administrator auf Ihrem Windows-System ausführen"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:94
+msgid ""
+"The script will install itself, create a scheduled task, and generate an "
+"uninstall script"
+msgstr ""
+"Das Skript installiert sich selbst, erstellt eine geplante Aufgabe und "
+"generiert ein Deinstallationsskript"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:95
+msgid "Automation will run daily at the specified time"
+msgstr "Die Automatisierung wird täglich zur angegebenen Zeit ausgeführt"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:96
+msgid "Check the log file for execution status"
+msgstr "Überprüfen Sie die Protokolldatei auf den Ausführungsstatus"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:97
+msgid "To remove the automation system, run the generated uninstall.bat script"
+msgstr ""
+"Um das Automatisierungssystem zu entfernen, führen Sie das generierte "
+"uninstall.bat-Skript aus"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:106
+msgid "Save Settings"
+msgstr "Einstellungen speichern"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:132
+#: adminmenu/template/api_setup.tpl.tmp.php:186
+msgid "Generating..."
+msgstr "Generiere..."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:156
+msgid "Generated!"
+msgstr "Generiert!"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:228
+msgid "Downloaded!"
+msgstr "Heruntergeladen!"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:244
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:103
+msgid "Error"
+msgstr "Fehler"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:269
+msgid ""
+"Error generating automation script. Please check your configuration and try "
+"again."
+msgstr ""
+"Fehler beim Generieren des Automatisierungsskripts. Bitte überprüfen Sie "
+"Ihre Konfiguration und versuchen Sie es erneut."
+
+#: adminmenu/template/status.tpl.tmp.php:16
+msgid "Cron Status"
+msgstr "Cron Status"
+
+#: adminmenu/template/status.tpl.tmp.php:24
+msgid "Last Run:"
+msgstr "Letzte Ausführung:"
+
+#: adminmenu/template/status.tpl.tmp.php:28
+msgid "Never"
+msgstr "Nie"
+
+#: adminmenu/template/status.tpl.tmp.php:33
+msgid "Next Run:"
+msgstr "Nächste Ausführung:"
+
+#: adminmenu/template/status.tpl.tmp.php:37
+msgid "Unknown"
+msgstr "Unbekannt"
+
+#: adminmenu/template/status.tpl.tmp.php:45
+msgid ""
+"Are you sure you want to reset stuck cron jobs? This will set their "
+"isRunning status to 0."
+msgstr ""
+"Sind Sie sicher, dass Sie hängende Cron-Jobs zurücksetzen möchten? Dies "
+"setzt ihren isRunning-Status auf 0."
+
+#: adminmenu/template/status.tpl.tmp.php:47
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+#: adminmenu/template/status.tpl.tmp.php:57
+msgid "Total Orders"
+msgstr "Gesamt Bestellungen"
+
+#: adminmenu/template/status.tpl.tmp.php:61
+msgid "Orders with actions"
+msgstr "Bestellungen mit Aktionen"
+
+#: adminmenu/template/status.tpl.tmp.php:65
+msgid "Order ID/Number"
+msgstr "Bestell-ID/-Nummer"
+
+#: adminmenu/template/status.tpl.tmp.php:80
+msgid "Pending"
+msgstr "Ausstehend"
+
+#: adminmenu/template/status.tpl.tmp.php:84
+msgid "Actions waiting"
+msgstr "Aktionen warten"
+
+#: adminmenu/template/status.tpl.tmp.php:90
+msgid "Are you sure you want to process all pending actions?"
+msgstr ""
+"Sind Sie sicher, dass Sie alle ausstehenden Aktionen verarbeiten möchten?"
+
+#: adminmenu/template/status.tpl.tmp.php:92
+msgid "Process All"
+msgstr "Alle verarbeiten"
+
+#: adminmenu/template/status.tpl.tmp.php:101
+msgid "Broken"
+msgstr "Defekt"
+
+#: adminmenu/template/status.tpl.tmp.php:105
+msgid "Need attention"
+msgstr "Benötigt Aufmerksamkeit"
+
+#: adminmenu/template/status.tpl.tmp.php:127
+msgid "Order Details:"
+msgstr "Bestelldetails:"
+
+#: adminmenu/template/status.tpl.tmp.php:134
+msgid "Customer:"
+msgstr "Kunde:"
+
+#: adminmenu/template/status.tpl.tmp.php:140
+msgid "Total:"
+msgstr "Gesamt:"
+
+#: adminmenu/template/status.tpl.tmp.php:141
+msgid "Status:"
+msgstr "Status:"
+
+#: adminmenu/template/status.tpl.tmp.php:142
+msgid "Date:"
+msgstr "Datum:"
+
+#: adminmenu/template/status.tpl.tmp.php:147
+msgid "Actions Overview"
+msgstr "Aktionsübersicht"
+
+#: adminmenu/template/status.tpl.tmp.php:170
+msgid "log entry"
+msgstr "Log-Eintrag"
+
+#: adminmenu/template/status.tpl.tmp.php:170
+msgid "log entries"
+msgstr "Log-Einträge"
+
+#: adminmenu/template/status.tpl.tmp.php:184
+msgid "Detailed log entries for"
+msgstr "Detaillierte Log-Einträge für"
+
+#: adminmenu/template/status.tpl.tmp.php:207
+msgid "No actions found for this order"
+msgstr "Keine Aktionen für diese Bestellung gefunden"
+
+#: adminmenu/template/status.tpl.tmp.php:227
+msgid "Order Actions"
+msgstr "Bestellaktionen"
+
+#: adminmenu/template/status.tpl.tmp.php:234
+msgid ""
+"Are you sure you want to retry all broken actions for this order? This will "
+"attempt to process them immediately."
+msgstr ""
+"Sind Sie sicher, dass Sie alle defekten Aktionen für diese Bestellung erneut "
+"versuchen möchten? Dies wird versuchen, sie sofort zu verarbeiten."
+
+#: adminmenu/template/status.tpl.tmp.php:236
+msgid "Retry Broken Actions"
+msgstr "Defekte Aktionen wiederholen"
+
+#: adminmenu/template/status.tpl.tmp.php:249
+msgid "Remove Broken Action"
+msgstr "Defekte Aktion entfernen"
+
+#: adminmenu/template/status.tpl.tmp.php:273
+msgid "Orders with Pending and Broken Actions"
+msgstr "Bestellungen mit ausstehenden und defekten Aktionen"
+
+#: adminmenu/template/status.tpl.tmp.php:273
+msgid "Recent Orders"
+msgstr "Aktuelle Bestellungen"
+
+#: adminmenu/template/status.tpl.tmp.php:280
+#: adminmenu/template/invoices.tpl.tmp.php:59
+msgid "Order Number"
+msgstr "Bestellnummer"
+
+#: adminmenu/template/status.tpl.tmp.php:281
+#: adminmenu/template/invoices.tpl.tmp.php:60
+msgid "Customer"
+msgstr "Kunde"
+
+#: adminmenu/template/status.tpl.tmp.php:282
+#: adminmenu/template/invoices.tpl.tmp.php:61
+msgid "Date"
+msgstr "Datum"
+
+#: adminmenu/template/status.tpl.tmp.php:283
+#: adminmenu/template/invoices.tpl.tmp.php:62
+msgid "Total"
+msgstr "Gesamt"
+
+#: adminmenu/template/status.tpl.tmp.php:284
+#: adminmenu/template/invoices.tpl.tmp.php:63
+msgid "Status"
+msgstr "Status"
+
+#: adminmenu/template/status.tpl.tmp.php:285
+msgid "Pending/Broken Actions"
+msgstr "Ausstehende/defekte Aktionen"
+
+#: adminmenu/template/status.tpl.tmp.php:305
+msgid "pending"
+msgstr "ausstehend"
+
+#: adminmenu/template/status.tpl.tmp.php:351
+msgid "Orders"
+msgstr "Bestellungen"
+
+#: adminmenu/template/status.tpl.tmp.php:354
+msgid "No orders found."
+msgstr "Keine Bestellungen gefunden."
+
+#: adminmenu/template/status.tpl.tmp.php:367
+#: adminmenu/template/invoices.tpl.tmp.php:91
+msgid "Refresh Data"
+msgstr "Daten aktualisieren"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:20
+msgid "Processing Details"
+msgstr "Verarbeitungsdetails"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:28
+msgid "Successfully Processed"
+msgstr "Erfolgreich verarbeitet"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:40
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:70
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:98
+#: adminmenu/template/invoices.tpl.tmp.php:115
+msgid "Order"
+msgstr "Bestellung"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:42
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:100
+msgid "Invoice"
+msgstr "Rechnung"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:43
+msgid "processed"
+msgstr "verarbeitet"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:58
+msgid "Skipped"
+msgstr "Übersprungen"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:71
+msgid "skipped"
+msgstr "übersprungen"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:86
+msgid "Failed to Process"
+msgstr "Verarbeitung fehlgeschlagen"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:101
+msgid "failed"
+msgstr "fehlgeschlagen"
+
+#: adminmenu/template/partials/processing_details.tpl.tmp.php:114
+msgid "No rows were processed."
+msgstr "Keine Zeilen wurden verarbeitet."
+
+#: adminmenu/template/invoices.tpl.tmp.php:18
+msgid "Upload Invoice CSV"
+msgstr "Rechnungs-CSV hochladen"
+
+#: adminmenu/template/invoices.tpl.tmp.php:27
+msgid "Select CSV File"
+msgstr "CSV-Datei auswählen"
+
+#: adminmenu/template/invoices.tpl.tmp.php:31
+msgid "Choose CSV file..."
+msgstr "CSV-Datei auswählen..."
+
+#: adminmenu/template/invoices.tpl.tmp.php:33
+msgid "Upload CSV"
+msgstr "CSV hochladen"
+
+#: adminmenu/template/invoices.tpl.tmp.php:35
+msgid "Select a CSV file containing invoice data"
+msgstr "Wählen Sie eine CSV-Datei mit Rechnungsdaten aus"
+
+#: adminmenu/template/invoices.tpl.tmp.php:47
+msgid "Shipped Orders Awaiting Invoice"
+msgstr "Bestellungen ohne Rechnungsnummer"
+
+#: adminmenu/template/invoices.tpl.tmp.php:52
+msgid "No orders awaiting invoice found"
+msgstr "Keine Bestellungen gefunden, die auf Rechnung warten"
+
+#: adminmenu/template/invoices.tpl.tmp.php:102
+#: adminmenu/template/invoices.tpl.tmp.php:126
+msgid "Set Invoice Number"
+msgstr "Rechnungsnummer setzen"
+
+#: adminmenu/template/invoices.tpl.tmp.php:119
+msgid "Invoice Number"
+msgstr "Rechnungsnummer"
+
+#: adminmenu/template/invoices.tpl.tmp.php:121
+msgid "Enter invoice number"
+msgstr "Rechnungsnummer eingeben"
+
+#: adminmenu/template/invoices.tpl.tmp.php:125
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#~ msgid "Axytos Payment"
+#~ msgstr "Axytos - Bezahlen auf Rechnung"
+
+#~ msgid "Axytos payment integration for JTL Shop"
+#~ msgstr "Axytos Bezahlungsintegration für JTL Shop"
+
+#~ msgid "API Setup"
+#~ msgstr "API Konfiguration"
+
+#~ msgid "Pay Later"
+#~ msgstr "Zahlen auf Rechnung"
+
+#~ msgid "Actions"
+#~ msgstr "Aktionen"
+
+#~ msgid "Created:"
+#~ msgstr "Erstellt:"
+
+#~ msgid ""
+#~ "Are you sure you want to remove the failed '%s' action? You are "
+#~ "responsible for communicating the necessary changes to Axytos to ensure "
+#~ "that further processing of the order is guaranteed. This action cannot be "
+#~ "undone."
+#~ msgstr ""
+#~ "Sind Sie sicher, dass Sie die fehlgeschlagene '%s' Aktion entfernen "
+#~ "möchten? Sie sind verantwortlich für die Kommunikation der notwendigen "
+#~ "Änderungen an Axytos, um sicherzustellen, dass die weitere Verarbeitung "
+#~ "der Bestellung gewährleistet ist. Diese Aktion kann nicht rückgängig "
+#~ "gemacht werden."
+
+#~ msgid "Action Log"
+#~ msgstr "Aktionsprotokoll"
+
+#~ msgid "Time"
+#~ msgstr "Zeit"
+
+#~ msgid "Level"
+#~ msgstr "Level"
+
+#~ msgid "Action"
+#~ msgstr "Aktion"
+
+#~ msgid "Message"
+#~ msgstr "Nachricht"
+
+#~ msgid "retry"
+#~ msgstr "wiederholen"
+
+#~ msgid "retry (failed %dx)"
+#~ msgstr "wiederholen (fehlgeschlagen %dx)"
+
+#~ msgid "broken"
+#~ msgstr "defekt"
+
+#~ msgid "broken (failed %dx)"
+#~ msgstr "defekt (fehlgeschlagen %dx)"
+
+#~ msgid "completed"
+#~ msgstr "abgeschlossen"
+
+#~ msgid "No broken actions found for order #%d."
+#~ msgstr "Keine defekten Aktionen für Bestellung #%d gefunden."
+
+#~ msgid "retrying"
+#~ msgstr "wiederholt"
+
+#~ msgid "queued"
+#~ msgstr "eingereiht"
+
+#~ msgid "Webhook Configuration"
+#~ msgstr "Webhook Konfiguration"
+
+#~ msgid "Webhook Status:"
+#~ msgstr "Webhook Status:"
+
+#~ msgid "Configured"
+#~ msgstr "Konfiguriert"
+
+#~ msgid "Not Configured"
+#~ msgstr "Nicht konfiguriert"
+
+#~ msgid "Webhook Documentation"
+#~ msgstr "Webhook Dokumentation"
+
+#~ msgid "Webhook Integration Guide"
+#~ msgstr "Webhook Integrationsanleitung"
+
+#~ msgid "Close"
+#~ msgstr "Schließen"
+
+#~ msgid "Authentication"
+#~ msgstr "Authentifizierung"
+
+#~ msgid "Webhook requests must include the"
+#~ msgstr "Webhook-Anfragen müssen den"
+
+#~ msgid "header with your configured webhook API key."
+#~ msgstr "Header mit Ihrem konfigurierten Webhook-API-Schlüssel enthalten."
+
+#~ msgid "Security Note:"
+#~ msgstr "Sicherheitshinweis:"
+
+#~ msgid ""
+#~ "Keep your webhook API key secure and never expose it in client-side code "
+#~ "or public repositories."
+#~ msgstr ""
+#~ "Halten Sie Ihren Webhook-API-Schlüssel sicher und geben Sie ihn niemals "
+#~ "in clientseitigem Code oder öffentlichen Repositories preis."
+
+#~ msgid "Endpoint Information"
+#~ msgstr "Endpunkt-Informationen"
+
+#~ msgid "Request Format"
+#~ msgstr "Anfrageformat"
+
+#~ msgid ""
+#~ "The webhook expects a JSON payload with invoice updates in the following "
+#~ "structure:"
+#~ msgstr ""
+#~ "Der Webhook erwartet eine JSON-Payload mit Rechnungsupdates in folgender "
+#~ "Struktur:"
+
+#~ msgid "Example Requests"
+#~ msgstr "Beispielanfragen"
+
+#~ msgid "Response Format"
+#~ msgstr "Antwortformat"
+
+#~ msgid "The webhook will respond with a JSON object indicating the result:"
+#~ msgstr ""
+#~ "Der Webhook antwortet mit einem JSON-Objekt, das das Ergebnis anzeigt:"
+
+#~ msgid "Integration Notes"
+#~ msgstr "Integrationshinweise"
+
+#~ msgid "Copied to clipboard!"
+#~ msgstr "In Zwischenablage kopiert!"
+
+#~ msgid ""
+#~ "Used for automated data transfer between JTL WaWi and the Axytos Payment "
+#~ "plugin."
+#~ msgstr ""
+#~ "Wird für automatische Datenübertragung zwischen JTL WaWi und dem Axytos "
+#~ "Payment Plugin verwendet."

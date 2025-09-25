@@ -4,3 +4,6 @@
 
 # PHPUnit cache file
 .phpunit.result.cache
+
+# Generated i18n files
+locale/messages.pot

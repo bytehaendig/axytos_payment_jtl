@@ -6,3 +6,18 @@ run = "ddev stop"
 
 [tasks.test]
 run = "ddev exec -d /var/www/html/shop/plugins/axytos_payment vendor/bin/phpunit -c phpunit.xml --testdox"
+
+[tasks.i18n-pot]
+run = "./mise/tasks/i18n-pot.sh"
+
+[tasks.i18n-po-de]
+run = "msgmerge --update locale/de-DE/base.po locale/messages.pot"
+
+[tasks.i18n-po-en]
+run = "msgmerge --update locale/en-EN/base.po locale/messages.pot"
+
+[tasks.i18n-mo-de]
+run = "msgfmt locale/de-DE/base.po -o locale/de-DE/base.mo"
+
+[tasks.i18n-mo-en]
+run = "msgfmt locale/en-EN/base.po -o locale/en-EN/base.mo"
