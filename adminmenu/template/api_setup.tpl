@@ -36,11 +36,11 @@
         </div>
     </div>
 
-    <!-- Windows Automation Card -->
+    <!-- WaWi Automation Card -->
     <div class="card mt-4">
         <div class="card-header">
             <h5 class="mb-0">
-                {__('Windows Automation')}
+                {__('JTL-WaWi Automation')}
             </h5>
         </div>
         <small class="form-text text-muted ml-3">{__('Configure webhook key and generate Windows batch scripts for automated invoice data synchronization.')}</small>

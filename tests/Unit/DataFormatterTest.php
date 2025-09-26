@@ -6,7 +6,7 @@ use JTL\Catalog\Currency;
 use JTL\Checkout\Bestellung;
 use JTL\Helpers\Order;
 use JTL\Session\Frontend;
-use PHPUnit\Framework\TestCase;
+use Tests\BaseTestCase;
 use Plugin\axytos_payment\helpers\DataFormatter;
 
 // Define JTL constants for testing
@@ -26,7 +26,7 @@ if (!defined('C_WARENKORBPOS_TYP_ARTIKEL')) {
     define('C_WARENKORBPOS_TYP_BEARBEITUNGSGEBUEHR', 13);
 }
 
-final class DataFormatterTest extends TestCase
+final class DataFormatterTest extends BaseTestCase
 {
     private function createBasicOrder(): object
     {

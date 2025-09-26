@@ -658,9 +658,9 @@ The plugin uses a structured approach to organize reusable template components:
 - Maintain consistent styling with Bootstrap 4 framework
 - Include error handling for missing or empty data
 
-## Windows Automation System
+## WaWi (ERP) Automation System
 
-The plugin includes a Windows automation system that allows JTL-WaWi users to automatically export invoice data and upload it to the shop system via scheduled tasks.
+The plugin includes an automation system that allows JTL-WaWi users to automatically export invoice data and upload it to the shop system via scheduled tasks.
 
 ### Architecture Overview
 
@@ -689,7 +689,7 @@ The automation system consists of three main components:
 - Integrated into existing API Setup tab
 
 #### Admin Interface (`adminmenu/template/api_setup.tpl`)
-- Windows Automation section in API Setup tab
+- WaWi Automation section in API Setup tab
 - Prerequisites validation display
 - Script generation button
 - System requirements and usage instructions

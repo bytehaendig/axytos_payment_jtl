@@ -195,8 +195,8 @@ msgid "Enable this for testing."
 msgstr "Enable this for testing."
 
 #: adminmenu/template/api_setup.tpl.tmp.php:43
-msgid "Windows Automation"
-msgstr "Windows Automation"
+msgid "JTL-WaWi Automation"
+msgstr "JTL-WaWi Automation"
 
 #: adminmenu/template/api_setup.tpl.tmp.php:46
 msgid ""
