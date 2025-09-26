@@ -47,6 +47,23 @@ abstract class BaseTestCase extends TestCase
             ->getMock();
     }
 
+    // Helper methods for accessing private properties and methods
+    public function getPrivateProperty(object $object, string $property): mixed
+    {
+        $reflection = new \ReflectionClass($object);
+        $prop = $reflection->getProperty($property);
+        $prop->setAccessible(true);
+        return $prop->getValue($object);
+    }
+
+    public function callPrivateMethod(object $object, string $method, array $args = []): mixed
+    {
+        $reflection = new \ReflectionClass($object);
+        $meth = $reflection->getMethod($method);
+        $meth->setAccessible(true);
+        return $meth->invokeArgs($object, $args);
+    }
+
     /**
      * Helper method to assert that an array has specific keys
      *
