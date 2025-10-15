@@ -73,29 +73,29 @@ class SetupController
                     'text' => $validationResult['message']
                 ];
             } else {
-                $automationHandler = new AutomationHandler($this->plugin->getPaths()->getAdminPath());
-                $scheduleTime = Request::postVar('schedule_time', '09:00');
-                $pluginVersion = $this->plugin->getMeta()->getVersion();
-                $webhookKey = $this->method->getSetting('webhook_api_key');
-                $shopUrl = Shop::getURL();
-                $automationResult = $automationHandler->generateAutomationScript($smarty, $webhookKey, $shopUrl, $scheduleTime, $pluginVersion);
-            
-                if ($automationResult['success']) {
-                    $messages[] = [
-                        'type' => 'success',
-                        'text' => $automationResult['message']
-                    ];
-                    // If download was requested, exit here to send file
-                    if ($automationResult['download']) {
-                        $this->downloadAutomationScript($automationResult['script_content'], $automationResult['filename']);
-                        exit;
-                    }
-                } else {
-                    $messages[] = [
-                        'type' => 'error',
-                        'text' => $automationResult['message']
-                    ];
+            $automationHandler = new AutomationHandler($this->plugin->getPaths()->getAdminPath());
+            $scheduleTime = '17:00'; // Default schedule time (can be changed in config.ini)
+            $pluginVersion = $this->plugin->getMeta()->getVersion();
+            $webhookKey = $this->method->getSetting('webhook_api_key');
+            $shopUrl = Shop::getURL();
+            $automationResult = $automationHandler->generateAutomationScript($smarty, $webhookKey, $shopUrl, $scheduleTime, $pluginVersion);
+        
+            if ($automationResult['success']) {
+                $messages[] = [
+                    'type' => 'success',
+                    'text' => $automationResult['message']
+                ];
+                // If download was requested, exit here to send file
+                if ($automationResult['download']) {
+                    $this->downloadAutomationScript($automationResult['zip_content'], $automationResult['filename']);
+                    exit;
                 }
+            } else {
+                $messages[] = [
+                    'type' => 'error',
+                    'text' => $automationResult['message']
+                ];
+            }
             }
         }
 
@@ -312,28 +312,10 @@ else:
         $apiKey = $this->method->getSetting('api_key');
         $apiConfigured = !empty($apiKey);
 
-        // Default schedule time
-        $defaultScheduleTime = '17:00';
-
-        // Generate schedule time options
-        $scheduleOptions = [];
-        for ($hour = 0; $hour < 24; $hour++) {
-            for ($minute = 0; $minute < 60; $minute += 30) {
-                $time = sprintf('%02d:%02d', $hour, $minute);
-                $scheduleOptions[] = [
-                    'value' => $time,
-                    'label' => $time,
-                    'selected' => ($time === '17:00')
-                ];
-            }
-        }
-
         return [
             'ready' => $automationReady,
             'webhookConfigured' => $webhookConfigured,
             'apiConfigured' => $apiConfigured,
-            'defaultScheduleTime' => $defaultScheduleTime,
-            'scheduleOptions' => $scheduleOptions,
             'validationMessage' => $automationReady ? '' : $validationResult['message']
         ];
     }
@@ -341,24 +323,25 @@ else:
 
 
     /**
-     * Download automation script as file
+     * Download automation package as ZIP file
      */
     private function downloadAutomationScript(string $content, string $filename): void
     {
-        // Set headers for file download
-        header('Content-Type: application/octet-stream');
+        // Clear all output buffers first
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        // Set headers for ZIP file download
+        header('Content-Type: application/zip');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Content-Length: ' . strlen($content));
         header('Cache-Control: private, max-age=0, must-revalidate');
         header('Pragma: public');
 
-        // Clear any output buffers
-        if (ob_get_level()) {
-            ob_clean();
-        }
-
         // Output the content
         echo $content;
+        flush();
 
         // Exit to prevent any further output
         exit;

@@ -51,6 +51,12 @@ class CSVHelper
                 throw new \InvalidArgumentException("CSV file is empty or has invalid header");
             }
 
+            // Filter out empty columns (from trailing semicolons)
+            $header = array_filter($header, function($field) {
+                return trim($field) !== '';
+            });
+            $header = array_values($header);
+
             // Check if required fields exist in header (case-insensitive)
             $normalizedHeader = array_map('strtolower', array_map('trim', $header));
             $requiredFields = ['rechnungsnummer', 'externe bestellnummer'];
@@ -81,6 +87,17 @@ class CSVHelper
                 throw new \InvalidArgumentException("CSV file is empty or has invalid header");
             }
 
+            // Filter out empty columns (from trailing semicolons) and track original indices
+            $validIndices = [];
+            $filteredHeader = [];
+            foreach ($header as $index => $field) {
+                if (trim($field) !== '') {
+                    $validIndices[] = $index;
+                    $filteredHeader[] = $field;
+                }
+            }
+            $header = $filteredHeader;
+
             $expectedFieldCount = count($header);
 
             // Clean and normalize header names
@@ -92,18 +109,24 @@ class CSVHelper
             while (($row = fgetcsv($handle, 1000, $delimiter, $enclosure, $escape)) !== false) {
                 $rowCount++;
                 if (!empty($row)) {
-                    // Validate field count matches header
-                    if (count($row) !== $expectedFieldCount) {
+                    // Filter row to match valid header columns
+                    $filteredRow = [];
+                    foreach ($validIndices as $index) {
+                        $filteredRow[] = isset($row[$index]) ? $row[$index] : '';
+                    }
+
+                    // Validate field count matches filtered header
+                    if (count($filteredRow) !== $expectedFieldCount) {
                         fclose($handle);
                         throw new \InvalidArgumentException(
-                            "CSV dialect mismatch at row {$rowCount}: expected {$expectedFieldCount} fields, got " . count($row) .
+                            "CSV dialect mismatch at row {$rowCount}: expected {$expectedFieldCount} fields, got " . count($filteredRow) .
                             ". Check delimiter (expected: '{$delimiter}') and enclosure (expected: '{$enclosure}') settings."
                         );
                     }
 
                     $rowData = [];
                     foreach ($header as $index => $fieldName) {
-                        $rowData[$fieldName] = isset($row[$index]) ? trim($row[$index]) : '';
+                        $rowData[$fieldName] = isset($filteredRow[$index]) ? trim($filteredRow[$index]) : '';
                     }
                     $data[] = $rowData;
                 }

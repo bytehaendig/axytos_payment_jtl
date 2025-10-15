@@ -65,37 +65,31 @@
             {else}
                 <!-- Automation Configuration -->
                 <div class="form-group">
-                    <label for="schedule_time">{__('Schedule Time:')}</label>
-                    <div class="row">
-                        <div class="col-md-2">
-                            <select class="form-control" id="schedule_time" name="schedule_time">
-                                {foreach $automationConfig.scheduleOptions as $option}
-                                    <option value="{$option.value}" {if $option.value == '17:00'}selected{/if}>
-                                        {$option.label}
-                                    </option>
-                                {/foreach}
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <button type="button" class="btn btn-success" id="generate-automation-script">
-                                <i class="fas fa-download"></i> {__('Generate Windows Script')}
-                            </button>
-                        </div>
-                    </div>
-                    <small class="form-text text-muted">{__('Time when the automation should run daily.')}</small>
+                    <button type="button" class="btn btn-success" id="generate-automation-script">
+                        <i class="fas fa-download"></i> Automatisierungs-Paket herunterladen
+                    </button>
+                    <small class="form-text text-muted mt-2">Zeitplan und weitere Einstellungen können in der config.ini nach dem Download konfiguriert werden.</small>
                 </div>
 
                 <!-- Usage Instructions -->
                 <div class="mt-4">
-                    <h6>{__('How to Use:')}</h6>
+                    <h6>Verwendung:</h6>
                     <ol class="text-muted">
-                        <li>{__('Download the generated batch script')}</li>
-                        <li>{__('Run the script as Administrator on your Windows system')}</li>
-                        <li>{__('The script will install itself, create a scheduled task, and generate an uninstall script')}</li>
-                        <li>{__('Automation will run daily at the specified time')}</li>
-                        <li>{__('Check the log file for execution status')}</li>
-                        <li>{__('To remove the automation system, run the generated uninstall.bat script')}</li>
+                        <li>Laden Sie das ZIP-Paket herunter</li>
+                        <li>Entpacken Sie alle Dateien in einen Ordner Ihrer Wahl</li>
+                        <li>Bearbeiten Sie die <strong>config.ini</strong> und konfigurieren Sie:
+                            <ul>
+                                <li>JTL-WaWi Datenbankzugangsdaten (Server, Datenbank, Benutzer, Passwort)</li>
+                                <li>Zeitplan (ScheduleTime, Standard: 17:00)</li>
+                                <li>JTL-Ameise Export-Template ID</li>
+                            </ul>
+                        </li>
+                        <li>Führen Sie <strong>install.bat</strong> als Administrator aus</li>
+                        <li>Die Automatisierung läuft täglich zur konfigurierten Zeit</li>
+                        <li>Prüfen Sie die Logdateien im Ordner %APPDATA%\AxytosPaymentJTL\</li>
+                        <li>Zum Deinstallieren führen Sie <strong>uninstall.bat</strong> aus</li>
                     </ol>
+                    <p class="text-muted"><small><strong>Hinweis:</strong> Weitere Details finden Sie in der README.txt Datei im heruntergeladenen Paket.</small></p>
                 </div>
             {/if}
         </div>
@@ -117,7 +111,6 @@
 <form method="post" id="automation-script-form" style="display: none;">
     {$token}
     <input type="hidden" name="generate_script" value="1">
-    <input type="hidden" name="schedule_time" id="hidden-schedule-time" value="">
 </form>
 
 
@@ -180,14 +173,10 @@ document.getElementById('generate-webhook-key').addEventListener('click', functi
 document.getElementById('generate-automation-script').addEventListener('click', function() {
     const button = this;
     const originalHtml = button.innerHTML;
-    const scheduleTime = document.getElementById('schedule_time').value;
 
     // Show loading state
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {__('Generating...')}';
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generiere...';
     button.disabled = true;
-
-    // Update hidden form with current schedule time
-    document.getElementById('hidden-schedule-time').value = scheduleTime;
 
     // Get form data
     const formData = new FormData(document.getElementById('automation-script-form'));
@@ -217,7 +206,7 @@ document.getElementById('generate-automation-script').addEventListener('click', 
 
         // Generate filename
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-        a.download = 'axytos_automation_' + timestamp + '.bat';
+        a.download = 'axytos_automation_' + timestamp + '.zip';
 
         document.body.appendChild(a);
         a.click();
@@ -225,7 +214,7 @@ document.getElementById('generate-automation-script').addEventListener('click', 
         document.body.removeChild(a);
 
         // Show success state
-        button.innerHTML = '<i class="fas fa-check"></i> {__('Downloaded!')}';
+        button.innerHTML = '<i class="fas fa-check"></i> Heruntergeladen!';
         button.classList.remove('btn-success');
         button.classList.add('btn-success');
 
