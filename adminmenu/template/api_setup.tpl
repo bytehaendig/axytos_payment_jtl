@@ -63,34 +63,36 @@
                     {$automationConfig.validationMessage}
                 </div>
             {else}
-                <!-- Automation Configuration -->
-                <div class="form-group">
-                    <button type="button" class="btn btn-success" id="generate-automation-script">
-                        <i class="fas fa-download"></i> Automatisierungs-Paket herunterladen
-                    </button>
-                    <small class="form-text text-muted mt-2">Zeitplan und weitere Einstellungen können in der config.ini nach dem Download konfiguriert werden.</small>
-                </div>
+                 <!-- Automation Configuration -->
+                 <div class="form-group">
+                     <button type="button" class="btn btn-success" id="generate-automation-script">
+                         <i class="fas fa-download"></i> {__('Download Automation Package')}
+                     </button>
+                     <small class="form-text text-muted mt-2">{__('Schedule and additional settings can be configured in config.ini after download.')}</small>
+                 </div>
 
-                <!-- Usage Instructions -->
-                <div class="mt-4">
-                    <h6>Verwendung:</h6>
-                    <ol class="text-muted">
-                        <li>Laden Sie das ZIP-Paket herunter</li>
-                        <li>Entpacken Sie alle Dateien in einen Ordner Ihrer Wahl</li>
-                        <li>Bearbeiten Sie die <strong>config.ini</strong> und konfigurieren Sie:
-                            <ul>
-                                <li>JTL-WaWi Datenbankzugangsdaten (Server, Datenbank, Benutzer, Passwort)</li>
-                                <li>Zeitplan (ScheduleTime, Standard: 17:00)</li>
-                                <li>JTL-Ameise Export-Template ID</li>
-                            </ul>
-                        </li>
-                        <li>Führen Sie <strong>install.bat</strong> als Administrator aus</li>
-                        <li>Die Automatisierung läuft täglich zur konfigurierten Zeit</li>
-                        <li>Prüfen Sie die Logdateien im Ordner %APPDATA%\AxytosPaymentJTL\</li>
-                        <li>Zum Deinstallieren führen Sie <strong>uninstall.bat</strong> aus</li>
-                    </ol>
-                    <p class="text-muted"><small><strong>Hinweis:</strong> Weitere Details finden Sie in der README.txt Datei im heruntergeladenen Paket.</small></p>
-                </div>
+                 <!-- Usage Instructions -->
+                 <div class="mt-4">
+                     <h6>{__('Usage:')}</h6>
+                     <ol class="text-muted">
+                         <li>{__('Download the ZIP package')}</li>
+                         <li>{__('Extract all files to a folder of your choice')}
+                             <br><small class="text-muted">{__('Recommended:')} <code>C:\Tools\AxytosPaymentAutomation\</code></small>
+                         </li>
+                         <li>{__('Edit the')} <strong>config.ini</strong> {__('and configure:')}
+                             <ul class="text-muted">
+                                 <li>{__('JTL-WaWi database access data (Server, Database, User, Password)')}</li>
+                                 <li>{__('Schedule (ScheduleTime, Default: 17:00)')}</li>
+                                 <li>{__('JTL-Ameise Export-Template ID')}</li>
+                             </ul>
+                         </li>
+                         <li>{__('Run')} <strong>install.bat</strong> {__('as administrator')}</li>
+                         <li>{__('The automation runs daily at the configured time')}</li>
+                         <li>{__('Check the log files in the same folder')} (<code>axytos_automation.log</code>)</li>
+                         <li>{__('To uninstall, run')} <strong>uninstall.bat</strong></li>
+                     </ol>
+                     <p class="text-muted"><small><strong>{__('Note:')}</strong> {__('All files remain in your chosen folder - nothing is copied to system directories.')}</small></p>
+                 </div>
             {/if}
         </div>
     </div>
@@ -175,7 +177,7 @@ document.getElementById('generate-automation-script').addEventListener('click', 
     const originalHtml = button.innerHTML;
 
     // Show loading state
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generiere...';
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {__('Generating...')}';
     button.disabled = true;
 
     // Get form data
@@ -214,7 +216,7 @@ document.getElementById('generate-automation-script').addEventListener('click', 
         document.body.removeChild(a);
 
         // Show success state
-        button.innerHTML = '<i class="fas fa-check"></i> Heruntergeladen!';
+        button.innerHTML = '<i class="fas fa-check"></i> {__('Downloaded!')}';
         button.classList.remove('btn-success');
         button.classList.add('btn-success');
 

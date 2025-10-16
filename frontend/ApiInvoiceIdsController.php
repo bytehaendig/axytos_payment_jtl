@@ -199,6 +199,8 @@ class ApiInvoiceIdsController
             // Process the invoice IDs update
             $result = $this->invoiceUpdatesHandler->processInvoiceIdsUpdate($data);
 
+            $this->paymentMethod->doLog("Invoice IDs API endpoint called - {$result['total_processed']} total processed, {$result['successful_count']} successful, {$result['error_count']} errors");
+
             return new JsonResponse([
                 'success' => true,
                 'data' => $result

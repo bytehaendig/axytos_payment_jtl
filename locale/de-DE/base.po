@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: dev@axytos.com\n"
-"POT-Creation-Date: 2025-09-25 16:46+0200\n"
+"POT-Creation-Date: 2025-10-16 00:26+0200\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
 #: adminmenu/StatusController.php:40
@@ -229,75 +229,109 @@ msgstr ""
 "Ihr Webhook-API-Schlüssel wird vor dem Speichern in der Datenbank "
 "verschlüsselt."
 
-#: adminmenu/template/api_setup.tpl.tmp.php:68
-msgid "Schedule Time:"
-msgstr "Zeitplan:"
+#: adminmenu/template/api_setup.tpl.tmp.php:69
+msgid "Download Automation Package"
+msgstr "Automatisierungs-Paket herunterladen"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:81
-msgid "Generate Windows Script"
-msgstr "Windows-Skript generieren"
+#: adminmenu/template/api_setup.tpl.tmp.php:71
+msgid ""
+"Schedule and additional settings can be configured in config.ini after "
+"download."
+msgstr ""
+"Zeitplan und weitere Einstellungen können in der config.ini nach dem "
+"Download konfiguriert werden."
 
-#: adminmenu/template/api_setup.tpl.tmp.php:85
-msgid "Time when the automation should run daily."
-msgstr "Zeitpunkt, zu dem die Automatisierung täglich ausgeführt werden soll."
-
-#: adminmenu/template/api_setup.tpl.tmp.php:90
-msgid "How to Use:"
+#: adminmenu/template/api_setup.tpl.tmp.php:76
+msgid "Usage:"
 msgstr "Verwendung:"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:92
-msgid "Download the generated batch script"
-msgstr "Das generierte Batch-Skript herunterladen"
+#: adminmenu/template/api_setup.tpl.tmp.php:78
+msgid "Download the ZIP package"
+msgstr "Laden Sie das ZIP-Paket herunter"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:93
-msgid "Run the script as Administrator on your Windows system"
-msgstr "Das Skript als Administrator auf Ihrem Windows-System ausführen"
+#: adminmenu/template/api_setup.tpl.tmp.php:79
+msgid "Extract all files to a folder of your choice"
+msgstr "Entpacken Sie alle Dateien in einen Ordner Ihrer Wahl"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:80
+msgid "Recommended:"
+msgstr "Empfohlen:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:82
+msgid "Edit the"
+msgstr "Bearbeiten Sie die"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:82
+msgid "and configure:"
+msgstr "und konfigurieren Sie:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:84
+msgid "JTL-WaWi database access data (Server, Database, User, Password)"
+msgstr "JTL-WaWi Datenbankzugangsdaten (Server, Datenbank, Benutzer, Passwort)"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:85
+msgid "Schedule (ScheduleTime, Default: 17:00)"
+msgstr "Zeitplan (ScheduleTime, Standard: 17:00)"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:86
+msgid "JTL-Ameise Export-Template ID"
+msgstr "JTL-Ameise Export-Template ID"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:89
+msgid "Run"
+msgstr "Führen Sie"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:89
+msgid "as administrator"
+msgstr "als Administrator aus"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:90
+msgid "The automation runs daily at the configured time"
+msgstr "Die Automatisierung läuft täglich zur konfigurierten Zeit"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:91
+msgid "Check the log files in the same folder"
+msgstr "Prüfen Sie die Logdateien im selben Ordner"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:92
+msgid "To uninstall, run"
+msgstr "Zum Deinstallieren führen Sie"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:94
+msgid "Note:"
+msgstr "Hinweis:"
 
 #: adminmenu/template/api_setup.tpl.tmp.php:94
 msgid ""
-"The script will install itself, create a scheduled task, and generate an "
-"uninstall script"
+"All files remain in your chosen folder - nothing is copied to system "
+"directories."
 msgstr ""
-"Das Skript installiert sich selbst, erstellt eine geplante Aufgabe und "
-"generiert ein Deinstallationsskript"
+"Alle Dateien bleiben in Ihrem gewählten Ordner - nichts wird in "
+"Systemverzeichnisse kopiert."
 
-#: adminmenu/template/api_setup.tpl.tmp.php:95
-msgid "Automation will run daily at the specified time"
-msgstr "Die Automatisierung wird täglich zur angegebenen Zeit ausgeführt"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:96
-msgid "Check the log file for execution status"
-msgstr "Überprüfen Sie die Protokolldatei auf den Ausführungsstatus"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:97
-msgid "To remove the automation system, run the generated uninstall.bat script"
-msgstr ""
-"Um das Automatisierungssystem zu entfernen, führen Sie das generierte "
-"uninstall.bat-Skript aus"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:106
+#: adminmenu/template/api_setup.tpl.tmp.php:102
 msgid "Save Settings"
 msgstr "Einstellungen speichern"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:132
-#: adminmenu/template/api_setup.tpl.tmp.php:186
+#: adminmenu/template/api_setup.tpl.tmp.php:127
+#: adminmenu/template/api_setup.tpl.tmp.php:180
 msgid "Generating..."
 msgstr "Generiere..."
 
-#: adminmenu/template/api_setup.tpl.tmp.php:156
+#: adminmenu/template/api_setup.tpl.tmp.php:151
 msgid "Generated!"
 msgstr "Generiert!"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:228
+#: adminmenu/template/api_setup.tpl.tmp.php:219
 msgid "Downloaded!"
 msgstr "Heruntergeladen!"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:244
+#: adminmenu/template/api_setup.tpl.tmp.php:235
 #: adminmenu/template/partials/processing_details.tpl.tmp.php:103
 msgid "Error"
 msgstr "Fehler"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:269
+#: adminmenu/template/api_setup.tpl.tmp.php:260
 msgid ""
 "Error generating automation script. Please check your configuration and try "
 "again."
@@ -577,6 +611,38 @@ msgstr "Rechnungsnummer eingeben"
 msgid "Cancel"
 msgstr "Abbrechen"
 
+#~ msgid "Schedule Time:"
+#~ msgstr "Zeitplan:"
+
+#~ msgid "Generate Windows Script"
+#~ msgstr "Windows-Skript generieren"
+
+#~ msgid "Time when the automation should run daily."
+#~ msgstr ""
+#~ "Zeitpunkt, zu dem die Automatisierung täglich ausgeführt werden soll."
+
+#~ msgid "How to Use:"
+#~ msgstr "Verwendung:"
+
+#~ msgid "Download the generated batch script"
+#~ msgstr "Das generierte Batch-Skript herunterladen"
+
+#~ msgid "Run the script as Administrator on your Windows system"
+#~ msgstr "Das Skript als Administrator auf Ihrem Windows-System ausführen"
+
+#~ msgid ""
+#~ "The script will install itself, create a scheduled task, and generate an "
+#~ "uninstall script"
+#~ msgstr ""
+#~ "Das Skript installiert sich selbst, erstellt eine geplante Aufgabe und "
+#~ "generiert ein Deinstallationsskript"
+
+#~ msgid ""
+#~ "To remove the automation system, run the generated uninstall.bat script"
+#~ msgstr ""
+#~ "Um das Automatisierungssystem zu entfernen, führen Sie das generierte "
+#~ "uninstall.bat-Skript aus"
+
 #~ msgid "Axytos Payment"
 #~ msgstr "Axytos - Bezahlen auf Rechnung"
 
@@ -619,9 +685,6 @@ msgstr "Abbrechen"
 #~ msgid "Action"
 #~ msgstr "Aktion"
 
-#~ msgid "Message"
-#~ msgstr "Nachricht"
-
 #~ msgid "retry"
 #~ msgstr "wiederholen"
 
@@ -651,9 +714,6 @@ msgstr "Abbrechen"
 
 #~ msgid "Webhook Status:"
 #~ msgstr "Webhook Status:"
-
-#~ msgid "Configured"
-#~ msgstr "Konfiguriert"
 
 #~ msgid "Not Configured"
 #~ msgstr "Nicht konfiguriert"
