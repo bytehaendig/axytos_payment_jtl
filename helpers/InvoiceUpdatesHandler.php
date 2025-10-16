@@ -94,8 +94,8 @@ class InvoiceUpdatesHandler
                 // Check if order already has an invoice number
                 $existingInvoiceNumber = $this->getExistingInvoiceNumber($orderNumber);
 
-                if ($existingInvoiceNumber !== null) {
-                    // Order already has an invoice number - skip processing
+                if ($existingInvoiceNumber !== null && $existingInvoiceNumber === $invoiceNumber) {
+                    // Order already has the same invoice number - skip processing
                     $results[] = [
                         'invoiceNumber' => $invoiceNumber,
                         'orderNumber' => $orderNumber,
