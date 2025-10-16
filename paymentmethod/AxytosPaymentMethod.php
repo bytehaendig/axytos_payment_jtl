@@ -231,7 +231,7 @@ class AxytosPaymentMethod extends Method
         $actionHandler->processPendingActionsForOrder($orderId);
     }
 
-    public function invoiceWasCreated(string $orderNumber, string $invoiceNumber = null): void
+    public function invoiceWasCreated(string $orderNumber, string $invoiceNumber = null, bool $processImmediately = true): void
     {
         // Load the order by order number
         $order = Utils::loadOrderByOrderNumber($this->db, $orderNumber);
@@ -252,7 +252,10 @@ class AxytosPaymentMethod extends Method
 
         $actionHandler = $this->createActionHandler();
         $actionHandler->addPendingAction($orderId, 'invoice', $invoiceData);
-        $actionHandler->processPendingActionsForOrder($orderId);
+        
+        if ($processImmediately) {
+            $actionHandler->processPendingActionsForOrder($orderId);
+        }
     }
 
     private function loadPluginSettings(): void

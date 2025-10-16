@@ -104,8 +104,8 @@ class InvoiceUpdatesHandler
                     continue;
                 }
 
-                // Order lookup and invoice creation is now handled inside the method
-                $this->paymentMethod->invoiceWasCreated($orderNumber, $invoiceNumber);
+                // Queue action without immediate processing (processImmediately = false)
+                $this->paymentMethod->invoiceWasCreated($orderNumber, $invoiceNumber, false);
 
                 $results[] = [
                     'invoiceNumber' => $invoiceNumber,
