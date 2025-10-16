@@ -646,28 +646,53 @@ class ActionHandler
             ['orderId' => $orderId]
         )->toArray();
 
-        // Get all action logs grouped by action
+        // Get all action logs
         $logs = $this->db->getCollection(
-            "SELECT * FROM axytos_actionslog WHERE kBestellung = :orderId ORDER BY dProcessedAt DESC, kAxytosActionsLog DESC",
+            "SELECT * FROM axytos_actionslog WHERE kBestellung = :orderId ORDER BY dProcessedAt ASC, kAxytosActionsLog ASC",
             ['orderId' => $orderId]
         )->toArray();
-
-        // Group logs by action type
-        $logsByAction = [];
-        foreach ($logs as $log) {
-            $logsByAction[$log->cAction][] = [
-                'id' => (int) $log->kAxytosActionsLog,
-                'timestamp' => $log->dProcessedAt,
-                'level' => $log->cLevel,
-                'message' => $log->cMessage
-            ];
-        }
 
         // Create compact timeline entries
         $timeline = [];
         foreach ($actions as $action) {
             $status = $this->getActionStatus($action);
-            $actionLogs = $logsByAction[$action->cAction] ?? [];
+            
+            // Match logs to this specific action instance based on timestamp proximity
+            // Note: Multiple actions of the same type can exist per order (e.g., cancel → reactivate → cancel again)
+            // Since axytos_actionslog doesn't have a foreign key to kAxytosAction, we must match logs
+            // to actions using timestamp ranges. Logs belong to an action if they fall within its time window.
+            $actionLogs = [];
+            foreach ($logs as $log) {
+                if ($log->cAction !== $action->cAction) {
+                    continue;
+                }
+                
+                // Log must be at or after action creation
+                if ($log->dProcessedAt < $action->dCreatedAt) {
+                    continue;
+                }
+                
+                // For completed actions, log must be before or at completion time
+                if ($action->dProcessedAt && $log->dProcessedAt > $action->dProcessedAt) {
+                    continue;
+                }
+                
+                // For failed actions, include logs up to failure time
+                if (!$action->dProcessedAt && $action->dFailedAt && $log->dProcessedAt > $action->dFailedAt) {
+                    continue;
+                }
+                
+                // For pending actions, include all logs after creation (no upper bound)
+                $actionLogs[] = [
+                    'id' => (int) $log->kAxytosActionsLog,
+                    'timestamp' => $log->dProcessedAt,
+                    'level' => $log->cLevel,
+                    'message' => $log->cMessage
+                ];
+            }
+            
+            // Reverse logs to show newest first
+            $actionLogs = array_reverse($actionLogs);
             
             // Determine the most recent timestamp for sorting
             $latestTimestamp = $action->dCreatedAt;
