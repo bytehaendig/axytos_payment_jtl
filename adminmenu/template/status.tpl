@@ -125,7 +125,7 @@
                     <div class="modal-content">
                          <div class="modal-header">
                              <h5 class="modal-title" id="orderModalLabel">{__("Order Details:")} {$searchResult.order->cBestellNr}</h5>
-                             <button type="button" class="close" onclick="closeOrderModal()" aria-label="Close">
+                             <button type="button" class="close" onclick="closeOrderModal({$menuID})" aria-label="Close">
                                  <span aria-hidden="true">&times;</span>
                              </button>
                          </div>
@@ -386,19 +386,20 @@ function confirmAction(button) {
     return confirm(message);
 }
 
-function closeOrderModal() {
-    // Hide the modal and backdrop
-    var modal = document.querySelector('.modal');
-    var backdrop = document.querySelector('.modal-backdrop');
-    if (modal) modal.style.display = 'none';
-    if (backdrop) backdrop.style.display = 'none';
+function closeOrderModal(menuID) {
+    // Set order_search to empty to stay on Status tab without showing modal
+    var currentUrl = new URL(window.location);
+    currentUrl.searchParams.set('order_search', '');
+    window.location.href = currentUrl.toString();
 }
 
 // Add click handler to backdrop to close modal
 document.addEventListener('DOMContentLoaded', function() {
     var backdrop = document.querySelector('.modal-backdrop');
     if (backdrop) {
-        backdrop.addEventListener('click', closeOrderModal);
+        backdrop.addEventListener('click', function() {
+            closeOrderModal({$menuID});
+        });
     }
 });
 

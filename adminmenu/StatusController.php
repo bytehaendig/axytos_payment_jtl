@@ -71,13 +71,16 @@ class StatusController
         }
 
         // Handle GET parameter for order search AFTER all POST actions (no CSRF token needed for read operations)
-        $orderIdOrNumber = trim(Request::getVar('order_search', ''));
-        if (!empty($orderIdOrNumber)) {
+        $orderSearchParam = Request::getVar('order_search', null);
+        if ($orderSearchParam !== null) {
             $smarty->assign('defaultTabbertab', $menuID);
-            $orderDetails = $this->searchOrderDetails($orderIdOrNumber);
-            $smarty->assign('searchResult', $orderDetails);
-            if (!$orderDetails) {
-                $messages[] = ['type' => 'warning', 'text' => __('Order not found or not using Axytos payment method.')];
+            $orderIdOrNumber = trim($orderSearchParam);
+            if (!empty($orderIdOrNumber)) {
+                $orderDetails = $this->searchOrderDetails($orderIdOrNumber);
+                $smarty->assign('searchResult', $orderDetails);
+                if (!$orderDetails) {
+                    $messages[] = ['type' => 'warning', 'text' => __('Order not found or not using Axytos payment method.')];
+                }
             }
         }
 
@@ -92,6 +95,7 @@ class StatusController
         $smarty->assign('ordersData', !empty($unifiedActions) ? $unifiedActions : $recentOrders);
         $smarty->assign('showActions', !empty($unifiedActions)); // Show different header text based on data source
         $smarty->assign('token', Form::getTokenInput());
+        $smarty->assign('menuID', $menuID);
         
         return $smarty->fetch($this->plugin->getPaths()->getAdminPath() . 'template/status.tpl');
     }
