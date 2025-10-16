@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: dev@axytos.com\n"
-"POT-Creation-Date: 2025-10-16 00:26+0200\n"
+"POT-Creation-Date: 2025-10-16 00:32+0200\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
 #: adminmenu/StatusController.php:40
@@ -233,7 +233,11 @@ msgstr ""
 msgid "Download Automation Package"
 msgstr "Automatisierungs-Paket herunterladen"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:71
+#: adminmenu/template/api_setup.tpl.tmp.php:72
+msgid "Show Usage Instructions"
+msgstr "Verwendungshinweise anzeigen"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:74
 msgid ""
 "Schedule and additional settings can be configured in config.ini after "
 "download."
@@ -241,67 +245,75 @@ msgstr ""
 "Zeitplan und weitere Einstellungen können in der config.ini nach dem "
 "Download konfiguriert werden."
 
-#: adminmenu/template/api_setup.tpl.tmp.php:76
-msgid "Usage:"
-msgstr "Verwendung:"
+#: adminmenu/template/api_setup.tpl.tmp.php:82
+msgid "Save Settings"
+msgstr "Einstellungen speichern"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:78
+#: adminmenu/template/api_setup.tpl.tmp.php:105
+msgid "Usage Instructions"
+msgstr "Verwendungshinweise"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:111
+msgid "Setup Steps:"
+msgstr "Einrichtungsschritte:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:113
 msgid "Download the ZIP package"
 msgstr "Laden Sie das ZIP-Paket herunter"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:79
+#: adminmenu/template/api_setup.tpl.tmp.php:114
 msgid "Extract all files to a folder of your choice"
 msgstr "Entpacken Sie alle Dateien in einen Ordner Ihrer Wahl"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:80
+#: adminmenu/template/api_setup.tpl.tmp.php:115
 msgid "Recommended:"
 msgstr "Empfohlen:"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:82
+#: adminmenu/template/api_setup.tpl.tmp.php:117
 msgid "Edit the"
 msgstr "Bearbeiten Sie die"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:82
+#: adminmenu/template/api_setup.tpl.tmp.php:117
 msgid "and configure:"
 msgstr "und konfigurieren Sie:"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:84
+#: adminmenu/template/api_setup.tpl.tmp.php:119
 msgid "JTL-WaWi database access data (Server, Database, User, Password)"
 msgstr "JTL-WaWi Datenbankzugangsdaten (Server, Datenbank, Benutzer, Passwort)"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:85
+#: adminmenu/template/api_setup.tpl.tmp.php:120
 msgid "Schedule (ScheduleTime, Default: 17:00)"
 msgstr "Zeitplan (ScheduleTime, Standard: 17:00)"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:86
+#: adminmenu/template/api_setup.tpl.tmp.php:121
 msgid "JTL-Ameise Export-Template ID"
 msgstr "JTL-Ameise Export-Template ID"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:89
+#: adminmenu/template/api_setup.tpl.tmp.php:124
 msgid "Run"
 msgstr "Führen Sie"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:89
+#: adminmenu/template/api_setup.tpl.tmp.php:124
 msgid "as administrator"
 msgstr "als Administrator aus"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:90
+#: adminmenu/template/api_setup.tpl.tmp.php:125
 msgid "The automation runs daily at the configured time"
 msgstr "Die Automatisierung läuft täglich zur konfigurierten Zeit"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:91
+#: adminmenu/template/api_setup.tpl.tmp.php:126
 msgid "Check the log files in the same folder"
 msgstr "Prüfen Sie die Logdateien im selben Ordner"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:92
+#: adminmenu/template/api_setup.tpl.tmp.php:127
 msgid "To uninstall, run"
 msgstr "Zum Deinstallieren führen Sie"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:94
+#: adminmenu/template/api_setup.tpl.tmp.php:129
 msgid "Note:"
 msgstr "Hinweis:"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:94
+#: adminmenu/template/api_setup.tpl.tmp.php:129
 msgid ""
 "All files remain in your chosen folder - nothing is copied to system "
 "directories."
@@ -309,29 +321,25 @@ msgstr ""
 "Alle Dateien bleiben in Ihrem gewählten Ordner - nichts wird in "
 "Systemverzeichnisse kopiert."
 
-#: adminmenu/template/api_setup.tpl.tmp.php:102
-msgid "Save Settings"
-msgstr "Einstellungen speichern"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:127
-#: adminmenu/template/api_setup.tpl.tmp.php:180
+#: adminmenu/template/api_setup.tpl.tmp.php:169
+#: adminmenu/template/api_setup.tpl.tmp.php:222
 msgid "Generating..."
 msgstr "Generiere..."
 
-#: adminmenu/template/api_setup.tpl.tmp.php:151
+#: adminmenu/template/api_setup.tpl.tmp.php:193
 msgid "Generated!"
 msgstr "Generiert!"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:219
+#: adminmenu/template/api_setup.tpl.tmp.php:261
 msgid "Downloaded!"
 msgstr "Heruntergeladen!"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:235
+#: adminmenu/template/api_setup.tpl.tmp.php:277
 #: adminmenu/template/partials/processing_details.tpl.tmp.php:103
 msgid "Error"
 msgstr "Fehler"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:260
+#: adminmenu/template/api_setup.tpl.tmp.php:302
 msgid ""
 "Error generating automation script. Please check your configuration and try "
 "again."
@@ -610,6 +618,9 @@ msgstr "Rechnungsnummer eingeben"
 #: adminmenu/template/invoices.tpl.tmp.php:125
 msgid "Cancel"
 msgstr "Abbrechen"
+
+#~ msgid "Usage:"
+#~ msgstr "Verwendung:"
 
 #~ msgid "Schedule Time:"
 #~ msgstr "Zeitplan:"

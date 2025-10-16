@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: dev@axytos.com\n"
-"POT-Creation-Date: 2025-10-16 00:26+0200\n"
+"POT-Creation-Date: 2025-10-16 00:32+0200\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
 #: adminmenu/StatusController.php:40
@@ -226,7 +226,11 @@ msgstr "Your webhook API key will be encrypted before storing in the database."
 msgid "Download Automation Package"
 msgstr "Download Automation Package"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:71
+#: adminmenu/template/api_setup.tpl.tmp.php:72
+msgid "Show Usage Instructions"
+msgstr "Show Usage Instructions"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:74
 msgid ""
 "Schedule and additional settings can be configured in config.ini after "
 "download."
@@ -234,97 +238,101 @@ msgstr ""
 "Schedule and additional settings can be configured in config.ini after "
 "download."
 
-#: adminmenu/template/api_setup.tpl.tmp.php:76
-msgid "Usage:"
-msgstr "Usage:"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:78
-msgid "Download the ZIP package"
-msgstr "Download the ZIP package"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:79
-msgid "Extract all files to a folder of your choice"
-msgstr "Extract all files to a folder of your choice"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:80
-msgid "Recommended:"
-msgstr "Recommended:"
-
 #: adminmenu/template/api_setup.tpl.tmp.php:82
-msgid "Edit the"
-msgstr "Edit the"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:82
-msgid "and configure:"
-msgstr "and configure:"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:84
-msgid "JTL-WaWi database access data (Server, Database, User, Password)"
-msgstr "JTL-WaWi database access data (Server, Database, User, Password)"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:85
-msgid "Schedule (ScheduleTime, Default: 17:00)"
-msgstr "Schedule (ScheduleTime, Default: 17:00)"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:86
-msgid "JTL-Ameise Export-Template ID"
-msgstr "JTL-Ameise Export-Template ID"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:89
-msgid "Run"
-msgstr "Run"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:89
-msgid "as administrator"
-msgstr "as administrator"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:90
-msgid "The automation runs daily at the configured time"
-msgstr "The automation runs daily at the configured time"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:91
-msgid "Check the log files in the same folder"
-msgstr "Check the log files in the same folder"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:92
-msgid "To uninstall, run"
-msgstr "To uninstall, run"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:94
-msgid "Note:"
-msgstr "Note:"
-
-#: adminmenu/template/api_setup.tpl.tmp.php:94
-msgid ""
-"All files remain in your chosen folder - nothing is copied to system "
-"directories."
-msgstr ""
-"All files remain in your chosen folder - nothing is copied to system "
-"directories."
-
-#: adminmenu/template/api_setup.tpl.tmp.php:102
 msgid "Save Settings"
 msgstr "Save Settings"
 
+#: adminmenu/template/api_setup.tpl.tmp.php:105
+msgid "Usage Instructions"
+msgstr "Usage Instructions"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:111
+msgid "Setup Steps:"
+msgstr "Setup Steps:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:113
+msgid "Download the ZIP package"
+msgstr "Download the ZIP package"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:114
+msgid "Extract all files to a folder of your choice"
+msgstr "Extract all files to a folder of your choice"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:115
+msgid "Recommended:"
+msgstr "Recommended:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:117
+msgid "Edit the"
+msgstr "Edit the"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:117
+msgid "and configure:"
+msgstr "and configure:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:119
+msgid "JTL-WaWi database access data (Server, Database, User, Password)"
+msgstr "JTL-WaWi database access data (Server, Database, User, Password)"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:120
+msgid "Schedule (ScheduleTime, Default: 17:00)"
+msgstr "Schedule (ScheduleTime, Default: 17:00)"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:121
+msgid "JTL-Ameise Export-Template ID"
+msgstr "JTL-Ameise Export-Template ID"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:124
+msgid "Run"
+msgstr "Run"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:124
+msgid "as administrator"
+msgstr "as administrator"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:125
+msgid "The automation runs daily at the configured time"
+msgstr "The automation runs daily at the configured time"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:126
+msgid "Check the log files in the same folder"
+msgstr "Check the log files in the same folder"
+
 #: adminmenu/template/api_setup.tpl.tmp.php:127
-#: adminmenu/template/api_setup.tpl.tmp.php:180
+msgid "To uninstall, run"
+msgstr "To uninstall, run"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:129
+msgid "Note:"
+msgstr "Note:"
+
+#: adminmenu/template/api_setup.tpl.tmp.php:129
+msgid ""
+"All files remain in your chosen folder - nothing is copied to system "
+"directories."
+msgstr ""
+"All files remain in your chosen folder - nothing is copied to system "
+"directories."
+
+#: adminmenu/template/api_setup.tpl.tmp.php:169
+#: adminmenu/template/api_setup.tpl.tmp.php:222
 msgid "Generating..."
 msgstr "Generating..."
 
-#: adminmenu/template/api_setup.tpl.tmp.php:151
+#: adminmenu/template/api_setup.tpl.tmp.php:193
 msgid "Generated!"
 msgstr "Generated!"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:219
+#: adminmenu/template/api_setup.tpl.tmp.php:261
 msgid "Downloaded!"
 msgstr "Downloaded!"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:235
+#: adminmenu/template/api_setup.tpl.tmp.php:277
 #: adminmenu/template/partials/processing_details.tpl.tmp.php:103
 msgid "Error"
 msgstr "Error"
 
-#: adminmenu/template/api_setup.tpl.tmp.php:260
+#: adminmenu/template/api_setup.tpl.tmp.php:302
 msgid ""
 "Error generating automation script. Please check your configuration and try "
 "again."
@@ -602,6 +610,9 @@ msgstr "Enter invoice number"
 #: adminmenu/template/invoices.tpl.tmp.php:125
 msgid "Cancel"
 msgstr "Cancel"
+
+#~ msgid "Usage:"
+#~ msgstr "Usage:"
 
 #~ msgid "Schedule Time:"
 #~ msgstr "Schedule Time:"
