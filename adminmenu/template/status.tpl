@@ -390,9 +390,10 @@ function confirmAction(button) {
 }
 
 function closeOrderModal(menuID) {
-    // Set order_search to empty to stay on Status tab without showing modal
+    // Remove order_search parameter and ensure cPluginTab is set to Status
     var currentUrl = new URL(window.location);
-    currentUrl.searchParams.set('order_search', '');
+    currentUrl.searchParams.delete('order_search');
+    currentUrl.searchParams.set('cPluginTab', 'Status');
     window.location.href = currentUrl.toString();
 }
 

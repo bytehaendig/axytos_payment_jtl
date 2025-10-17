@@ -155,4 +155,25 @@ class InvoiceUpdatesHandler
             return null;
         }
     }
+
+    /**
+     * Get count of orders awaiting invoice
+     */
+    public function getOrdersAwaitingInvoiceCount(): int
+    {
+        $sql = "
+            SELECT COUNT(DISTINCT kBestellung) as count
+            FROM axytos_actions a1
+            WHERE cAction IN ('confirm', 'shipped', 'reverse_cancel')
+              AND NOT EXISTS (
+                  SELECT 1 
+                  FROM axytos_actions a2 
+                  WHERE a2.kBestellung = a1.kBestellung 
+                    AND a2.dProcessedAt > a1.dProcessedAt
+              )
+        ";
+        
+        $result = $this->db->getSingleArray($sql, []);
+        return (int)($result['count'] ?? 0);
+    }
 }
