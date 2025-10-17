@@ -1,47 +1,47 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: dev@axytos.com\n"
-"POT-Creation-Date: 2025-10-16 00:32+0200\n"
+"POT-Creation-Date: 2025-10-17 13:10+0200\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
 #: adminmenu/StatusController.php:40
 msgid "Status data refreshed."
 msgstr "Status data refreshed."
 
-#: adminmenu/StatusController.php:80
+#: adminmenu/StatusController.php:82
 msgid "Order not found or not using Axytos payment method."
 msgstr "Order not found or not using Axytos payment method."
 
-#: adminmenu/StatusController.php:109
+#: adminmenu/StatusController.php:113
 #, php-format
 msgid "Successfully processed %d pending action(s)."
 msgstr "Successfully processed %d pending action(s)."
 
-#: adminmenu/StatusController.php:116
+#: adminmenu/StatusController.php:120
 #, php-format
 msgid "%d action(s) failed processing."
 msgstr "%d action(s) failed processing."
 
-#: adminmenu/StatusController.php:123
+#: adminmenu/StatusController.php:127
 msgid "No pending actions found to process."
 msgstr "No pending actions found to process."
 
-#: adminmenu/StatusController.php:147
+#: adminmenu/StatusController.php:151
 #, php-format
 msgid "Successfully retried %d broken action(s) for order #%d."
 msgstr "Successfully retried %d broken action(s) for order #%d."
 
-#: adminmenu/StatusController.php:153
+#: adminmenu/StatusController.php:157
 #, php-format
 msgid "%d action(s) still failed for order #%d."
 msgstr "%d action(s) still failed for order #%d."
 
-#: adminmenu/StatusController.php:176
+#: adminmenu/StatusController.php:180
 #, php-format
 msgid "Successfully removed broken action \"%s\" for order #%d."
 msgstr "Successfully removed broken action \"%s\" for order #%d."
 
-#: adminmenu/StatusController.php:181
+#: adminmenu/StatusController.php:185
 #, php-format
 msgid ""
 "Action \"%s\" for order #%d could not be removed (may not be broken or not "
@@ -50,18 +50,44 @@ msgstr ""
 "Action \"%s\" for order #%d could not be removed (may not be broken or not "
 "exist)."
 
-#: adminmenu/StatusController.php:205
+#: adminmenu/StatusController.php:209
 msgid "No stuck Axytos cron jobs found."
 msgstr "No stuck Axytos cron jobs found."
 
-#: adminmenu/StatusController.php:210
+#: adminmenu/StatusController.php:214
 #, php-format
 msgid "Successfully reset %d stuck Axytos cron job(s)."
 msgstr "Successfully reset %d stuck Axytos cron job(s)."
 
-#: adminmenu/StatusController.php:215
+#: adminmenu/StatusController.php:219
 msgid "Failed to reset any stuck cron jobs."
 msgstr "Failed to reset any stuck cron jobs."
+
+#: adminmenu/StatusController.php:452
+msgid "completed"
+msgstr "completed"
+
+#: adminmenu/StatusController.php:459
+#, php-format
+msgid "broken (failed %dx)"
+msgstr "broken (failed %dx)"
+
+#: adminmenu/StatusController.php:464
+msgid "broken"
+msgstr "broken"
+
+#: adminmenu/StatusController.php:474 adminmenu/template/status.tpl.tmp.php:308
+msgid "pending"
+msgstr "pending"
+
+#: adminmenu/StatusController.php:480
+#, php-format
+msgid "retry (failed %dx)"
+msgstr "retry (failed %dx)"
+
+#: adminmenu/StatusController.php:485
+msgid "retry"
+msgstr "retry"
 
 #: adminmenu/SetupController.php:46
 msgid "Settings saved successfully."
@@ -167,6 +193,83 @@ msgid ""
 "This payment method can only be used with payment before order completion"
 msgstr ""
 "This payment method can only be used with payment before order completion"
+
+#: adminmenu/widget/overview.tpl.tmp.php:5
+msgid "Payment method not yet installed"
+msgstr "Payment method not yet installed"
+
+#: adminmenu/widget/overview.tpl.tmp.php:10
+msgid "Setup Required"
+msgstr "Setup Required"
+
+#: adminmenu/widget/overview.tpl.tmp.php:11
+#, fuzzy
+msgid "API key not configured"
+msgstr "Not Configured"
+
+#: adminmenu/widget/overview.tpl.tmp.php:13
+msgid "Configure API Key"
+msgstr "Configure API Key"
+
+#: adminmenu/widget/overview.tpl.tmp.php:20
+#: adminmenu/widget/overview.tpl.tmp.php:75
+#, fuzzy
+msgid "Sandbox Mode Active"
+msgstr "Use Sandbox Mode"
+
+#: adminmenu/widget/overview.tpl.tmp.php:28
+#: adminmenu/widget/overview.tpl.tmp.php:86
+msgid "pending action"
+msgstr "pending action"
+
+#: adminmenu/widget/overview.tpl.tmp.php:28
+#: adminmenu/widget/overview.tpl.tmp.php:86
+msgid "pending actions"
+msgstr "pending actions"
+
+#: adminmenu/widget/overview.tpl.tmp.php:35
+#: adminmenu/widget/overview.tpl.tmp.php:91
+msgid "order awaiting invoice"
+msgstr "order awaiting invoice"
+
+#: adminmenu/widget/overview.tpl.tmp.php:35
+#: adminmenu/widget/overview.tpl.tmp.php:91
+msgid "orders awaiting invoice"
+msgstr "orders awaiting invoice"
+
+#: adminmenu/widget/overview.tpl.tmp.php:41
+msgid "Attention Required"
+msgstr "Attention Required"
+
+#: adminmenu/widget/overview.tpl.tmp.php:47
+msgid "broken action"
+msgstr "broken action"
+
+#: adminmenu/widget/overview.tpl.tmp.php:47
+msgid "broken actions"
+msgstr "broken actions"
+
+#: adminmenu/widget/overview.tpl.tmp.php:54
+msgid "Cron job stuck"
+msgstr "Cron job stuck"
+
+#: adminmenu/widget/overview.tpl.tmp.php:59
+msgid "Cron job overdue"
+msgstr "Cron job overdue"
+
+#: adminmenu/widget/overview.tpl.tmp.php:65
+#: adminmenu/widget/overview.tpl.tmp.php:99
+msgid "View Status"
+msgstr "View Status"
+
+#: adminmenu/widget/overview.tpl.tmp.php:68
+#: adminmenu/widget/overview.tpl.tmp.php:102
+msgid "Invoices"
+msgstr "Invoices"
+
+#: adminmenu/widget/overview.tpl.tmp.php:81
+msgid "All systems operational"
+msgstr "All systems operational"
 
 #: adminmenu/template/api_setup.tpl.tmp.php:18
 msgid "API Configuration"
@@ -357,10 +460,14 @@ msgid "Next Run:"
 msgstr "Next Run:"
 
 #: adminmenu/template/status.tpl.tmp.php:37
+msgid "OVERDUE"
+msgstr ""
+
+#: adminmenu/template/status.tpl.tmp.php:40
 msgid "Unknown"
 msgstr "Unknown"
 
-#: adminmenu/template/status.tpl.tmp.php:45
+#: adminmenu/template/status.tpl.tmp.php:48
 msgid ""
 "Are you sure you want to reset stuck cron jobs? This will set their "
 "isRunning status to 0."
@@ -368,91 +475,91 @@ msgstr ""
 "Are you sure you want to reset stuck cron jobs? This will set their "
 "isRunning status to 0."
 
-#: adminmenu/template/status.tpl.tmp.php:47
+#: adminmenu/template/status.tpl.tmp.php:50
 msgid "Reset"
 msgstr "Reset"
 
-#: adminmenu/template/status.tpl.tmp.php:57
+#: adminmenu/template/status.tpl.tmp.php:60
 msgid "Total Orders"
 msgstr "Total Orders"
 
-#: adminmenu/template/status.tpl.tmp.php:61
+#: adminmenu/template/status.tpl.tmp.php:64
 msgid "Orders with actions"
 msgstr "Orders with actions"
 
-#: adminmenu/template/status.tpl.tmp.php:65
+#: adminmenu/template/status.tpl.tmp.php:68
 msgid "Order ID/Number"
 msgstr "Order ID/Number"
 
-#: adminmenu/template/status.tpl.tmp.php:80
+#: adminmenu/template/status.tpl.tmp.php:83
 msgid "Pending"
 msgstr "Pending"
 
-#: adminmenu/template/status.tpl.tmp.php:84
+#: adminmenu/template/status.tpl.tmp.php:87
 msgid "Actions waiting"
 msgstr "Actions waiting"
 
-#: adminmenu/template/status.tpl.tmp.php:90
+#: adminmenu/template/status.tpl.tmp.php:93
 msgid "Are you sure you want to process all pending actions?"
 msgstr "Are you sure you want to process all pending actions?"
 
-#: adminmenu/template/status.tpl.tmp.php:92
+#: adminmenu/template/status.tpl.tmp.php:95
 msgid "Process All"
 msgstr "Process All"
 
-#: adminmenu/template/status.tpl.tmp.php:101
+#: adminmenu/template/status.tpl.tmp.php:104
 msgid "Broken"
 msgstr "Broken"
 
-#: adminmenu/template/status.tpl.tmp.php:105
+#: adminmenu/template/status.tpl.tmp.php:108
 msgid "Need attention"
 msgstr "Need attention"
 
-#: adminmenu/template/status.tpl.tmp.php:127
+#: adminmenu/template/status.tpl.tmp.php:130
 msgid "Order Details:"
 msgstr "Order Details:"
 
-#: adminmenu/template/status.tpl.tmp.php:134
+#: adminmenu/template/status.tpl.tmp.php:137
 msgid "Customer:"
 msgstr "Customer:"
 
-#: adminmenu/template/status.tpl.tmp.php:140
+#: adminmenu/template/status.tpl.tmp.php:143
 msgid "Total:"
 msgstr "Total:"
 
-#: adminmenu/template/status.tpl.tmp.php:141
+#: adminmenu/template/status.tpl.tmp.php:144
 msgid "Status:"
 msgstr "Status:"
 
-#: adminmenu/template/status.tpl.tmp.php:142
+#: adminmenu/template/status.tpl.tmp.php:145
 msgid "Date:"
 msgstr "Date:"
 
-#: adminmenu/template/status.tpl.tmp.php:147
+#: adminmenu/template/status.tpl.tmp.php:150
 msgid "Actions Overview"
 msgstr "Actions Overview"
 
-#: adminmenu/template/status.tpl.tmp.php:170
+#: adminmenu/template/status.tpl.tmp.php:173
 msgid "log entry"
 msgstr "log entry"
 
-#: adminmenu/template/status.tpl.tmp.php:170
+#: adminmenu/template/status.tpl.tmp.php:173
 msgid "log entries"
 msgstr "log entries"
 
-#: adminmenu/template/status.tpl.tmp.php:184
+#: adminmenu/template/status.tpl.tmp.php:187
 msgid "Detailed log entries for"
 msgstr "Detailed log entries for"
 
-#: adminmenu/template/status.tpl.tmp.php:207
+#: adminmenu/template/status.tpl.tmp.php:210
 msgid "No actions found for this order"
 msgstr "No actions found for this order"
 
-#: adminmenu/template/status.tpl.tmp.php:227
+#: adminmenu/template/status.tpl.tmp.php:230
 msgid "Order Actions"
 msgstr "Order Actions"
 
-#: adminmenu/template/status.tpl.tmp.php:234
+#: adminmenu/template/status.tpl.tmp.php:237
 msgid ""
 "Are you sure you want to retry all broken actions for this order? This will "
 "attempt to process them immediately."
@@ -460,64 +567,60 @@ msgstr ""
 "Are you sure you want to retry all broken actions for this order? This will "
 "attempt to process them immediately."
 
-#: adminmenu/template/status.tpl.tmp.php:236
+#: adminmenu/template/status.tpl.tmp.php:239
 msgid "Retry Broken Actions"
 msgstr "Retry Broken Actions"
 
-#: adminmenu/template/status.tpl.tmp.php:249
+#: adminmenu/template/status.tpl.tmp.php:252
 msgid "Remove Broken Action"
 msgstr "Remove Broken Action"
 
-#: adminmenu/template/status.tpl.tmp.php:273
+#: adminmenu/template/status.tpl.tmp.php:276
 msgid "Orders with Pending and Broken Actions"
 msgstr "Orders with Pending and Broken Actions"
 
-#: adminmenu/template/status.tpl.tmp.php:273
+#: adminmenu/template/status.tpl.tmp.php:276
 msgid "Recent Orders"
 msgstr "Recent Orders"
 
-#: adminmenu/template/status.tpl.tmp.php:280
+#: adminmenu/template/status.tpl.tmp.php:283
 #: adminmenu/template/invoices.tpl.tmp.php:59
 msgid "Order Number"
 msgstr "Order Number"
 
-#: adminmenu/template/status.tpl.tmp.php:281
+#: adminmenu/template/status.tpl.tmp.php:284
 #: adminmenu/template/invoices.tpl.tmp.php:60
 msgid "Customer"
 msgstr "Customer"
 
-#: adminmenu/template/status.tpl.tmp.php:282
+#: adminmenu/template/status.tpl.tmp.php:285
 #: adminmenu/template/invoices.tpl.tmp.php:61
 msgid "Date"
 msgstr "Date"
 
-#: adminmenu/template/status.tpl.tmp.php:283
+#: adminmenu/template/status.tpl.tmp.php:286
 #: adminmenu/template/invoices.tpl.tmp.php:62
 msgid "Total"
 msgstr "Total"
 
-#: adminmenu/template/status.tpl.tmp.php:284
+#: adminmenu/template/status.tpl.tmp.php:287
 #: adminmenu/template/invoices.tpl.tmp.php:63
 msgid "Status"
 msgstr "Status"
 
-#: adminmenu/template/status.tpl.tmp.php:285
+#: adminmenu/template/status.tpl.tmp.php:288
 msgid "Pending/Broken Actions"
 msgstr "Pending/Broken Actions"
 
-#: adminmenu/template/status.tpl.tmp.php:305
-msgid "pending"
-msgstr "pending"
-
-#: adminmenu/template/status.tpl.tmp.php:351
+#: adminmenu/template/status.tpl.tmp.php:354
 msgid "Orders"
 msgstr "Orders"
 
-#: adminmenu/template/status.tpl.tmp.php:354
+#: adminmenu/template/status.tpl.tmp.php:357
 msgid "No orders found."
 msgstr "No orders found."
 
-#: adminmenu/template/status.tpl.tmp.php:367
+#: adminmenu/template/status.tpl.tmp.php:370
 #: adminmenu/template/invoices.tpl.tmp.php:91
 msgid "Refresh Data"
 msgstr "Refresh Data"
@@ -685,21 +788,6 @@ msgstr "Cancel"
 #~ msgid "Action"
 #~ msgstr "Action"
 
-#~ msgid "retry"
-#~ msgstr "retry"
-
-#~ msgid "retry (failed %dx)"
-#~ msgstr "retry (failed %dx)"
-
-#~ msgid "broken"
-#~ msgstr "broken"
-
-#~ msgid "broken (failed %dx)"
-#~ msgstr "broken (failed %dx)"
-
-#~ msgid "completed"
-#~ msgstr "completed"
-
 #~ msgid "No broken actions found for order #%d."
 #~ msgstr "No broken actions found for order #%d."
 
@@ -714,9 +802,6 @@ msgstr "Cancel"
 
 #~ msgid "Webhook Status:"
 #~ msgstr "Webhook Status:"
-
-#~ msgid "Not Configured"
-#~ msgstr "Not Configured"
 
 #~ msgid "Webhook Documentation"
 #~ msgstr "Webhook Documentation"
