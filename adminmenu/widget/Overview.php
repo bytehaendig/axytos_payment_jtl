@@ -29,6 +29,20 @@ class Overview extends AbstractWidget
             );
         }
         
+        // Check if API key is configured
+        $apiKey = $method->getSetting('api_key');
+        if (empty($apiKey)) {
+            $setupUrl = Shop::getAdminURL() . '/plugin/' . $plugin->getID() . '?cPluginTab=API+Setup';
+            $this->oSmarty->assign('setupRequired', true);
+            $this->oSmarty->assign('setupUrl', $setupUrl);
+            return $this->oSmarty->fetch(
+                $plugin->getPaths()->getAdminPath() . 'widget/overview.tpl'
+            );
+        }
+        
+        // Check if sandbox mode is active
+        $useSandbox = (bool)$method->getSetting('use_sandbox');
+        
         $actionHandler = $method->createActionHandler();
         $cronHelper = new CronHelper();
         $invoiceHandler = new InvoiceUpdatesHandler($method, $db);
@@ -46,7 +60,9 @@ class Overview extends AbstractWidget
         $statusUrl = Shop::getAdminURL() . '/plugin/' . $plugin->getID() . '?cPluginTab=Status';
         $invoicesUrl = Shop::getAdminURL() . '/plugin/' . $plugin->getID() . '?cPluginTab=Invoices';
         
+        $this->oSmarty->assign('setupRequired', false);
         $this->oSmarty->assign('notInstalled', false);
+        $this->oSmarty->assign('useSandbox', $useSandbox);
         $this->oSmarty->assign('pendingOrders', $actionOverview['pending_orders']);
         $this->oSmarty->assign('brokenOrders', $actionOverview['broken_orders']);
         $this->oSmarty->assign('cronStatus', $cronStatus);
