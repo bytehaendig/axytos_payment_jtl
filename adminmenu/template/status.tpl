@@ -11,7 +11,7 @@
         <!-- Status Overview Cards -->
         <div class="row mb-4 d-flex">
             <div class="col-md-3 d-flex">
-                 <div class="card text-white {if $statusOverview.cron_status.has_stuck}bg-danger{else}bg-info{/if} flex-fill">
+                 <div class="card text-white {if $statusOverview.cron_status.has_stuck}bg-danger{elseif $statusOverview.cron_status.is_overdue}card-bg-warning{else}bg-info{/if} flex-fill">
                       <div class="card-header text-center status-card-header">
                           <strong>{__("Cron Status")}</strong>
                       </div>
@@ -33,6 +33,9 @@
                              <strong>{__("Next Run:")}</strong>
                                {if $statusOverview.next_cron_run}
                                    {$statusOverview.next_cron_run|germanDate}
+                                   {if $statusOverview.cron_status.is_overdue}
+                                       <span style="color: #fff; font-weight: bold;"> ⚠ {__("OVERDUE")}</span>
+                                   {/if}
                                {else}
                                   {__("Unknown")}
                               {/if}

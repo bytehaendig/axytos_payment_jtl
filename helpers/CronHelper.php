@@ -221,12 +221,21 @@ class CronHelper
             ['ntrvl' => \QUEUE_MAX_STUCK_HOURS]
         );
         
+        // Check if next scheduled run is overdue (in the past)
+        $nextRun = $this->getNextCronRun();
+        $isOverdue = false;
+        if ($nextRun !== null) {
+            $nextRunTimestamp = strtotime($nextRun);
+            $isOverdue = $nextRunTimestamp !== false && $nextRunTimestamp < time();
+        }
+        
         $isRunning = (int)($runningJobs->running_count ?? 0) > 0;
         $hasStuck = (int)($stuckJobs->stuck_count ?? 0) > 0;
         
         return [
             'is_running' => $isRunning,
             'has_stuck' => $hasStuck,
+            'is_overdue' => $isOverdue,
             'running_count' => (int)($runningJobs->running_count ?? 0),
             'stuck_count' => (int)($stuckJobs->stuck_count ?? 0)
         ];
