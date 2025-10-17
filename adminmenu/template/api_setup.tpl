@@ -68,9 +68,6 @@
                      <button type="button" class="btn btn-success" id="generate-automation-script">
                          <i class="fas fa-download"></i> {__('Download Automation Package')}
                      </button>
-                     <button type="button" class="btn btn-info ml-2" onclick="showUsageModal()">
-                         <i class="fas fa-info-circle"></i> {__('Show Usage Instructions')}
-                     </button>
                      <small class="form-text text-muted mt-2">{__('Schedule and additional settings can be configured in config.ini after download.')}</small>
                  </div>
             {/if}
@@ -95,72 +92,7 @@
     <input type="hidden" name="generate_script" value="1">
 </form>
 
-<!-- Usage Instructions Modal -->
-<div class="modal-backdrop" id="usage-modal-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1040;"></div>
-
-<div class="modal fade" id="usageModal" tabindex="-1" role="dialog" aria-labelledby="usageModalLabel" aria-hidden="true" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1050; align-items: flex-start; justify-content: center; padding-top: 2rem;">
-    <div class="modal-dialog modal-xl" role="document" style="width: 60%; max-width: 60%;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="usageModalLabel">{__('Usage Instructions')}</h5>
-                <button type="button" class="close" onclick="closeUsageModal()" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <h6>{__('Setup Steps:')}</h6>
-                <ol class="text-muted">
-                    <li>{__('Download the ZIP package')}</li>
-                    <li>{__('Extract all files to a folder of your choice')}
-                        <br><small class="text-muted">{__('Recommended:')} <code>C:\Tools\AxytosPaymentAutomation\</code></small>
-                    </li>
-                    <li>{__('Edit the')} <strong>config.ini</strong> {__('and configure:')}
-                        <ul class="text-muted">
-                            <li>{__('JTL-WaWi database access data (Server, Database, User, Password)')}</li>
-                            <li>{__('Schedule (ScheduleTime, Default: 17:00)')}</li>
-                            <li>{__('JTL-Ameise Export-Template ID')}</li>
-                        </ul>
-                    </li>
-                    <li>{__('Run')} <strong>install.bat</strong> {__('as administrator')}</li>
-                    <li>{__('The automation runs daily at the configured time')}</li>
-                    <li>{__('Check the log files in the same folder')} (<code>axytos_automation.log</code>)</li>
-                    <li>{__('To uninstall, run')} <strong>uninstall.bat</strong></li>
-                </ol>
-                <p class="text-muted"><small><strong>{__('Note:')}</strong> {__('All files remain in your chosen folder - nothing is copied to system directories.')}</small></p>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
-function showUsageModal() {
-    const modal = document.getElementById('usageModal');
-    const backdrop = document.getElementById('usage-modal-backdrop');
-    if (modal && backdrop) {
-        modal.style.display = 'flex';
-        backdrop.style.display = 'block';
-        modal.classList.add('show');
-    }
-}
-
-function closeUsageModal() {
-    const modal = document.getElementById('usageModal');
-    const backdrop = document.getElementById('usage-modal-backdrop');
-    if (modal && backdrop) {
-        modal.style.display = 'none';
-        backdrop.style.display = 'none';
-        modal.classList.remove('show');
-    }
-}
-
-// Add click handler to backdrop to close modal
-document.addEventListener('DOMContentLoaded', function() {
-    const backdrop = document.getElementById('usage-modal-backdrop');
-    if (backdrop) {
-        backdrop.addEventListener('click', closeUsageModal);
-    }
-});
-
 document.getElementById('generate-webhook-key').addEventListener('click', function() {
     const button = this;
     const originalHtml = button.innerHTML;
@@ -330,64 +262,5 @@ label {
     font-weight: 600 !important;
 }
 
-/* Modal styling for usage instructions */
-.modal-backdrop {
-    backdrop-filter: blur(2px);
-}
 
-.modal-content {
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-    border-bottom: 1px solid #dee2e6;
-    border-radius: 8px 8px 0 0;
-}
-
-.modal-title {
-    font-weight: 600;
-    color: #495057;
-}
-
-.modal .close {
-    padding: 0;
-    margin: 0;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background-color 0.2s ease;
-}
-
-.modal .close:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-}
-
-.modal .close span {
-    font-size: 24px;
-    line-height: 1;
-}
-
-.modal-body {
-    padding: 20px;
-}
-
-.modal-body h6 {
-    color: #495057;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.modal-body ol {
-    line-height: 1.8;
-}
-
-.modal-body strong {
-    color: #495057;
-    font-weight: 600;
-}
 </style>

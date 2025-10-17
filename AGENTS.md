@@ -23,6 +23,12 @@ The framework provides responsive design, components, and utilities throughout b
 
 This is the Axytos Payment Plugin for JTL Shop - a payment integration that provides "pay later" functionality through the Axytos payment provider. The plugin is built for JTL Shop version 5.0.0+ and implements a full payment workflow including precheck, confirmation, invoice creation, shipping notifications, and order management.
 
+## Requirements
+
+- **PHP**: >= 7.4
+- **Composer**: For dependency management
+- **DDEV**: Optional, for local development environment
+
 ## Common Development Commands
 
 ### Code Quality
