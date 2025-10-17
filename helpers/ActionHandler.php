@@ -962,8 +962,11 @@ class ActionHandler
                     'fail_reason' => $action['cFailReason'] ?? null
                 ];
             } elseif ($actionStatus === 'pending') {
-                if (empty($action['dFailedAt'])) {
-                    // True pending actions (never failed)
+                $failedCount = (int) ($action['nFailedCount'] ?? 0);
+                $hasFailedAt = !empty($action['dFailedAt']) && $action['dFailedAt'] !== '0000-00-00 00:00:00';
+                
+                if ($failedCount === 0 && !$hasFailedAt) {
+                    // True pending actions (never attempted)
                     $pendingActions[] = [
                         'action' => $action['cAction'],
                         'created_at' => $action['dCreatedAt'],
@@ -973,31 +976,17 @@ class ActionHandler
                         'fail_reason' => null
                     ];
                 } else {
-                    // Failed pending actions - check if broken or retryable
-                    $failedCount = (int) ($action['nFailedCount'] ?? 0);
-                    if ($failedCount > self::MAX_RETRIES) {
-                        $brokenActions[] = [
-                            'action' => $action['cAction'],
-                            'created_at' => $action['dCreatedAt'],
-                            'failed_at' => $action['dFailedAt'],
-                            'failed_count' => $failedCount,
-                            'status' => 'broken',
-                            'status_text' => $failedCount > 0 ? sprintf('failed %dx, broken', $failedCount) : 'broken',
-                            'status_color' => '#dc3545', // red
-                            'fail_reason' => $action['cFailReason'] ?? null
-                        ];
-                    } else {
-                        $retryableActions[] = [
-                            'action' => $action['cAction'],
-                            'created_at' => $action['dCreatedAt'],
-                            'failed_at' => $action['dFailedAt'],
-                            'failed_count' => $failedCount,
-                            'status' => 'retryable',
-                            'status_text' => $failedCount > 0 ? sprintf('failed %dx, will retry', $failedCount) : 'will retry',
-                            'status_color' => '#ffc107', // yellow/orange
-                            'fail_reason' => $action['cFailReason'] ?? null
-                        ];
-                    }
+                    // Failed actions that can be retried
+                    $retryableActions[] = [
+                        'action' => $action['cAction'],
+                        'created_at' => $action['dCreatedAt'],
+                        'failed_at' => $action['dFailedAt'],
+                        'failed_count' => $failedCount,
+                        'status' => 'retryable',
+                        'status_text' => $failedCount > 0 ? sprintf('failed %dx, will retry', $failedCount) : 'will retry',
+                        'status_color' => '#ffc107', // yellow/orange
+                        'fail_reason' => $action['cFailReason'] ?? null
+                    ];
                 }
             }
         }

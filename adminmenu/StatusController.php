@@ -398,15 +398,13 @@ class StatusController
             $statusData = $this->getStatusData($status, $actionArray);
             if (is_object($action)) {
                 $action->status = $status;
-                $action->statusText = $statusData['text'];
                 $action->statusKey = $statusData['key'];
-                $action->statusParams = $statusData['params'];
+                $action->statusText = $statusData['text'];
                 $action->statusColor = $this->getStatusColor($status);
             } else {
                 $action['status'] = $status;
-                $action['statusText'] = $statusData['text'];
                 $action['statusKey'] = $statusData['key'];
-                $action['statusParams'] = $statusData['params'];
+                $action['statusText'] = $statusData['text'];
                 $action['statusColor'] = $this->getStatusColor($status);
             }
 
@@ -432,9 +430,8 @@ class StatusController
 
             // Add status fields to timeline entry
             $statusData = $this->getStatusData($status, $actionArray);
-            $entry['statusText'] = $statusData['text'];
             $entry['statusKey'] = $statusData['key'];
-            $entry['statusParams'] = $statusData['params'];
+            $entry['statusText'] = $statusData['text'];
             $entry['statusColor'] = $this->getStatusColor($status);
 
             return $entry;
@@ -444,60 +441,55 @@ class StatusController
 
 
     /**
-     * Get status data including translation key and parameters
+     * Get status data including display text and simplified key
      */
     private function getStatusData(string $status, array $actionArray): array
     {
         switch ($status) {
             case 'completed':
                 return [
-                    'text' => 'completed',
                     'key' => 'completed',
-                    'params' => []
+                    'text' => __('completed')
                 ];
             case 'broken':
                 $failedCount = $actionArray['nFailedCount'] ?? 0;
                 if ($failedCount > 0) {
                     return [
-                        'text' => "broken (failed {$failedCount}x)",
-                        'key' => 'broken (failed %dx)',
-                        'params' => [$failedCount]
+                        'key' => 'broken',
+                        'text' => sprintf(__('broken (failed %dx)'), $failedCount)
                     ];
                 } else {
                     return [
-                        'text' => 'broken',
                         'key' => 'broken',
-                        'params' => []
+                        'text' => __('broken')
                     ];
                 }
             case 'pending':
-                if (empty($actionArray['dFailedAt'])) {
+                $failedCount = $actionArray['nFailedCount'] ?? 0;
+                $hasFailedAt = !empty($actionArray['dFailedAt']) && $actionArray['dFailedAt'] !== '0000-00-00 00:00:00';
+                
+                if ($failedCount === 0 && !$hasFailedAt) {
                     return [
-                        'text' => 'pending',
                         'key' => 'pending',
-                        'params' => []
+                        'text' => __('pending')
                     ];
                 } else {
-                    $failedCount = $actionArray['nFailedCount'] ?? 0;
                     if ($failedCount > 0) {
                         return [
-                            'text' => "retry (failed {$failedCount}x)",
-                            'key' => 'retry (failed %dx)',
-                            'params' => [$failedCount]
+                            'key' => 'retry',
+                            'text' => sprintf(__('retry (failed %dx)'), $failedCount)
                         ];
                     } else {
                         return [
-                            'text' => 'retry',
                             'key' => 'retry',
-                            'params' => []
+                            'text' => __('retry')
                         ];
                     }
                 }
             default:
                 return [
-                    'text' => $status,
                     'key' => $status,
-                    'params' => []
+                    'text' => $status
                 ];
         }
     }
