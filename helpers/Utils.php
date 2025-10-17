@@ -74,17 +74,17 @@ class Utils
      * Check if an order uses the Axytos payment method
      * 
      * @param DbInterface $db
-     * @param Bestellung $order
+     * @param Bestellung|\stdClass $order
      * @return bool
      */
-    public static function isAxytosOrder(DbInterface $db, Bestellung $order): bool
+    public static function isAxytosOrder(DbInterface $db, $order): bool
     {
-        if (!$order->kBestellung || !$order->kZahlungsart) {
+        if (!isset($order->kBestellung) || !isset($order->kZahlungsart)) {
             return false;
         }
         
         $axytosPaymentMethodId = self::getPaymentMethodId($db);
-        return $axytosPaymentMethodId && $order->kZahlungsart === $axytosPaymentMethodId;
+        return $axytosPaymentMethodId && (int)$order->kZahlungsart === $axytosPaymentMethodId;
     }
 
     /**
