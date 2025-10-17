@@ -241,11 +241,14 @@ class Bootstrap extends Bootstrapper
             $handler = new InvoicesController($this->getPlugin(), $this->getMethod(), $this->getDB());
             return $handler->render($tabName, $menuID, $smarty);
         }
-        // Only show Development tab in development mode
-        if ($tabName == "Development" && $this->isDevMode()) {
+        if ($tabName == "Development") {
+            if (!$this->isDevMode()) {
+                return '<div class="alert alert-warning">Development mode is not enabled. Set environment variable AXYTOS_DEV_MODE=true to access this tab.</div>';
+            }
             $handler = new DevController($this->getPlugin(), $this->getMethod(), $this->getDB());
             return $handler->render($tabName, $menuID, $smarty);
         }
+        return '';
     }
 
     /**
@@ -334,7 +337,6 @@ class Bootstrap extends Bootstrapper
      */
     private function isDevMode(): bool
     {
-        return (defined('PLUGIN_DEV_MODE') && PLUGIN_DEV_MODE) ||
-               (defined('SHOW_DEBUG_BAR') && SHOW_DEBUG_BAR);
+        return (defined('PLUGIN_DEV_MODE') && PLUGIN_DEV_MODE);
     }
 }
