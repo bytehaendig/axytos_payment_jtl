@@ -24,3 +24,11 @@ run = "msgfmt locale/de-DE/base.po -o locale/de-DE/base.mo"
 
 [tasks.i18n-mo-en]
 run = "msgfmt locale/en-EN/base.po -o locale/en-EN/base.mo"
+
+[tasks.build]
+run = """
+mkdir -p releases
+VERSION=$(xmllint --xpath 'string(//Version)' info.xml)
+git archive --format=zip --prefix=axytos_payment-v${VERSION}/ --output=releases/axytos_payment-v${VERSION}.zip HEAD
+echo "Built releases/axytos_payment-v${VERSION}.zip"
+"""

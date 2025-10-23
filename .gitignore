@@ -1,6 +1,7 @@
 .aider*
 .php-cs-fixer.cache
 /vendor/
+/releases/
 
 # PHPUnit cache file
 .phpunit.result.cache
