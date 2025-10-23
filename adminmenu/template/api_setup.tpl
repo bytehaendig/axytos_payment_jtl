@@ -34,6 +34,9 @@
                 <small class="form-text text-muted">{__('Enable this for testing.')}</small>
             </div>
         </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">{__('Save Settings')}</button>
+        </div>
     </div>
 
     <!-- WaWi Automation Card -->
@@ -69,14 +72,12 @@
                          <i class="fas fa-download"></i> {__('Download Automation Package')}
                      </button>
                      <small class="form-text text-muted mt-2">{__('Schedule and additional settings can be configured in config.ini after download.')}</small>
-                 </div>
+                  </div>
             {/if}
         </div>
-    </div>
-
-    <!-- Shared Save Button -->
-    <div class="form-group mt-4">
-        <button type="submit" class="btn btn-primary">{__('Save Settings')}</button>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">{__('Save Settings')}</button>
+        </div>
     </div>
 </form>
 

@@ -157,8 +157,7 @@ class SetupController
             'webhookUrl' => $webhookUrl,
             'webhookConfigured' => $webhookConfigured,
             'recentActivity' => $recentActivity,
-            'stats' => $stats,
-            'examples' => $this->getWebhookExamples($webhookUrl, $webhookKey)
+            'stats' => $stats
         ];
     }
 
@@ -176,102 +175,6 @@ class SetupController
             'successful_requests' => 0,
             'failed_requests' => 0,
             'last_request' => null
-        ];
-    }
-
-    private function getWebhookExamples(string $webhookUrl, string $webhookKey): array
-    {
-        $curlExample = "curl -X POST '{$webhookUrl}' \\
-  -H 'Content-Type: application/json' \\
-  -H 'X-Axytos-Webhook-Key: {$webhookKey}' \\
-  -d '{
-    \"data\": [
-      {
-        \"orderNumber\": \"ORD-123\",
-        \"invoiceNumber\": \"INV-33939\"
-      },
-      {
-        \"orderNumber\": \"ORD-124\",
-        \"invoiceNumber\": \"INV-33940\"
-      }
-    ]
-  }'";
-
-        $phpExample = "<?php
-\$webhookUrl = '{$webhookUrl}';
-\$webhookKey = '{$webhookKey}';
-
-\$data = [
-    'data' => [
-        [
-            'orderNumber' => 'ORD-123',
-            'invoiceNumber' => 'INV-33939'
-        ],
-        [
-            'orderNumber' => 'ORD-124',
-            'invoiceNumber' => 'INV-33940'
-        ]
-    ]
-];
-
-\$ch = curl_init();
-curl_setopt(\$ch, CURLOPT_URL, \$webhookUrl);
-curl_setopt(\$ch, CURLOPT_POST, true);
-curl_setopt(\$ch, CURLOPT_POSTFIELDS, json_encode(\$data));
-curl_setopt(\$ch, CURLOPT_HTTPHEADER, [
-    'Content-Type: application/json',
-    'X-Axytos-Webhook-Key: ' . \$webhookKey
-]);
-curl_setopt(\$ch, CURLOPT_RETURNTRANSFER, true);
-
-\$response = curl_exec(\$ch);
-\$httpCode = curl_getinfo(\$ch, CURLINFO_HTTP_CODE);
-curl_close(\$ch);
-
-if (\$httpCode === 200) {
-    echo '" . __('Webhook sent successfully') . "';
-} else {
-    echo '" . sprintf(__('Webhook failed with status: %s'), '\$httpCode') . "';
-}
-?>";
-
-        $pythonExample = "import requests
-import json
-
-webhook_url = '{$webhookUrl}'
-webhook_key = '{$webhookKey}'
-
-data = {
-    'data': [
-        {
-            'orderNumber': 'ORD-123',
-            'invoiceNumber': 'INV-33939'
-        },
-        {
-            'orderNumber': 'ORD-124',
-            'invoiceNumber': 'INV-33940'
-        }
-    ]
-}
-
-headers = {
-    'Content-Type': 'application/json',
-    'X-Axytos-Webhook-Key': webhook_key
-}
-
-response = requests.post(webhook_url, json=data, headers=headers)
-
-if response.status_code == 200:
-    print('" . __('Webhook sent successfully') . "')
-    print('" . __('Response:') . "', response.json())
-else:
-    print(f'" . sprintf(__('Webhook failed with status: %s'), '{response.status_code}') . "')
-    print('" . __('Response:') . "', response.text)";
-
-        return [
-            'curl' => $curlExample,
-            'php' => $phpExample,
-            'python' => $pythonExample
         ];
     }
 
