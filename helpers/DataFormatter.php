@@ -252,7 +252,7 @@ class DataFormatter
             "externalInvoiceNumber" => $this->order->cBestellNr,
             "externalInvoiceDisplayName" => sprintf("Bestellung %s", $this->order->cBestellNr),
             "externalSubOrderId" => "",
-            "date" => date('c', strtotime($this->order->dErstellt)),
+            "date" => date('c'),
             // TODO: should this be configurable?
             "dueDateOffsetDays" => 14,
             "basket" => $this->createBasketData("invoice"),
