@@ -124,12 +124,12 @@ class InvoiceSyncHandler
      */
     private function onInvoiceNumberAdded(int $kBestellung, string $orderNumber, string $newInvoiceNumber): void
     {
-        $this->logChange($kBestellung, 'info', "Invoice number added by WaWi: {$newInvoiceNumber}");
+        $this->logChange($kBestellung, 'info', "Invoice number added by WaWi: {$newInvoiceNumber} - queued for cron processing");
         
         try {
-            // Call invoiceWasCreated with fromWaWi=true so it doesn't set attributes
-            // Process immediately since WaWi sync happens synchronously
-            $this->paymentMethod->invoiceWasCreated($orderNumber, $newInvoiceNumber, true, true);
+            // Queue action for cron processing to avoid blocking WaWi sync
+            // Invoice number and date are already set in order attributes by WaWi
+            $this->paymentMethod->invoiceWasCreated($orderNumber, $newInvoiceNumber);
         } catch (\Exception $e) {
             $this->logChange($kBestellung, 'error', "Failed to create invoice action: " . $e->getMessage());
         }
@@ -154,8 +154,10 @@ class InvoiceSyncHandler
             // Invoice already sent - create new invoice action
             // ActionHandler will handle any API errors/retries
             try {
-                // Process immediately since WaWi sync happens synchronously
-                $this->paymentMethod->invoiceWasCreated($orderNumber, $newInvoiceNumber, true, true);
+                // Queue action for cron processing to avoid blocking WaWi sync
+                // Invoice number and date are already set in order attributes by WaWi
+                $this->paymentMethod->invoiceWasCreated($orderNumber, $newInvoiceNumber);
+                $this->logChange($kBestellung, 'info', "New invoice action queued for cron processing: {$newInvoiceNumber}");
             } catch (\Exception $e) {
                 $this->logChange($kBestellung, 'error', "Failed to create new invoice action: " . $e->getMessage());
             }

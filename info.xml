@@ -2,12 +2,12 @@
 <jtlshopplugin>
   <Name>Axytos Payment</Name>
   <PluginID>axytos_payment</PluginID>
-  <XMLVersion>010</XMLVersion>
+  <XMLVersion>011</XMLVersion>
   <Description>Axytos payment integration for JTL Shop</Description>
   <Author>Bytehaendig Software Manufaktur</Author>
   <URL>https://bytehaendig.de</URL>
-  <Version>1.0.1</Version>
-  <CreateDate>2025-10-17</CreateDate>
+  <Version>1.0.2</Version>
+  <CreateDate>2025-11-27</CreateDate>
   <ShopVersion>5.0.0</ShopVersion>
   <Install>
     <AdminWidget>
@@ -28,11 +28,8 @@
       <Customlink sort="2">
         <Name>Status</Name>
       </Customlink>
-      <Customlink sort="3">
-        <Name>Invoices</Name>
-      </Customlink>
       <!--
-      <Customlink sort="4">
+      <Customlink sort="3">
         <Name>Development</Name>
       </Customlink>
         -->

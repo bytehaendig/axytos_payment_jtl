@@ -18,9 +18,7 @@ use Plugin\axytos_payment\paymentmethod\AxytosPaymentMethod;
 use Plugin\axytos_payment\adminmenu\SetupController;
 use Plugin\axytos_payment\adminmenu\StatusController;
 use Plugin\axytos_payment\adminmenu\DevController;
-use Plugin\axytos_payment\adminmenu\InvoicesController;
 use Plugin\axytos_payment\frontend\AgreementController;
-use Plugin\axytos_payment\frontend\ApiInvoiceIdsController;
 
 /**
  * Class Bootstrap
@@ -44,15 +42,6 @@ class Bootstrap extends Bootstrapper
                 $router = $args['router'];
                 $agreementController = $this->createAgreementController();
                 $router->addRoute($agreementController->getPath(), [$agreementController, 'getResponse'], 'axytosAgreement');
-
-                // Register update-invoice-ids endpoint
-                $updateController = $this->createApiInvoiceIdsController();
-                $router->addRoute(
-                    $updateController->getPath(),
-                    [$updateController, 'getResponse'],
-                    'axytosApiInvoiceIds',
-                    ['POST']
-                );
             });
         } else {
             $dispatcher->listen('backend.notification', [$this, 'checkPayments']);
@@ -65,12 +54,6 @@ class Bootstrap extends Bootstrapper
     private function createAgreementController()
     {
         $controller = new AgreementController($this->getPlugin(), $this->getMethod(), Shop::Container()->getCache());
-        return $controller;
-    }
-
-    private function createApiInvoiceIdsController()
-    {
-        $controller = new ApiInvoiceIdsController($this->getPlugin(), $this->getMethod(), $this->getDB());
         return $controller;
     }
 
@@ -256,10 +239,6 @@ class Bootstrap extends Bootstrapper
         }
         if ($tabName == "Status") {
             $handler = new StatusController($this->getPlugin(), $this->getMethod(), $this->getDB());
-            return $handler->render($tabName, $menuID, $smarty);
-        }
-        if ($tabName == "Invoices") {
-            $handler = new InvoicesController($this->getPlugin(), $this->getMethod(), $this->getDB());
             return $handler->render($tabName, $menuID, $smarty);
         }
         if ($tabName == "Development") {

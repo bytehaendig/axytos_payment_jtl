@@ -702,9 +702,23 @@ msgstr "No orders awaiting invoice found"
 msgid "Set Invoice Number"
 msgstr "Set Invoice Number"
 
+#: adminmenu/template/status.tpl:285
 #: adminmenu/template/invoices.tpl.tmp.php:119
 msgid "Invoice Number"
 msgstr "Invoice Number"
+
+#: adminmenu/template/status.tpl:142
+msgid "Invoice Number:"
+msgstr "Invoice Number:"
+
+#: adminmenu/template/status.tpl:143
+msgid "Invoice Date:"
+msgstr "Invoice Date:"
+
+#: adminmenu/template/status.tpl:142
+#: adminmenu/template/status.tpl:143
+msgid "Not yet created"
+msgstr "Not yet created"
 
 #: adminmenu/template/invoices.tpl.tmp.php:121
 msgid "Enter invoice number"

@@ -29,13 +29,6 @@
             </div>
         {/if}
         
-        {if $ordersAwaitingInvoice > 0}
-            <div class="mb-2" style="color: #17a2b8;">
-                <i class="fas fa-file-invoice" style="width: 20px; text-align: center;"></i>
-                <strong>{$ordersAwaitingInvoice}</strong> {if $ordersAwaitingInvoice == 1}{__("order awaiting invoice")}{else}{__("orders awaiting invoice")}{/if}
-            </div>
-        {/if}
-        
         {* Attention required section *}
         <div class="alert alert-warning mb-3 mt-3" style="padding: 0.5rem 0.75rem;">
             <strong><i class="fas fa-exclamation-triangle"></i> {__("Attention Required")}</strong>
@@ -61,11 +54,8 @@
         {/if}
         
         <div class="mt-3">
-            <a href="{$statusUrl}" class="btn btn-sm btn-primary mr-2">
+            <a href="{$statusUrl}" class="btn btn-sm btn-primary">
                 <i class="fas fa-list"></i> {__("View Status")}
-            </a>
-            <a href="{$invoicesUrl}" class="btn btn-sm btn-secondary">
-                <i class="fas fa-file-invoice"></i> {__("Invoices")}
             </a>
         </div>
     {else}
@@ -79,27 +69,17 @@
         <div class="text-center text-success">
             <i class="fas fa-check-circle fa-3x mb-2"></i>
             <p class="mb-0"><strong>{__("All systems operational")}</strong></p>
-            {if $hasPending || $ordersAwaitingInvoice > 0}
+            {if $hasPending}
                 <div class="mt-2" style="font-size: 0.9rem; color: #17a2b8;">
-                    {if $hasPending}
-                        <p class="mb-1">
-                            <i class="fas fa-clock"></i> {$pendingOrders} {if $pendingOrders == 1}{__("pending action")}{else}{__("pending actions")}{/if}
-                        </p>
-                    {/if}
-                    {if $ordersAwaitingInvoice > 0}
-                        <p class="mb-0">
-                            <i class="fas fa-file-invoice"></i> {$ordersAwaitingInvoice} {if $ordersAwaitingInvoice == 1}{__("order awaiting invoice")}{else}{__("orders awaiting invoice")}{/if}
-                        </p>
-                    {/if}
+                    <p class="mb-1">
+                        <i class="fas fa-clock"></i> {$pendingOrders} {if $pendingOrders == 1}{__("pending action")}{else}{__("pending actions")}{/if}
+                    </p>
                 </div>
             {/if}
         </div>
         <div class="mt-3 text-center">
-            <a href="{$statusUrl}" class="btn btn-sm btn-primary mr-2">
+            <a href="{$statusUrl}" class="btn btn-sm btn-primary">
                 <i class="fas fa-list"></i> {__("View Status")}
-            </a>
-            <a href="{$invoicesUrl}" class="btn btn-sm btn-secondary">
-                <i class="fas fa-file-invoice"></i> {__("Invoices")}
             </a>
         </div>
     {/if}

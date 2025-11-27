@@ -114,10 +114,6 @@
             </div>
         </div>
 
-
-
-
-
         <!-- Search Results Modal -->
         {if isset($searchResult) && $searchResult}
             <!-- Modal Backdrop -->
@@ -142,7 +138,9 @@
                                  </p>
                                   <p class="mb-1"><strong>{__("Total:")}</strong> {$searchResult.order->fGesamtsumme|number_format:2:',':"."} {if $searchResult.order->Waehrung && $searchResult.order->Waehrung->cName}{$searchResult.order->Waehrung->cName}{else}€{/if}</p>
                                  <p class="mb-1"><strong>{__("Status:")}</strong> {$searchResult.order->Status}</p>
-                                   <p class="mb-0"><strong>{__("Date:")}</strong> {$searchResult.order->dErstellt|germanDate}</p>
+                                   <p class="mb-1"><strong>{__("Date:")}</strong> {$searchResult.order->dErstellt|germanDate}</p>
+                                   <p class="mb-1"><strong>{__("Invoice Number:")}</strong> {if $searchResult.invoiceNumber}{$searchResult.invoiceNumber}{else}<span class="text-muted">{__("Not yet created")}</span>{/if}</p>
+                                   <p class="mb-0"><strong>{__("Invoice Date:")}</strong> {if $searchResult.invoiceDate}{$searchResult.invoiceDate|germanDate:false}{else}<span class="text-muted">{__("Not yet created")}</span>{/if}</p>
                              </div>
 
                              {* Compact Timeline *}
@@ -285,6 +283,7 @@
                                                  <th>{__("Date")}</th>
                                                  <th>{__("Total")}</th>
                                                  <th>{__("Status")}</th>
+                                                 <th>{__("Invoice Number")}</th>
                                                  <th>{__("Pending/Broken Actions")}</th>
                                              </tr>
                                          </thead>
@@ -296,6 +295,7 @@
                                                  <td data-order="{$orderInfo.order->dErstellt|strtotime}">{$orderInfo.order->dErstellt|germanDate:false}</td>
                                                  <td>{$orderInfo.order->fGesamtsumme|number_format:2:',':"."} {if $orderInfo.order->Waehrung && $orderInfo.order->Waehrung->cName}{$orderInfo.order->Waehrung->cName}{else}€{/if}</td>
                                                 <td>{$orderInfo.order->Status}</td>
+                                                <td>{if $orderInfo.invoiceNumber}{$orderInfo.invoiceNumber}{else}<span class="text-muted">-</span>{/if}</td>
                                                 <td>
                                                     {assign var="hasAnyActions" value=false}
                                                     <div class="actions-list">

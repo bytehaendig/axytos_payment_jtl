@@ -710,9 +710,23 @@ msgstr "Keine Bestellungen gefunden, die auf Rechnung warten"
 msgid "Set Invoice Number"
 msgstr "Rechnungsnummer setzen"
 
+#: adminmenu/template/status.tpl:285
 #: adminmenu/template/invoices.tpl.tmp.php:119
 msgid "Invoice Number"
 msgstr "Rechnungsnummer"
+
+#: adminmenu/template/status.tpl:142
+msgid "Invoice Number:"
+msgstr "Rechnungsnummer:"
+
+#: adminmenu/template/status.tpl:143
+msgid "Invoice Date:"
+msgstr "Rechnungsdatum:"
+
+#: adminmenu/template/status.tpl:142
+#: adminmenu/template/status.tpl:143
+msgid "Not yet created"
+msgstr "Noch nicht erstellt"
 
 #: adminmenu/template/invoices.tpl.tmp.php:121
 msgid "Enter invoice number"

@@ -270,11 +270,15 @@ class StatusController
 
         // Extract customer info
         $customerInfo = $this->getCustomerInfo($order);
+        $invoiceNumber = $this->getOrderInvoiceNumber($order->kBestellung);
+        $invoiceDate = $this->getOrderInvoiceDate($order->kBestellung);
 
         return [
             'order' => $order,
             'customerName' => $customerInfo['name'],
             'customerEmail' => $customerInfo['email'],
+            'invoiceNumber' => $invoiceNumber,
+            'invoiceDate' => $invoiceDate,
             'timeline' => $timeline, // Unified timeline with actions and logs
             'pendingActions' => $pendingAndBrokenActions // Keep for action buttons (backward compatibility)
         ];
@@ -307,6 +311,7 @@ class StatusController
             $order->fuelleBestellung(false);
             
             $customerInfo = $this->getCustomerInfo($order);
+            $invoiceNumber = $this->getOrderInvoiceNumber($orderId);
             
             // Get detailed actions breakdown via ActionHandler (same as unified actions)
             $actionsBreakdown = $this->actionHandler->getOrderActionsBreakdown($orderId);
@@ -314,7 +319,8 @@ class StatusController
             $orders[] = array_merge($actionsBreakdown, [
                 'order' => $order,
                 'customerName' => $customerInfo['name'],
-                'customerEmail' => $customerInfo['email']
+                'customerEmail' => $customerInfo['email'],
+                'invoiceNumber' => $invoiceNumber
             ]);
         }
 
@@ -365,6 +371,7 @@ class StatusController
             $order->fuelleBestellung(false);
             
             $customerInfo = $this->getCustomerInfo($order);
+            $invoiceNumber = $this->getOrderInvoiceNumber($orderId);
             
             // Get detailed actions breakdown via ActionHandler
             $actionsBreakdown = $this->actionHandler->getOrderActionsBreakdown($orderId);
@@ -374,12 +381,31 @@ class StatusController
                 $ordersWithActions[] = array_merge($actionsBreakdown, [
                     'order' => $order,
                     'customerName' => $customerInfo['name'],
-                    'customerEmail' => $customerInfo['email']
+                    'customerEmail' => $customerInfo['email'],
+                    'invoiceNumber' => $invoiceNumber
                 ]);
             }
         }
 
         return $ordersWithActions;
+    }
+
+    private function getOrderInvoiceNumber(int $orderId): ?string
+    {
+        $result = $this->db->getSingleObject(
+            "SELECT cValue FROM tbestellattribut WHERE kBestellung = :orderId AND cName = :name",
+            ['orderId' => $orderId, 'name' => 'invoice_number']
+        );
+        return $result->cValue ?? null;
+    }
+
+    private function getOrderInvoiceDate(int $orderId): ?string
+    {
+        $result = $this->db->getSingleObject(
+            "SELECT cValue FROM tbestellattribut WHERE kBestellung = :orderId AND cName = :name",
+            ['orderId' => $orderId, 'name' => 'invoice_date']
+        );
+        return $result->cValue ?? null;
     }
 
     /**

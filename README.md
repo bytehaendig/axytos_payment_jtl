@@ -35,74 +35,13 @@ Dieses Plugin integriert Axytos als Zahlungsmethode in Ihren JTL-Shop und ermög
 
 ## Rechnungsnummern übermitteln
 
-Damit Axytos die Bezahlungsverarbeitung durchführen kann, müssen die Rechnungsnummern an Axytos übermittelt werden. Da Rechnungsnummern nicht automatisch beim Datenabgleich zwischen JTL-Shop und JTL-WaWi übertragen werden, gibt es drei Möglichkeiten zur Übermittlung:
+Damit Axytos die Bezahlungsverarbeitung durchführen kann, müssen die Rechnungsnummern an Axytos übermittelt werden. Dies geschieht **vollautomatisch** durch die Integration mit JTL-WaWi.
 
-### 1. Manuell einzeln
+**Einrichtung der Automatisierung:**
+Damit die automatische Übermittlung funktioniert, müssen in der JTL-WaWi Workflows angelegt werden. Die Dokumentation dazu erfolgt separat.
 
-**Empfohlene Häufigkeit:** Regelmäßig (z.B. 1× pro Woche)
-
-1. Öffnen Sie **Axytos Payment > Rechnungen**
-2. Es wird eine Liste der Bestellungen angezeigt, für die noch keine Rechnungsnummer übermittelt wurde
-3. Klicken Sie auf eine Bestellung und geben Sie die zugehörige Rechnungsnummer ein
-
-### 2. Manuell via CSV-Upload
-
-**Empfohlene Häufigkeit:** Regelmäßig (z.B. 1× pro Woche)
-
-1. Erstellen Sie eine CSV-Datei mit der **JTL-Ameise Exportvorlage** (siehe unten):
-   - Öffnen Sie JTL-WaWi und starten Sie die JTL-Ameise (**Start > JTL-Ameise**)
-   - Wählen Sie unter **Zuletzt bearbeitete Exportvorlagen** die Vorlage "Rechnungsnummern"
-   - Klicken Sie auf **Export starten**, bestätigen Sie im Dialog und wählen Sie den Speicherort
-2. Laden Sie die erzeugte CSV-Datei hoch: **Axytos Payment > Rechnungen > CSV-Datei auswählen**
-
-### 3. Automatisch via Windows Task Scheduler
-
-**Empfohlene Häufigkeit:** Einmalige Einrichtung (danach täglich automatisch)
-
-**Voraussetzungen:**
-- Windows 10 oder höher
-- JTL-WaWi mit Kommandozeilen-Version der JTL-Ameise
-
-**Einrichtung:**
-
-1. Erstellen Sie eine JTL-Ameise Exportvorlage (siehe unten) und notieren Sie deren ID (z.B. `EXP1`)
-2. Öffnen Sie **Axytos Payment > API Setup > JTL-WaWi Automatisierung**
-3. Generieren und speichern Sie einen **Webhook-API-Schlüssel**
-4. Klicken Sie auf **Automatisierungs-Paket herunterladen** (ZIP-Datei) auf dem Computer, auf dem JTL-WaWi installiert ist
-5. Entpacken Sie die ZIP-Datei in einen geeigneten Ordner (z.B. `C:\Tools\AxytosPaymentAutomation`)
-6. Bearbeiten Sie die Datei `config.ini` und passen Sie die Werte im Abschnitt `[WaWi]` an Ihre JTL-WaWi-Installation an:
-   - **Server**: SQL-Server-Instanz (Standard: `(local)\JTLWAWI`)
-   - **Database**: Name der WaWi-Datenbank (Standard: `eazybusiness`)
-   - **User**: SQL-Server-Benutzername
-   - **Password**: SQL-Server-Passwort
-   - **ExportTemplate**: ID der JTL-Ameise Exportvorlage (z.B. `EXP1`)
-   - **InstallPath**: Installationspfad von JTL-WaWi (Standard: `C:\Program Files (x86)\JTL-Software`)
-7. Optional können Sie im Abschnitt `[Axytos]` die **ScheduleTime** anpassen (Uhrzeit im Format HH:MM, Standard: 02:00)
-8. Führen Sie das Skript `install.bat` im entpackten Ordner aus
-
-Das Installationsskript richtet im Windows Task Scheduler einen täglichen Task ein, der automatisch Rechnungsnummern an das Axytos-Plugin übermittelt.
-
-**Deinstallation:**
-Um den automatischen Task wieder zu entfernen, führen Sie das Skript `uninstall.bat` im Installationsordner aus. Dies entfernt den Task aus dem Windows Task Scheduler.
-
-### JTL-Ameise Exportvorlage anlegen
-
-So erstellen Sie eine Exportvorlage für Rechnungsnummern:
-
-1. Öffnen Sie JTL-WaWi und starten Sie die JTL-Ameise (**Start > JTL-Ameise**)
-2. Klicken Sie auf **Export**
-3. Wählen Sie links **Buchungsdaten > Rechnungen**
-4. Wählen Sie bei **Datenbankfeld** folgende Felder aus:
-   - Rechnungsnummer
-   - Externe Bestellnummer
-5. Lassen Sie **Exportdatei** unverändert
-6. Setzen Sie bei **Exportfilter wählen**:
-   - Haken bei **offene Rechnungen**
-   - Zeitraum: **aktueller Monat**
-7. Klicken Sie auf **Vorlage speichern**
-8. Geben Sie einen **Vorlagennamen** ein (z.B. "Rechnungsnummern")
-9. Klicken Sie auf **Neue Vorlage speichern**
-10. Notieren Sie sich die angezeigte **Vorlagen-ID** (z.B. `EXP1`) für die Automatisierung
+**Rechnungsnummer einsehen:**
+Im Admin-Bereich unter **Axytos Payment > Status** wird die Rechnungsnummer in der Bestellübersicht angezeigt. Sie können dort prüfen, ob die Synchronisation erfolgreich war.
 
 ## Überwachung
 
@@ -124,6 +63,7 @@ Jeder dieser Schritte wird als "Aktion" im System gespeichert. Falls eine Kommun
 Im Admin-Bereich unter **Axytos Payment > Status** sehen Sie den Gesundheitszustand des Systems:
 
 **Systemstatus-Karten:**
+
 - **Cron-Job Status**: Zeigt, ob die automatische Verarbeitung aktiv ist
 - **Ausstehende Aktionen**: Anzahl der Aktionen, die noch verarbeitet werden
 - **Kaputte Aktionen**: Aktionen, die mehrfach fehlgeschlagen sind und Ihre Aufmerksamkeit benötigen
@@ -147,6 +87,7 @@ Im Admin-Bereich unter **Axytos Payment > Status** sehen Sie den Gesundheitszust
    - **Aktion entfernen**: ⚠️ **ACHTUNG** - Wenn Sie eine Aktion entfernen, müssen Sie die Information **manuell an Axytos übermitteln** (z.B. über das Axytos Customer Portal) oder die Bestellung in Ihrem System entsprechend korrigieren. Das Plugin wird diese Aktion danach nicht mehr automatisch verarbeiten!
 
 **Button "Alle verarbeiten":**
+
 - Startet die manuelle Verarbeitung aller ausstehenden Aktionen
 - Nützlich, wenn Sie nicht auf die automatische Verarbeitung warten möchten
 
@@ -155,8 +96,20 @@ Im Admin-Bereich unter **Axytos Payment > Status** sehen Sie den Gesundheitszust
 Auf dem Shop-Dashboard finden Sie das **Axytos Overview Widget** mit den wichtigsten Informationen auf einen Blick:
 
 - **Systemstatus**: Schnelle Übersicht über Cron-Job, ausstehende und kaputte Aktionen
-- **Bestellungen ohne Rechnung**: Zeigt Bestellungen, für die noch keine Rechnungsnummer übermittelt wurde
 - **Direkt-Links**: Schnellzugriff auf die Plugin-Tabs für detaillierte Aktionen
 
 Das Widget ermöglicht es Ihnen, den Zustand des Axytos-Systems im Blick zu behalten, ohne die Plugin-Tabs öffnen zu müssen. Nur bei Problemen oder für detaillierte Aktionen wechseln Sie in die jeweiligen Plugin-Bereiche.
 
+### Rechnungsnummern-Übersicht
+
+Im Admin-Bereich unter **Axytos Payment > Status** finden Sie eine Übersicht aller Bestellungen mit ihren zugehörigen Rechnungsnummern. Die Tabelle zeigt:
+
+- **Bestellnummer**: Ihre Shop-Bestellnummer
+- **Kunde**: Name des Kunden
+- **Datum**: Bestelldatum
+- **Gesamt**: Bestellsumme
+- **Status**: Aktueller Bestellstatus
+- **Rechnungsnummer**: Automatisch synchronisiert aus JTL-WaWi
+- **Ausstehende/Kaputte Aktionen**: Status der Axytos-Kommunikation
+
+In der Detailansicht einer Bestellung (per Klick auf die Bestellung oder Suche) sehen Sie ebenfalls die Rechnungsnummer zusammen mit allen anderen Bestelldetails.

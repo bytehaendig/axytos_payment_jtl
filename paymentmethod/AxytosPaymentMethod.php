@@ -228,15 +228,14 @@ class AxytosPaymentMethod extends Method
         $order->fuelleBestellung(false);
         $dataFormatter = $this->createDataFormatter($order);
         $shippingData = $dataFormatter->createShippingData();
-        // $invoiceData = $dataFormatter->createInvoiceData();
-        // $actionHandler->addPendingAction($orderId, 'invoice', $invoiceData);
 
         $actionHandler = $this->createActionHandler();
         $actionHandler->addPendingAction($orderId, 'shipped', $shippingData);
-        $actionHandler->processPendingActionsForOrder($orderId);
+        // Queue action for cron processing to avoid blocking WaWi sync
+        // Cron will process this action along with any pending invoice actions
     }
 
-    public function invoiceWasCreated(string $orderNumber, string $invoiceNumber, bool $processImmediately = true, bool $fromWaWi = false): void
+    public function invoiceWasCreated(string $orderNumber, string $invoiceNumber): void
     {
         // Load the order by order number
         $order = Utils::loadOrderByOrderNumber($this->db, $orderNumber);
@@ -247,14 +246,7 @@ class AxytosPaymentMethod extends Method
 
         $orderId = $order->kBestellung;
 
-        // Store invoice number and date (unless coming from WaWi sync)
-        // When fromWaWi=true, the attributes are already set by WaWi
-        if (!$fromWaWi) {
-            $this->addOrderAttribute($order, 'invoice_number', $invoiceNumber);
-            $this->addOrderAttribute($order, 'invoice_date', date('Y-m-d H:i:s'));
-        }
-
-        // Get invoice number from attributes - REQUIRED, no fallback!
+        // Get invoice number and date from attributes (set by WaWi sync)
         $orderAttributes = $this->getOrderAttributes($orderId);
         $invoiceNumber = $orderAttributes['invoice_number'] ?? null;
         
@@ -267,12 +259,9 @@ class AxytosPaymentMethod extends Method
         $invoiceDate = $orderAttributes['invoice_date'] ?? null;
         $invoiceData = $dataFormatter->createInvoiceData($invoiceNumber, $invoiceDate);
 
+        // Queue action for cron processing (async, non-blocking)
         $actionHandler = $this->createActionHandler();
         $actionHandler->addPendingAction($orderId, 'invoice', $invoiceData);
-        
-        if ($processImmediately) {
-            $actionHandler->processPendingActionsForOrder($orderId);
-        }
     }
 
     private function loadPluginSettings(): void
@@ -281,7 +270,7 @@ class AxytosPaymentMethod extends Method
         $pluginId = $this->plugin->getID();
         $settings = $this->db->selectAll('tplugineinstellungen', ['kPlugin'], [$pluginId]);
         foreach ($settings as $setting) {
-            if ($setting->cName === $this->getSettingName('api_key') || $setting->cName === $this->getSettingName('webhook_api_key')) {
+            if ($setting->cName === $this->getSettingName('api_key')) {
                 $encryption = Shop::Container()->getCryptoService();
                 $setting->cWert = trim($encryption->decryptXTEA($setting->cWert));
             }
@@ -297,8 +286,8 @@ class AxytosPaymentMethod extends Method
         $pluginId = $this->plugin->getID();
 
         foreach ($settings as $key => $value) {
-            // Encrypt API keys before saving if not empty
-            if (($key === 'api_key' || $key === 'webhook_api_key') && !empty($value)) {
+            // Encrypt API key before saving if not empty
+            if ($key === 'api_key' && !empty($value)) {
                 $cryptoService = Shop::Container()->getCryptoService();
                 $value = $cryptoService->encryptXTEA(trim($value));
             }
