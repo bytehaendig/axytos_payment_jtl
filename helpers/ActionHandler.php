@@ -1044,6 +1044,7 @@ class ActionHandler
 
         return [
             'kAxytosAction' => (int) $action->kAxytosAction,
+            'kBestellung' => (int) $action->kBestellung,
             'cAction' => $action->cAction,
             'bDone' => (bool) $action->bDone,
             'dCreatedAt' => $action->dCreatedAt,
@@ -1054,6 +1055,4 @@ class ActionHandler
             'data' => $data
         ];
     }
-
-
 }

@@ -58,6 +58,7 @@ class Bootstrap extends Bootstrapper
             $dispatcher->listen('backend.notification', [$this, 'checkPayments']);
         }
         $dispatcher->hookInto(\HOOK_BESTELLUNGEN_XML_BESTELLSTATUS, [$this, 'onUpdateOrderStatus']);
+        $dispatcher->hookInto(\HOOK_BESTELLUNGEN_XML_BEARBEITEUPDATE, [$this, 'onOrderUpdatedFromWawi']);
         $this->setupCronHooks($dispatcher);
     }
 
@@ -126,6 +127,26 @@ class Bootstrap extends Bootstrapper
                 }
             }
         }
+    }
+
+    public function onOrderUpdatedFromWawi(array $args): void
+    {
+        $order = $args['oBestellung'];  // Updated order from WaWi
+        
+        // Convert stdClass to Bestellung object if needed
+        if (!($order instanceof \JTL\Checkout\Bestellung)) {
+            $order = new \JTL\Checkout\Bestellung((int)$order->kBestellung, false, $this->getDB());
+        }
+        
+        // Create handler and process invoice number changes
+        $paymentMethod = $this->getMethod();
+        $invoiceSyncHandler = new \Plugin\axytos_payment\helpers\InvoiceSyncHandler(
+            $this->getDB(),
+            $paymentMethod,
+            $paymentMethod->getLogger()
+        );
+        
+        $invoiceSyncHandler->handleOrderUpdate($order);
     }
 
     /**

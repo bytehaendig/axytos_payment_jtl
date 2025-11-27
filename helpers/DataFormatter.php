@@ -203,7 +203,7 @@ class DataFormatter
                 "mobilePhoneNumber" => $customer->cMobil ? $customer->cMobil : $customer->cTel ?? '',
             ],
             "invoiceAddress" => getAddress($this->order->oRechnungsadresse),
-            "deliveryAddress" => getAddress($this->order->oLieferadresse ?: $this->order->oRechnungsadresse),
+            "deliveryAddress" => getAddress($this->order->Lieferadresse ?: $this->order->oRechnungsadresse),
             "basket" => $this->createBasketData("order"),
         ];
     }
@@ -245,15 +245,22 @@ class DataFormatter
      *
      * @return array
      */
-    public function createInvoiceData(): array
+    public function createInvoiceData(string $invoiceNumber, ?string $invoiceDate = null): array
     {
+        // Fallback to current date if no invoice date is set
+        if ($invoiceDate === null) {
+            $invoiceDate = date('c');
+        } else {
+            // Convert to ISO 8601 format if needed
+            $invoiceDate = date('c', strtotime($invoiceDate));
+        }
+        
         return [
             "externalOrderId" => $this->getExternalOrderId(),
-            "externalInvoiceNumber" => $this->order->cBestellNr,
-            "externalInvoiceDisplayName" => sprintf("Bestellung %s", $this->order->cBestellNr),
+            "externalInvoiceNumber" => $invoiceNumber,
+            "externalInvoiceDisplayName" => sprintf("Rechnung %s", $invoiceNumber),
             "externalSubOrderId" => "",
-            // NOTE: should probably be invoice date - since we don't have it, use curent datetime 
-            "date" => date('c'),
+            "date" => $invoiceDate,
             // TODO: should this be configurable?
             "dueDateOffsetDays" => 14,
             "basket" => $this->createBasketData("invoice"),

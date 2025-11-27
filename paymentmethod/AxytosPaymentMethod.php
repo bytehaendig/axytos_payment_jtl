@@ -180,6 +180,11 @@ class AxytosPaymentMethod extends Method
         }
         $confirmData  = $dataFormatter->createConfirmData($precheckResponseJson, $orderData);
         $orderId = $order->kBestellung;
+        
+        // Initialize invoice tracking attributes
+        $this->addOrderAttribute($order, 'invoice_number', '');
+        $this->addOrderAttribute($order, 'invoice_date', '');
+        
         $actionHandler = $this->createActionHandler();
         $actionHandler->addPendingAction($orderId, 'confirm', $confirmData);
         $successful = $actionHandler->processPendingActionsForOrder($orderId);
@@ -231,7 +236,7 @@ class AxytosPaymentMethod extends Method
         $actionHandler->processPendingActionsForOrder($orderId);
     }
 
-    public function invoiceWasCreated(string $orderNumber, string $invoiceNumber = null, bool $processImmediately = true): void
+    public function invoiceWasCreated(string $orderNumber, string $invoiceNumber, bool $processImmediately = true, bool $fromWaWi = false): void
     {
         // Load the order by order number
         $order = Utils::loadOrderByOrderNumber($this->db, $orderNumber);
@@ -242,13 +247,25 @@ class AxytosPaymentMethod extends Method
 
         $orderId = $order->kBestellung;
 
-        $dataFormatter = $this->createDataFormatter($order);
-        $invoiceData = $dataFormatter->createInvoiceData();
-
-        // Store invoice number if provided
-        if ($invoiceNumber !== null) {
+        // Store invoice number and date (unless coming from WaWi sync)
+        // When fromWaWi=true, the attributes are already set by WaWi
+        if (!$fromWaWi) {
             $this->addOrderAttribute($order, 'invoice_number', $invoiceNumber);
+            $this->addOrderAttribute($order, 'invoice_date', date('Y-m-d H:i:s'));
         }
+
+        // Get invoice number from attributes - REQUIRED, no fallback!
+        $orderAttributes = $this->getOrderAttributes($orderId);
+        $invoiceNumber = $orderAttributes['invoice_number'] ?? null;
+        
+        if ($invoiceNumber === null) {
+            throw new \Exception("Invoice number is required to create invoice action for order {$orderId}");
+        }
+        
+        // Create invoice data with invoice number and date
+        $dataFormatter = $this->createDataFormatter($order);
+        $invoiceDate = $orderAttributes['invoice_date'] ?? null;
+        $invoiceData = $dataFormatter->createInvoiceData($invoiceNumber, $invoiceDate);
 
         $actionHandler = $this->createActionHandler();
         $actionHandler->addPendingAction($orderId, 'invoice', $invoiceData);
@@ -325,6 +342,25 @@ class AxytosPaymentMethod extends Method
     private function createDataFormatter(Bestellung $order): DataFormatter
     {
         return new DataFormatter($order);
+    }
+
+    /**
+     * Get order attributes as associative array
+     */
+    private function getOrderAttributes(int $kBestellung): array
+    {
+        $attributes = [];
+        $results = $this->db->selectAll(
+            'tbestellattribut',
+            'kBestellung',
+            $kBestellung
+        );
+        
+        foreach ($results as $attr) {
+            $attributes[$attr->cName] = $attr->cValue;
+        }
+        
+        return $attributes;
     }
 
     private function addErrorMessage(string $messageKey, string $key = 'generic'): void

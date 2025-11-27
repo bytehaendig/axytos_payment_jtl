@@ -197,6 +197,13 @@ class DevController
         
         $dataFormatter = new DataFormatter($order);
         
+        // Fetch order attributes for invoice action
+        $orderAttributes = [];
+        $attrs = $this->db->selectAll('tbestellattribut', 'kBestellung', $order->kBestellung);
+        foreach ($attrs as $attr) {
+            $orderAttributes[$attr->cName] = $attr->cValue;
+        }
+        
         switch ($actionName) {
             case 'confirm':
                 // For confirm, we need both order data and precheck response
@@ -209,11 +216,11 @@ class DevController
                 ];
                 return $dataFormatter->createConfirmData($mockPrecheckResponse, $orderData);
                 
-            case 'shipped':
-                return $dataFormatter->createShippingData();
-                
             case 'invoice':
-                return $dataFormatter->createInvoiceData();
+                // For dev testing, use order number if no invoice_number exists
+                $invoiceNumber = $orderAttributes['invoice_number'] ?? $order->cBestellNr;
+                $invoiceDate = $orderAttributes['invoice_date'] ?? null;
+                return $dataFormatter->createInvoiceData($invoiceNumber, $invoiceDate);
                 
             case 'cancel':
             case 'reverse_cancel':
