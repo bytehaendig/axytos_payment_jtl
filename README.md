@@ -75,6 +75,18 @@ Im Admin-Bereich unter **Axytos Payment > Status** sehen Sie den Gesundheitszust
 - **Erneut versuchen**: Aktionen, die einmal fehlgeschlagen sind und automatisch wiederholt werden
 - **Kaputt**: Aktionen, die mehrfach fehlgeschlagen sind - **diese benötigen Ihre Aufmerksamkeit**
 
+Darunter finden Sie eine Übersicht aller Bestellungen mit ihren zugehörigen Rechnungsnummern. Die Tabelle zeigt:
+
+- **Bestellnummer**: Ihre Shop-Bestellnummer
+- **Kunde**: Name des Kunden
+- **Datum**: Bestelldatum
+- **Gesamt**: Bestellsumme
+- **Status**: Aktueller Bestellstatus
+- **Rechnungsnummer**: Automatisch synchronisiert aus JTL-WaWi
+- **Ausstehende/Kaputte Aktionen**: Status der Axytos-Kommunikation
+
+In der Detailansicht einer Bestellung (per Klick auf die Bestellung oder Suche) sehen Sie ebenfalls die Rechnungsnummer zusammen mit allen anderen Bestelldetails.
+
 ### Fehler beheben
 
 **Bei "kaputten" Aktionen:**
@@ -99,17 +111,3 @@ Auf dem Shop-Dashboard finden Sie das **Axytos Overview Widget** mit den wichtig
 - **Direkt-Links**: Schnellzugriff auf die Plugin-Tabs für detaillierte Aktionen
 
 Das Widget ermöglicht es Ihnen, den Zustand des Axytos-Systems im Blick zu behalten, ohne die Plugin-Tabs öffnen zu müssen. Nur bei Problemen oder für detaillierte Aktionen wechseln Sie in die jeweiligen Plugin-Bereiche.
-
-### Rechnungsnummern-Übersicht
-
-Im Admin-Bereich unter **Axytos Payment > Status** finden Sie eine Übersicht aller Bestellungen mit ihren zugehörigen Rechnungsnummern. Die Tabelle zeigt:
-
-- **Bestellnummer**: Ihre Shop-Bestellnummer
-- **Kunde**: Name des Kunden
-- **Datum**: Bestelldatum
-- **Gesamt**: Bestellsumme
-- **Status**: Aktueller Bestellstatus
-- **Rechnungsnummer**: Automatisch synchronisiert aus JTL-WaWi
-- **Ausstehende/Kaputte Aktionen**: Status der Axytos-Kommunikation
-
-In der Detailansicht einer Bestellung (per Klick auf die Bestellung oder Suche) sehen Sie ebenfalls die Rechnungsnummer zusammen mit allen anderen Bestelldetails.
